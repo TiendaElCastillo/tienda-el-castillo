@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tienda El Castillo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10131b;color:#f4f4f6;font-family:Arial,sans-serif}
+header{background:#191e2a;padding:20px;text-align:center;border-bottom:1px solid #30394b}
+h1{margin:0;color:#e7bd69}
+main{max-width:700px;margin:22px auto;padding:0 15px}
+.card{background:#1b2230;border:1px solid #30394b;border-radius:13px;padding:17px;margin-bottom:15px}
+h2{margin-top:0;color:#e7bd69}
+input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:8px;border:1px solid #46516a;font-size:15px}
+input,select{background:#111722;color:white}
+button{background:#c99b49;color:#171717;border:0;font-weight:bold;cursor:pointer}
+button.secondary{background:#344056;color:white}
+small{color:#b7bdca}
+.hidden{display:none}
+.product{padding:12px;border-bottom:1px solid #394256}
+.status{color:#e7bd69}
+</style>
+</head>
+<body>
+<header>
+<h1>🏰 Tienda El Castillo</h1>
+<p>Recargas y productos digitales</p>
+</header>
+<main>
+
+<section id="setup" class="card">
+<h2>Conectar la tienda</h2>
+<p>Introduce los datos públicos de tu proyecto Supabase.</p>
+<input id="url" placeholder="URL del proyecto Supabase">
+<input id="key" placeholder="Clave pública sb_publishable_..." >
+<button onclick="connect()">Conectar</button>
+<small>Usa la clave pública, nunca la clave secreta o service_role.</small>
+</section>
+
+<section id="auth" class="card hidden">
+<h2>Entrar a tu cuenta</h2>
+<input id="email" type="email" placeholder="Correo electrónico">
+<input id="password" type="password" placeholder="Contraseña">
+<input id="fullname" placeholder="Nombre (solo para registrarte)">
+<button onclick="register()">Crear cuenta</button>
+<button class="secondary" onclick="login()">Iniciar sesión</button>
+<p id="authmsg"></p>
+</section>
+
+<section id="store" class="hidden">
+<div class="card">
+<h2>Bienvenido</h2>
+<p id="welcome"></p>
+<button class="secondary" onclick="logout()">Cerrar sesión</button>
+</div>
+
+<div class="card">
+<h2>Catálogo</h2>
+<div id="products">Cargando productos...</div>
+</div>
+
+<div class="card">
+<h2>Realizar pedido</h2>
+<select id="product"></select>
+<input id="player" placeholder="ID del jugador">
+<input id="playername" placeholder="Nombre del jugador (opcional)">
+<select id="payment">
+<option value="Transferencia CUP">Transferencia CUP</option>
+<option value="Saldo móvil">Saldo móvil</option>
+<option value="USDT">USDT</option>
+</select>
+<input id="reference" placeholder="Referencia del pago (opcional)">
+<button onclick="placeOrder()">Enviar pedido</button>
+<p id="ordermsg"></p>
+</div>
+
+<div class="card">
+<h2>Mis pedidos</h2>
+<div id="myorders">Cargando...</div>
+</div>
+
+<div id="admin" class="hidden">
+<div class="card">
+<h2>Administrar productos</h2>
+<input id="game" placeholder="Juego (ej. Free Fire)">
+<input id="pname" placeholder="Nombre del paquete">
+<input id="description" placeholder="Descripción (opcional)">
+<input id="amount" type="number" placeholder="Cantidad de diamantes o saldo">
+<input id="transfer" type="number" placeholder="Precio transferencia CUP">
+<input id="mobile" type="number" placeholder="Precio saldo móvil">
+<input id="usdt" type="number" step="0.01" placeholder="Precio USDT">
+<input id="cost" type="number" step="0.01" placeholder="Costo del paquete">
+<button onclick="addProduct()">Guardar producto</button>
+<p id="adminmsg"></p>
+</div>
+<div class="card">
+<h2>Pedidos de clientes</h2>
+<div id="allorders">Cargando...</div>
+</div>
+</div>
+</section>
+</main>
+
+<script>
+let db=null, currentUser=null, currentProfile=null, products=[];
+
+const $=id=>document.getElementById(id);
+const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=v=>Number(v||0).toLocaleString("es-ES");
+
+function connect(){
+ const url=$("url").value.trim();
+ const key=$("key").value.trim();
+ if(!url.startsWith("https://")||!key){alert("Revisa la URL y la clave pública.");return}
+ localStorage.setItem("castle_url",url);
+ localStorage.setItem("castle_key",key);
+ start(url,key);
+}
+
+async function start(url,key){
+ try{
+  db=window.supabase.createClient(url,key);
+  $("setup").classList.add("hidden");
+  const {data}=await db.auth.getSession();
+  if(data.session) await openStore(data.session.user);
+  else $("auth").classList.remove("hidden");
+ }catch(e){alert("No se pudo conectar: "+e.message)}
+}
+
+async function register(){
+ const email=$("email").value.trim();
+ const password=$("password").value;
+ const name=$("fullname").value.trim();
+ if(!email||password.length<6){$("authmsg").textContent="Escribe tu correo y una contraseña de al menos 6 caracteres.";return}
+ const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name}}});
+ if(error){$("authmsg").textContent=error.message;return}
+ if(data.session) await openStore(data.session.user);
+ else $("authmsg").textContent="Cuenta creada. Confirma tu correo si Supabase te lo solicita y después inicia sesión.";
+}
+
+async function login(){
+ const {data,error}=await db.auth.signInWithPassword({
+  email:$("email").value.trim(),password:$("password").value
+ });
+ if(error){$("authmsg").textContent=error.message;return}
+ await openStore(data.user);
+}
+
+async function openStore(user){
+ currentUser=user;
+ $("auth").classList.add("hidden");
+ $("store").classList.remove("hidden");
+
+ let result=await db.from("profiles").select("*").eq("id",user.id).maybeSingle();
+ if(result.error){alert("Error al consultar el perfil: "+result.error.message);return}
+ currentProfile=result.data;
+
+ if(!currentProfile){
+  const created=await db.from("profiles").insert({
+   id:user.id,email:user.email,role:"customer"
+  }).select().single();
+  if(created.error){alert("No se pudo crear tu perfil: "+created.error.message);return}
+  currentProfile=created.data;
+ }
+
+ $("welcome").textContent="Hola, "+(currentProfile.full_name||user.email);
+ if(currentProfile.role==="admin") $("admin").classList.remove("hidden");
+ await loadProducts();
+ await loadMyOrders();
+ if(currentProfile.role==="admin") await loadAllOrders();
+}
+
+async function loadProducts(){
+ const {data,error}=await db.from("products").select("*").eq("active",true).order("name");
+ if(error){$("products").textContent="Error: "+error.message;return}
+ products=data||[];
+ $("products").innerHTML=products.length?products.map(p=>
+  `<div class="product"><b>${clean(p.game)} - ${clean(p.name)}</b><br>
+  <small>${clean(p.description||"")}</small><br>
+  Transferencia: ${money(p.price_transfer)} CUP
+  </div>`).join(""):"Todavía no hay productos en el catálogo.";
+ $("product").innerHTML=products.map(p=>
+  `<option value="${p.id}">${clean(p.game)} - ${clean(p.name)}</option>`).join("");
+}
+
+async function placeOrder(){
+ const product=products.find(p=>p.id===$("product").value);
+ if(!product){$("ordermsg").textContent="No hay productos disponibles.";return}
+ const player=$("player").value.trim();
+ if(!player){$("ordermsg").textContent="Escribe el ID del jugador.";return}
+
+ const method=$("payment").value;
+ let price=method==="USDT"?product.price_usdt:
+           method==="Saldo móvil"?product.price_mobile:
+           product.price_transfer;
+ if(price===null||price===undefined||price===""){
+  $("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";
+  return;
+ }
+
+ const code="EC-"+Date.now();
+ const {error}=await db.from("orders").insert({
+  order_code:code,user_id:currentUser.id,product_id:product.id,
+  game:product.game,package_name:product.name,player_id:player,
+  player_name:$("playername").value.trim(),payment_method:method,
+  price:Number(price),payment_reference:$("reference").value.trim(),
+  status:"pending"
+ });
+ if(error){$("ordermsg").textContent="Error: "+error.message;return}
+ $("ordermsg").textContent="Pedido enviado. Código: "+code+". Está pendiente de revisión.";
+ $("player").value="";
+ $("playername").value="";
+ $("reference").value="";
+ await loadMyOrders();
+}
+
+async function loadMyOrders(){
+ const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
+ $("myorders").innerHTML=error?"Error: "+clean(error.message):
+ (data||[]).length?(data||[]).map(o=>
+ `<div class="product"><b>${clean(o.order_code)}</b><br>
+ ${clean(o.game)} - ${clean(o.package_name)}<br>
+ ${money(o.price)} ${clean(o.payment_method)}<br>
+ <span class="status">${clean(o.status)}</span></div>`).join("")
+ :"Todavía no tienes pedidos.";
+}
+
+async function addProduct(){
+ const name=$("pname").value.trim(), game=$("game").value.trim();
+ if(!name||!game){$("adminmsg").textContent="Escribe el juego y el nombre del paquete.";return}
+ const {error}=await db.from("products").insert({
+  game,name,description:$("description").value.trim(),
+  amount:Number($("amount").value||0),
+  price_transfer:Number($("transfer").value||0),
+  price_mobile:Number($("mobile").value||0),
+  price_usdt:Number($("usdt").value||0),
+  cost:Number($("cost").value||0),active:true
+ });
+ $("adminmsg").textContent=error?"Error: "+error.message:"Producto guardado.";
+ if(!error){await loadProducts();["game","pname","description","amount","transfer","mobile","usdt","cost"].forEach(id=>$(id).value="")}
+}
+
+async function loadAllOrders(){
+ const {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
+ $("allorders").innerHTML=error?"Error: "+clean(error.message):
+ (data||[]).length?(data||[]).map(o=>
+ `<div class="product"><b>${clean(o.order_code)}</b><br>
+ ${clean(o.game)} - ${clean(o.package_name)}<br>
+ Jugador: ${clean(o.player_id)}<br>
+ Precio: ${money(o.price)} ${clean(o.payment_method)}<br>
+ Estado: ${clean(o.status)}</div>`).join("")
+ :"No hay pedidos todavía.";
+}
+
+async function logout(){
+ await db.auth.signOut();
+ currentUser=null;
+ $("store").classList.add("hidden");
+ $("admin").classList.add("hidden");
+ $("auth").classList.remove("hidden");
+}
+
+window.addEventListener("load",()=>{
+ const url=localStorage.getItem("castle_url");
+ const key=localStorage.getItem("castle_key");
+ if(url&&key) start(url,key);
+});
+</script>
+</body>
+</html>
