@@ -393,6 +393,7 @@ function updatePaymentFields(){
  $("referenceLabel").textContent="Número de transferencia (obligatorio)";
  $("proofLabel").textContent=method==="Saldo móvil"?"Captura del SMS de ETECSA (obligatoria)":"Captura de la transferencia (obligatoria)";
  $("proofHelp").textContent=method==="Saldo móvil"?"Adjunta una captura clara del SMS de ETECSA que confirma el envío del saldo. JPG, PNG o WEBP; máximo 5 MB.":"Adjunta una captura clara del comprobante de transferencia. JPG, PNG o WEBP; máximo 5 MB.";
+ if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Crear pedido y enviar comprobante";
 }
 function renderPaymentMethodAdmin(){
  const list=$("paymentAdminList");if(!list)return;
@@ -480,7 +481,7 @@ async function placeOrder(){
    $("player").value="";$("playername").value="";
    await loadWalletData();await loadMyOrders();if(currentProfile?.role==="admin")await loadAllOrders();showView("orders");
   }catch(e){$("ordermsg").textContent="No se pudo completar el pago de billetera: "+(e.message||"error de conexión.");}
-  finally{if(walletButton){walletButton.disabled=false;walletButton.textContent="Crear pedido y enviar comprobante";}}
+  finally{if(walletButton){walletButton.disabled=false;walletButton.textContent=$("payment").value==="Billetera CUP"?"Pagar con mi billetera":"Crear pedido y enviar comprobante";}}
   return;
  }
  if(!paymentMethods.some(item=>item.name===method&&item.active&&item.instructions)){$("ordermsg").textContent="Este método de pago todavía no está configurado. Elige otro método o espera la confirmación de la tienda.";return}
