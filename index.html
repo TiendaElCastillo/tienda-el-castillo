@@ -234,7 +234,8 @@ async function loadMyOrders(){
  `<div class="product"><b>${clean(o.order_code)}</b><br>
  ${clean(o.game)} - ${clean(o.package_name)}<br>
  ${money(o.price)} ${clean(o.payment_method)}<br>
- <span class="status">${statusText(o.status)}</span></div>`).join("")
+ <span class="status">${statusText(o.status)}</span>
+ ${customerOrderProgress(o.status)}</div>`).join("")
  :"Todavía no tienes pedidos.";
 }
 
@@ -260,6 +261,14 @@ const orderStatuses=[
  {value:"completed",label:"Completado"},
  {value:"rejected",label:"Rechazado"}
 ];
+function customerOrderProgress(status){
+ if(status==="rejected") return '<p class="track-note">Pedido rechazado. Contacta con la tienda por tu canal habitual antes de volver a pagar.</p>';
+ const steps=[["pending","Recibido"],["payment_review","Pago"],["processing","Recarga"],["completed","Listo"]];
+ const pos=Math.max(0,steps.findIndex(s=>s[0]===status));
+ const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#e7bd69':'#46516a')+';font-size:11px">'+s[1]+'</span>').join("");
+ const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"La recarga está en proceso.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
+ return '<div style="margin:12px 0">'+bar+'</div><p class="track-note">'+(notes[status]||"Estamos revisando tu pedido.")+'</p>';
+}
 function statusText(value){
  const status=orderStatuses.find(s=>s.value===value);
  return status?status.label:clean(value||"Sin estado");
