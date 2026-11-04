@@ -553,7 +553,7 @@ async function logout(){
 }
 window.addEventListener("load",()=>{
  if(window.supabase&&window.supabase.createClient) start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY);
- else $("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo.";
+ else{$("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo.";$("brandLoader")?.classList.add("done");}
  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 });
 </script>
