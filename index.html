@@ -27,7 +27,28 @@ small{color:#b7bdca}
 .order-detail{margin:5px 0;color:#d2d7e1;font-size:14px;line-height:1.5}
 .order-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .order-toolbar button{width:auto}
-@media(max-width:430px){.order-actions{grid-template-columns:1fr}.order-actions button{width:100%}}
+.store-nav{display:flex;gap:7px;overflow-x:auto;padding:10px 0 14px;position:sticky;top:0;z-index:5;background:#10131b;scrollbar-width:none}
+.store-nav::-webkit-scrollbar{display:none}
+.store-nav button{flex:0 0 auto;width:auto;margin:0;padding:10px 14px;border:1px solid #344056;background:#1b2230;color:#dce2ec;border-radius:22px;font-size:13px}
+.store-nav button.active{background:#e7bd69;color:#171717;border-color:#e7bd69}
+.store-view{min-height:55vh}
+.hero{padding:25px 20px;background:linear-gradient(135deg,#252e40,#151a25);border:1px solid #3a465c;border-radius:18px;margin:10px 0 18px}
+.hero h2{font-size:26px;line-height:1.15;margin-bottom:8px}
+.hero p{color:#c8cfda;line-height:1.5}
+.hero-actions{display:flex;gap:9px;flex-wrap:wrap}
+.hero-actions button{width:auto;flex:1;min-width:130px}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.section-heading button{width:auto}
+.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.catalog-card{background:#1b2230;border:1px solid #30394b;border-radius:14px;padding:13px;min-width:0}
+.catalog-card h3{font-size:15px;margin:0 0 7px;color:#f4f4f6}
+.catalog-card p{font-size:12px;color:#b7bdca;min-height:30px;margin:5px 0}
+.catalog-card strong{color:#e7bd69}
+.catalog-card button{padding:10px;margin:9px 0 0}
+.empty-note{color:#b7bdca;padding:12px 0}
+.profile-email{overflow-wrap:anywhere;color:#c8cfda}
+@media(min-width:650px){.catalog-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:430px){.order-actions{grid-template-columns:1fr}.order-actions button{width:100%}.hero h2{font-size:22px}.hero-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -57,60 +78,124 @@ small{color:#b7bdca}
 </section>
 
 <section id="store" class="hidden">
-<div class="card">
-<h2>Bienvenido</h2>
-<p id="welcome"></p>
-<button class="secondary" onclick="logout()">Cerrar sesión</button>
-</div>
+<nav class="store-nav" aria-label="Navegación principal">
+ <button type="button" data-view="home" class="active" onclick="showView('home')">Inicio</button>
+ <button type="button" data-view="games" onclick="showView('games')">Juegos</button>
+ <button type="button" data-view="giftcards" onclick="showView('giftcards')">Gift Cards</button>
+ <button type="button" data-view="search" onclick="showView('search')">Buscar</button>
+ <button type="button" data-view="orders" onclick="showView('orders')">Mis pedidos</button>
+ <button type="button" data-view="profile" onclick="showView('profile')">Perfil</button>
+ <button type="button" id="adminNav" data-view="admin" class="hidden" onclick="showView('admin')">Administrar</button>
+</nav>
 
-<div class="card">
-<h2>Catálogo</h2>
-<div id="products">Cargando productos...</div>
-</div>
+<section id="homeView" class="store-view">
+ <div class="hero">
+  <h2>Todo lo que necesitas para jugar</h2>
+  <p>Recargas y productos digitales, de forma sencilla y segura con Tienda El Castillo.</p>
+  <div class="hero-actions">
+   <button type="button" onclick="showView('games')">Ver juegos</button>
+   <button type="button" class="secondary" onclick="showView('giftcards')">Ver Gift Cards</button>
+  </div>
+ </div>
+ <div class="card">
+  <div class="section-heading"><h2>Productos destacados</h2><button type="button" class="secondary" onclick="showView('games')">Ver catálogo</button></div>
+  <div id="homeProducts" class="catalog-grid"><p class="empty-note">Cargando catálogo...</p></div>
+ </div>
+ <div class="card">
+  <h2>Compra en pocos pasos</h2>
+  <p>1. Elige tu juego o tarjeta.</p>
+  <p>2. Escribe los datos necesarios.</p>
+  <p>3. Selecciona cómo pagar y envía tu pedido.</p>
+ </div>
+</section>
 
-<div class="card">
-<h2>Realizar pedido</h2>
-<select id="product"></select>
-<input id="player" placeholder="ID del jugador">
-<input id="playername" placeholder="Nombre del jugador (opcional)">
-<select id="payment">
-<option value="Transferencia CUP">Transferencia CUP</option>
-<option value="Saldo móvil">Saldo móvil</option>
-<option value="USDT">USDT</option>
-</select>
-<input id="reference" placeholder="Referencia del pago (opcional)">
-<button onclick="placeOrder()">Enviar pedido</button>
-<p id="ordermsg"></p>
-</div>
+<section id="gamesView" class="store-view hidden">
+ <div class="card">
+  <h2>Juegos</h2>
+  <p>Elige el juego y el paquete que deseas recargar.</p>
+  <div id="gamesProducts" class="catalog-grid"><p class="empty-note">Cargando...</p></div>
+ </div>
+</section>
 
-<div class="card">
-<h2>Mis pedidos</h2>
-<div id="myorders">Cargando...</div>
-</div>
+<section id="giftcardsView" class="store-view hidden">
+ <div class="card">
+  <h2>Gift Cards</h2>
+  <p>Tarjetas y códigos digitales disponibles.</p>
+  <div id="giftProducts" class="catalog-grid"><p class="empty-note">Cargando...</p></div>
+ </div>
+</section>
 
-<div id="admin" class="hidden">
-<div class="card">
-<h2>Administrar productos</h2>
-<input id="game" placeholder="Juego (ej. Free Fire)">
-<input id="pname" placeholder="Nombre del paquete">
-<input id="description" placeholder="Descripción (opcional)">
-<input id="amount" type="number" placeholder="Cantidad de diamantes o saldo">
-<input id="transfer" type="number" placeholder="Precio transferencia CUP">
-<input id="mobile" type="number" placeholder="Precio saldo móvil">
-<input id="usdt" type="number" step="0.01" placeholder="Precio USDT">
-<input id="cost" type="number" step="0.01" placeholder="Costo del paquete">
-<button onclick="addProduct()">Guardar producto</button>
-<p id="adminmsg"></p>
-</div>
-<div class="card">
-<div class="order-toolbar">
-<h2>Pedidos de clientes</h2>
-<button class="secondary" type="button" onclick="loadAllOrders()">Actualizar</button>
-</div>
-<p id="orderadminmsg" role="status"></p>
-<div id="allorders">Cargando...</div>
-</div>
-</div>
+<section id="searchView" class="store-view hidden">
+ <div class="card">
+  <h2>Buscar productos</h2>
+  <input id="productSearch" type="search" placeholder="Escribe el nombre del juego o producto..." oninput="renderSearchProducts()">
+  <div id="searchProducts" class="catalog-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div>
+ </div>
+</section>
+
+<section id="checkoutView" class="store-view hidden">
+ <div class="card">
+  <div class="section-heading"><h2>Completar pedido</h2><button type="button" class="secondary" onclick="showView('games')">Volver</button></div>
+  <p id="selectedProductText" class="status"></p>
+  <label for="product">Paquete</label>
+  <select id="product"></select>
+  <label for="player">ID del jugador</label>
+  <input id="player" placeholder="ID del jugador">
+  <label for="playername">Nombre del jugador (opcional)</label>
+  <input id="playername" placeholder="Nombre del jugador">
+  <label for="payment">Método de pago</label>
+  <select id="payment">
+   <option value="Transferencia CUP">Transferencia CUP</option>
+   <option value="Saldo móvil">Saldo móvil</option>
+   <option value="USDT">USDT</option>
+  </select>
+  <label for="reference">Referencia del pago (opcional)</label>
+  <input id="reference" placeholder="Referencia del pago">
+  <button onclick="placeOrder()">Enviar pedido</button>
+  <p id="ordermsg" role="status"></p>
+ </div>
+</section>
+
+<section id="ordersView" class="store-view hidden">
+ <div class="card">
+  <h2>Mis pedidos</h2>
+  <p>Consulta el estado y el progreso de tus compras.</p>
+  <div id="myorders">Cargando...</div>
+ </div>
+</section>
+
+<section id="profileView" class="store-view hidden">
+ <div class="card">
+  <h2>Mi perfil</h2>
+  <p id="welcome"></p>
+  <p id="profileEmail" class="profile-email"></p>
+  <button class="secondary" onclick="logout()">Cerrar sesión</button>
+ </div>
+</section>
+
+<section id="admin" class="store-view hidden">
+ <div class="card">
+  <h2>Administrar productos</h2>
+  <input id="game" placeholder="Juego (ej. Free Fire)">
+  <input id="pname" placeholder="Nombre del paquete">
+  <input id="description" placeholder="Descripción (opcional)">
+  <input id="amount" type="number" placeholder="Cantidad de diamantes o saldo">
+  <input id="transfer" type="number" placeholder="Precio transferencia CUP">
+  <input id="mobile" type="number" placeholder="Precio saldo móvil">
+  <input id="usdt" type="number" step="0.01" placeholder="Precio USDT">
+  <input id="cost" type="number" step="0.01" placeholder="Costo del paquete">
+  <button onclick="addProduct()">Guardar producto</button>
+  <p id="adminmsg"></p>
+ </div>
+ <div class="card">
+  <div class="order-toolbar">
+   <h2>Pedidos de clientes</h2>
+   <button class="secondary" type="button" onclick="loadAllOrders()">Actualizar</button>
+  </div>
+  <p id="orderadminmsg" role="status"></p>
+  <div id="allorders">Cargando...</div>
+ </div>
+</section>
 </section>
 </main>
 
@@ -163,6 +248,7 @@ async function openStore(user){
  currentUser=user;
  $("auth").classList.add("hidden");
  $("store").classList.remove("hidden");
+ showView("home");
 
  let result=await db.from("profiles").select("*").eq("id",user.id).maybeSingle();
  if(result.error){alert("Error al consultar el perfil: "+result.error.message);return}
@@ -177,23 +263,60 @@ async function openStore(user){
  }
 
  $("welcome").textContent="Hola, "+(currentProfile.full_name||user.email);
- if(currentProfile.role==="admin") $("admin").classList.remove("hidden");
+ $("profileEmail").textContent=user.email||"";
+ if(currentProfile.role==="admin") $("adminNav").classList.remove("hidden");
  await loadProducts();
  await loadMyOrders();
  if(currentProfile.role==="admin") await loadAllOrders();
 }
 
+function isGiftCard(p){
+ const value=(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).toLowerCase();
+ return /gift.?card|xbox|playstation|\bpsn\b|apple|nintendo|google play|steam|tarjeta regalo/.test(value);
+}
+function productCard(p){
+ return `<article class="catalog-card">
+  <h3>${clean(p.game)} · ${clean(p.name)}</h3>
+  <p>${clean(p.description||"Recarga digital disponible.")}</p>
+  <strong>${money(p.price_transfer)} CUP</strong>
+  <button type="button" onclick="openCheckout('${clean(p.id)}')">Comprar</button>
+ </article>`;
+}
+function renderProductCatalogs(){
+ const games=products.filter(p=>!isGiftCard(p));
+ const cards=products.filter(isGiftCard);
+ $("homeProducts").innerHTML=games.length?games.slice(0,4).map(productCard).join(""):'<p class="empty-note">Próximamente añadiremos productos.</p>';
+ $("gamesProducts").innerHTML=games.length?games.map(productCard).join(""):'<p class="empty-note">Todavía no hay recargas de juegos disponibles.</p>';
+ $("giftProducts").innerHTML=cards.length?cards.map(productCard).join(""):'<p class="empty-note">Todavía no hay Gift Cards publicadas.</p>';
+ renderSearchProducts();
+}
+function renderSearchProducts(){
+ const term=($("productSearch")?.value||"").trim().toLowerCase();
+ const matches=products.filter(p=>(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).toLowerCase().includes(term));
+ $("searchProducts").innerHTML=matches.length?matches.map(productCard).join(""):'<p class="empty-note">No encontramos productos con ese nombre.</p>';
+}
+function showView(name){
+ const views={home:"homeView",games:"gamesView",giftcards:"giftcardsView",search:"searchView",checkout:"checkoutView",orders:"ordersView",profile:"profileView",admin:"admin"};
+ Object.values(views).forEach(id=>$(id)?.classList.add("hidden"));
+ $(views[name]||views.home)?.classList.remove("hidden");
+ document.querySelectorAll(".store-nav [data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function openCheckout(productId){
+ const p=products.find(item=>String(item.id)===String(productId));
+ if(!p)return;
+ $("product").value=String(p.id);
+ $("selectedProductText").textContent=p.game+" · "+p.name;
+ $("ordermsg").textContent="";
+ showView("checkout");
+}
 async function loadProducts(){
  const {data,error}=await db.from("products").select("*").eq("active",true).order("name");
- if(error){$("products").textContent="Error: "+error.message;return}
+ if(error){$("gamesProducts").textContent="Error: "+error.message;return}
  products=data||[];
- $("products").innerHTML=products.length?products.map(p=>
-  `<div class="product"><b>${clean(p.game)} - ${clean(p.name)}</b><br>
-  <small>${clean(p.description||"")}</small><br>
-  Transferencia: ${money(p.price_transfer)} CUP
-  </div>`).join(""):"Todavía no hay productos en el catálogo.";
  $("product").innerHTML=products.map(p=>
   `<option value="${p.id}">${clean(p.game)} - ${clean(p.name)}</option>`).join("");
+ renderProductCatalogs();
 }
 
 async function placeOrder(){
@@ -225,6 +348,7 @@ async function placeOrder(){
  $("playername").value="";
  $("reference").value="";
  await loadMyOrders();
+ showView("orders");
 }
 
 async function loadMyOrders(){
@@ -342,7 +466,7 @@ async function logout(){
  await db.auth.signOut();
  currentUser=null;
  $("store").classList.add("hidden");
- $("admin").classList.add("hidden");
+ $("adminNav").classList.add("hidden");
  $("auth").classList.remove("hidden");
 }
 
