@@ -155,22 +155,32 @@ async function start(url,key){
 }
 
 async function register(){
- const email=$("email").value.trim();
+ const email=$("email").value.trim().toLowerCase();
  const password=$("password").value;
  const name=$("fullname").value.trim();
- if(!email||password.length<6){$("authmsg").textContent="Escribe tu correo y una contraseña de al menos 6 caracteres.";return}
- const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name}}});
- if(error){$("authmsg").textContent=error.message;return}
- if(data.session) await openStore(data.session.user);
- else $("authmsg").textContent="Cuenta creada. Confirma tu correo si Supabase te lo solicita y después inicia sesión.";
+ if(!name){$("authmsg").textContent="Escribe tu nombre para identificar tu cuenta.";return}
+ if(!email||!/^\\S+@\\S+\\.\\S+$/.test(email)){ $("authmsg").textContent="Escribe un correo electrónico válido.";return}
+ if(password.length<8){$("authmsg").textContent="Usa una contraseña de al menos 8 caracteres.";return}
+ const submit=$("authSubmit");submit.disabled=true;submit.textContent="Creando cuenta…";
+ try{
+  const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin+location.pathname}});
+  if(error){$("authmsg").textContent=error.message;return}
+  if(data.session){await openStore(data.user)}
+  else{$("authmsg").textContent="¡Cuenta creada! Revisa tu correo y confirma la dirección antes de iniciar sesión.";}
+ }catch(e){$("authmsg").textContent="No pudimos crear la cuenta. Comprueba tu conexión e inténtalo otra vez."}
+ finally{submit.disabled=false;submit.textContent="Crear cuenta"}
 }
 
 async function login(){
- const {data,error}=await db.auth.signInWithPassword({
-  email:$("email").value.trim(),password:$("password").value
- });
- if(error){$("authmsg").textContent=error.message;return}
- await openStore(data.user);
+ const email=$("email").value.trim().toLowerCase(),password=$("password").value;
+ if(!email||!password){$("authmsg").textContent="Escribe tu correo y contraseña.";return}
+ const submit=$("authSubmit");submit.disabled=true;submit.textContent="Entrando…";
+ try{
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error){$("authmsg").textContent=error.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":error.message;return}
+  await openStore(data.user);
+ }catch(e){$("authmsg").textContent="No pudimos iniciar sesión. Comprueba tu conexión."}
+ finally{submit.disabled=false;submit.textContent="Iniciar sesión"}
 }
 
 async function openStore(user){
@@ -185,7 +195,7 @@ async function openStore(user){
 
  if(!currentProfile){
   const created=await db.from("profiles").insert({
-   id:user.id,email:user.email,role:"customer"
+   id:user.id,email:user.email,full_name:user.user_metadata?.full_name||"",role:"customer"
   }).select().single();
   if(created.error){alert("No se pudo crear tu perfil: "+created.error.message);return}
   currentProfile=created.data;
