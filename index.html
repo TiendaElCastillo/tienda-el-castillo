@@ -352,17 +352,19 @@ function openAccount(){$("store").classList.add("hidden");$("bottomNav").classLi
 function openCheckout(productId,preferredMethod){const p=products.find(item=>String(item.id)===String(productId));if(!p)return;$("product").value=String(p.id);if(preferredMethod&&Number(priceForMethod(p,preferredMethod))>0)$("payment").value=preferredMethod;$("selectedProductText").textContent=p.game+" · "+p.name;$("ordermsg").textContent="";updateCheckoutSummary();showView("checkout")}
 function updateCheckoutSummary(){
  const p=products.find(item=>String(item.id)===$("product").value);if(!p)return;
- const prices={"Transferencia CUP":p.price_transfer,"Saldo móvil":p.price_mobile,"USDT":p.price_usdt};
+ const prices={"Transferencia CUP":p.price_transfer,"Saldo móvil":p.price_mobile,"USDT":p.price_usdt,"Billetera CUP":p.price_transfer};
  const select=$("payment"),available=[];
  Array.from(select.options).forEach(option=>{
   const configured=paymentMethods.some(item=>item.name===option.value&&item.active&&item.instructions);
-  const enabled=Number(prices[option.value])>0&&configured;option.disabled=!enabled;if(enabled)available.push(option.value)
+  const enabled=Number(prices[option.value])>0&&(option.value==="Billetera CUP"?!!currentUser:configured);
+  option.disabled=!enabled;if(enabled)available.push(option.value)
  });
  if(available.length&&!available.includes(select.value))select.value=available[0];
  const method=select.value,raw=prices[method];
- const unit=method==="USDT"?"USDT":method==="Saldo móvil"?"saldo móvil":"CUP";
+ const unit=method==="USDT"?"USDT":"CUP";
  const amount=Number(raw)>0?money(raw):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
  $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong><small>Precio final según el método de pago</small></div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
+ $("walletCheckoutNote").textContent=method==="Billetera CUP"?"Tu saldo actual es "+money(walletBalanceCUP)+" CUP. "+(walletBalanceCUP>=Number(raw)?"Tienes saldo suficiente para este paquete.":"Te faltan "+money(Number(raw)-walletBalanceCUP)+" CUP."):"";
  updatePaymentInstructions();
  updatePaymentFields();
 }
@@ -376,16 +378,19 @@ async function loadPaymentMethods(){
 function updatePaymentInstructions(){
  const box=$("paymentInstructions");if(!box)return;
  const name=$("payment")?.value||"";
+ if(name==="Billetera CUP"){box.classList.remove("hidden");box.textContent="El importe se descontará de tu billetera CUP al crear el pedido. No necesitas enviar una captura. La recarga se realizará manualmente después del descuento.";return}
  const method=paymentMethods.find(item=>item.name===name&&item.active);
  if(method&&method.instructions){box.classList.remove("hidden");box.innerHTML="<strong>Cómo realizar el pago</strong><br>"+clean(method.instructions).replace(/\n/g,"<br>")}
  else{box.classList.remove("hidden");box.textContent="Este método todavía no está configurado. No realices ningún pago."}
 }
 function updatePaymentFields(){
  const method=$("payment")?.value||"";
- const isTransfer=method==="Transferencia CUP";
+ const isWallet=method==="Billetera CUP",isTransfer=method==="Transferencia CUP";
  $("referenceWrap")?.classList.toggle("hidden",!isTransfer);
+ $("proofWrap")?.classList.toggle("hidden",isWallet);
  $("reference").required=isTransfer;
- $("referenceLabel").textContent=isTransfer?"Número de transferencia (obligatorio)":"Referencia de pago";
+ $("paymentProof").required=!isWallet;
+ $("referenceLabel").textContent="Número de transferencia (obligatorio)";
  $("proofLabel").textContent=method==="Saldo móvil"?"Captura del SMS de ETECSA (obligatoria)":"Captura de la transferencia (obligatoria)";
  $("proofHelp").textContent=method==="Saldo móvil"?"Adjunta una captura clara del SMS de ETECSA que confirma el envío del saldo. JPG, PNG o WEBP; máximo 5 MB.":"Adjunta una captura clara del comprobante de transferencia. JPG, PNG o WEBP; máximo 5 MB.";
 }
@@ -463,8 +468,21 @@ async function placeOrder(){
  const player=$("player").value.trim();
  if(player.length<3||player.length>64){$("ordermsg").textContent="Revisa el ID del jugador (debe tener entre 3 y 64 caracteres).";return}
  const method=$("payment").value;
- const price=method==="USDT"?product.price_usdt:method==="Saldo móvil"?product.price_mobile:method==="Transferencia CUP"?product.price_transfer:null;
+ const price=method==="USDT"?product.price_usdt:method==="Saldo móvil"?product.price_mobile:(method==="Transferencia CUP"||method==="Billetera CUP")?product.price_transfer:null;
  if(!(Number(price)>0)){$("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";return}
+ if(method==="Billetera CUP"){
+  if(walletBalanceCUP<Number(price)){$("ordermsg").textContent="Saldo insuficiente. Tu billetera tiene "+money(walletBalanceCUP)+" CUP y necesitas "+money(price)+" CUP.";return}
+  const walletButton=$("placeOrderBtn");if(walletButton){walletButton.disabled=true;walletButton.textContent="Descontando saldo…";}
+  try{
+   const result=await db.rpc("create_wallet_order",{p_product_id:product.id,p_player_id:player,p_player_name:$("playername").value.trim()});
+   if(result.error){$("ordermsg").textContent=result.error.message;return}
+   $("ordermsg").textContent="Pago realizado desde tu billetera. Pedido "+result.data.order_code+"; saldo restante: "+money(result.data.balance)+" CUP. La recarga queda pendiente de gestión manual.";
+   $("player").value="";$("playername").value="";
+   await loadWalletData();await loadMyOrders();if(currentProfile?.role==="admin")await loadAllOrders();showView("orders");
+  }catch(e){$("ordermsg").textContent="No se pudo completar el pago de billetera: "+(e.message||"error de conexión.");}
+  finally{if(walletButton){walletButton.disabled=false;walletButton.textContent="Crear pedido y enviar comprobante";}}
+  return;
+ }
  if(!paymentMethods.some(item=>item.name===method&&item.active&&item.instructions)){$("ordermsg").textContent="Este método de pago todavía no está configurado. Elige otro método o espera la confirmación de la tienda.";return}
  const file=$("paymentProof")?.files?.[0];
  const invalid=validateProofFile(file);if(invalid){$("ordermsg").textContent=invalid;return}
@@ -502,7 +520,7 @@ async function loadMyOrders(){
    '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
-   '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
+   '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
    '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+retry+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
 }
@@ -703,7 +721,7 @@ async function loadAllOrders(){
   const selectId="order-status-"+i;
   const options=orderStatuses.map(s=>`<option value="${s.value}" ${o.status===s.value?"selected":""}>${s.label}</option>`).join("");
   const unknown=orderStatuses.some(s=>s.value===o.status)?"":`<option value="${clean(o.status)}" selected>${clean(o.status||"Sin estado")}</option>`;
-  let proofLink='<span class="subtle">Sin comprobante</span>';
+  let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
    const signed=await db.storage.from("payment-proofs").createSignedUrl(o.proof_path,600);
    proofLink=signed.error?'<span class="subtle">No se pudo abrir el comprobante</span>':'<a href="'+clean(signed.data.signedUrl)+'" target="_blank" rel="noopener">Ver comprobante (10 min)</a>';
