@@ -155,7 +155,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  </div></section>
  <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
  <section id="profileView" class="store-view hidden"><div class="panel"><div class="profile-card"><div class="profile-avatar">EC</div><div><h2 id="welcome">Mi cuenta</h2><p id="profileEmail" class="profile-email"></p></div></div><div class="section"><h3>Tu cuenta</h3><p class="subtle">Aquí puedes consultar tus pedidos y gestionar tu sesión.</p></div><button class="secondary-btn block-btn" type="button" onclick="logout()">Cerrar sesión</button></div></section>
- <section id="admin" class="store-view hidden"><div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div><div class="field"><label>Costo interno</label><input id="cost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button class="primary-btn block-btn" onclick="addProduct()">Guardar producto</button><p id="adminmsg" class="msg"></p></div><div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div></div><div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button></div><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div></section>
+ <section id="admin" class="store-view hidden"><div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div><div class="field"><label>Costo interno</label><input id="cost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button id="adminProductSubmit" class="primary-btn block-btn" type="button" onclick="addProduct()">Guardar producto</button><button id="cancelProductEdit" class="secondary-btn block-btn hidden" type="button" onclick="cancelProductEdit()">Cancelar edición</button><p id="adminmsg" class="msg" role="status"></p><div id="adminProducts"></div></div><div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div></div><div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button></div><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div></section>
  <footer class="site-footer"><strong>Tienda El Castillo</strong> · Recargas digitales independientes. No afiliada ni respaldada por Garena ni por las marcas de juegos mostradas. Nunca compartas tu contraseña de juego con terceros.<div style="margin-top:9px"><a href="./recargar-free-fire-cuba.html">Guía: recargar Free Fire desde Cuba</a></div></footer>
 </section>
 </main>
@@ -163,7 +163,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 <script>
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], pendingCheckoutAfterLogin=false;
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -342,7 +342,7 @@ async function togglePaymentMethod(id,active){
 async function loadProducts(){
  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active").eq("active",true).order("name");
  if(error){$("gamesProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo. '+clean(error.message)+'</p>';$("giftProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo.</p>';return;}
- products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();updateCheckoutSummary();
+ products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();updateCheckoutSummary();if(currentProfile?.role==="admin"){const all=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,cost,active").order("created_at",{ascending:false});productsForAdmin=all.data||[];await loadAdminProducts()}
 }
 async function placeOrder(){
  if(!currentUser){pendingCheckoutAfterLogin=true;openAccount();$("authmsg").textContent="Inicia sesión o crea tu cuenta para enviar y seguir este pedido.";return}
@@ -378,20 +378,46 @@ async function loadMyOrders(){
  :"Todavía no tienes pedidos.";
 }
 
-async function addProduct(){
- const name=$("pname").value.trim(), game=$("game").value.trim();
- if(!name||!game){$("adminmsg").textContent="Escribe el juego y el nombre del paquete.";return}
- const {error}=await db.from("products").insert({
-  game,name,description:$("description").value.trim(),
-  amount:Number($("amount").value||0),
-  price_transfer:Number($("transfer").value||0),
-  price_mobile:Number($("mobile").value||0),
-  price_usdt:Number($("usdt").value||0),
-  cost:Number($("cost").value||0),active:true
- });
- $("adminmsg").textContent=error?"Error: "+error.message:"Producto guardado.";
- if(!error){await loadProducts();["game","pname","description","amount","transfer","mobile","usdt","cost"].forEach(id=>$(id).value="")}
+async function loadAdminProducts(){
+ if(currentProfile?.role!=="admin")return;
+ const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,cost,active").order("created_at",{ascending:false});
+ const list=$("adminProducts");if(!list)return;
+ if(result.error){list.textContent="No se pudo cargar el catálogo de administración: "+result.error.message;return}
+ const rows=result.data||[];
+ list.innerHTML=rows.length?rows.map(p=>"<article class=\"order-card\"><div class=\"order-code\">"+(p.active?"Activo":"Desactivado")+"</div><strong>"+clean(p.game)+" · "+clean(p.name)+"</strong><p class=\"order-detail\">Transferencia: "+money(p.price_transfer)+" CUP · Saldo: "+money(p.price_mobile)+" · USDT: "+money(p.price_usdt)+"</p><button class=\"secondary-btn\" type=\"button\" onclick=\"editProduct(\u0027"+clean(p.id)+"\u0027)\">Editar</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductActive(\u0027"+clean(p.id)+"\u0027,"+(!p.active)+")\">"+(p.active?"Desactivar":"Activar")+"</button></article>").join(""):"<p class=\"empty-note\">Todavía no hay productos cargados.</p>";
 }
+function editProduct(id){
+ if(currentProfile?.role!=="admin")return;
+ const product=productsForAdmin.find(p=>String(p.id)===String(id));if(!product)return;
+ editingProductId=id;
+ $("game").value=product.game||"";$("pname").value=product.name||"";$("description").value=product.description||"";$("amount").value=product.amount??"";$("transfer").value=product.price_transfer??0;$("mobile").value=product.price_mobile??0;$("usdt").value=product.price_usdt??0;$("cost").value=product.cost??0;
+ $("adminProductSubmit").textContent="Actualizar producto";$("cancelProductEdit").classList.remove("hidden");$("adminmsg").textContent="Editando "+product.name+". Los cambios se guardarán en este producto.";
+ document.getElementById("admin").scrollIntoView({behavior:"smooth",block:"start"});
+}
+let productsForAdmin=[];
+async function toggleProductActive(id,active){
+ if(currentProfile?.role!=="admin")return;
+ const result=await db.from("products").update({active}).eq("id",id);
+ if(result.error){$("adminmsg").textContent="No se pudo cambiar el estado: "+result.error.message;return}
+ $("adminmsg").textContent=active?"Producto activado.":"Producto desactivado.";
+ await loadProducts();
+}
+function cancelProductEdit(){
+ editingProductId=null;
+ ["game","pname","description","amount","transfer","mobile","usdt","cost"].forEach(id=>$(id).value="");
+ $("adminProductSubmit").textContent="Guardar producto";$("cancelProductEdit").classList.add("hidden");$("adminmsg").textContent="Edición cancelada.";
+}
+async function addProduct(){
+ if(currentProfile?.role!=="admin")return;
+ const name=$("pname").value.trim(),game=$("game").value.trim();
+ if(!name||!game){$("adminmsg").textContent="Escribe el juego y el nombre del paquete.";return}
+ const payload={game,name,description:$("description").value.trim(),amount:Number($("amount").value||0),price_transfer:Number($("transfer").value||0),price_mobile:Number($("mobile").value||0),price_usdt:Number($("usdt").value||0),cost:Number($("cost").value||0)};
+ if(payload.price_transfer<0||payload.price_mobile<0||payload.price_usdt<0){$("adminmsg").textContent="Los precios no pueden ser negativos.";return}
+ const result=editingProductId?await db.from("products").update(payload).eq("id",editingProductId):await db.from("products").insert({...payload,active:true});
+ $("adminmsg").textContent=result.error?"Error: "+result.error.message:(editingProductId?"Producto actualizado.":"Producto guardado.");
+ if(!result.error){editingProductId=null;cancelProductEdit();$("adminmsg").textContent="Producto guardado correctamente.";await loadProducts();}
+}
+
 
 const orderStatuses=[
  {value:"pending",label:"Pendiente"},
