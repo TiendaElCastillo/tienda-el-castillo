@@ -93,7 +93,7 @@ main{max-width:1120px;margin:0 auto;padding:18px 18px 30px}
 @media(max-width:420px){.product-prices{grid-template-columns:repeat(3,minmax(0,1fr))}.price-option strong{font-size:10px}}
 </style><link rel="preload" as="image" href="./assets/game-art.svg" type="image/svg+xml"></head>
 <body>
-<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><span class="brand-mark">EC</span><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
+<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><span class="brand-mark">EC</span><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="currentUser?showView('profile'):openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
 <main id="appMain">
 <section id="setup" class="hidden"><input id="url"><input id="key"><button onclick="connect()">Conectar</button></section>
 <section id="auth" class="auth-layout">
@@ -245,9 +245,14 @@ function openAccount(){$("store").classList.add("hidden");$("bottomNav").classLi
 function openCheckout(productId){const p=products.find(item=>String(item.id)===String(productId));if(!p)return;$("product").value=String(p.id);$("selectedProductText").textContent=p.game+" · "+p.name;$("ordermsg").textContent="";updateCheckoutSummary();showView("checkout")}
 function updateCheckoutSummary(){
  const p=products.find(item=>String(item.id)===$("product").value);if(!p)return;
- const method=$("payment").value;const raw=method==="USDT"?p.price_usdt:method==="Saldo móvil"?p.price_mobile:p.price_transfer;
+ const prices={"Transferencia CUP":p.price_transfer,"Saldo móvil":p.price_mobile,"USDT":p.price_usdt};
+ const select=$("payment"),available=[];
+ Array.from(select.options).forEach(option=>{const enabled=Number(prices[option.value])>0;option.disabled=!enabled;if(enabled)available.push(option.value)});
+ if(available.length&&!available.includes(select.value))select.value=available[0];
+ const method=select.value,raw=prices[method];
  const unit=method==="USDT"?"USDT":method==="Saldo móvil"?"saldo móvil":"CUP";
- $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong><small>Precio según el método seleccionado</small></div><div class="checkout-total"><strong>'+(Number(raw)>0?money(raw):"—")+'</strong><small>'+(Number(raw)>0?unit:"Precio no disponible")+'</small></div>';
+ const amount=Number(raw)>0?money(raw):"—",label=Number(raw)>0?unit:"Sin métodos con precio publicado";
+ $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong><small>Precio final según el método de pago</small></div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
 }
 async function loadProducts(){
  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active").eq("active",true).order("name");
