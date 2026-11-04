@@ -437,7 +437,7 @@ async function uploadProofForOrder(orderId,method,file,reference){
  if(orderError||!order)throw new Error("No se pudo comprobar el pedido de tu cuenta.");
  if(order.payment_source!=="direct"||!["pending","payment_review"].includes(order.status))throw new Error("Este pedido ya no admite comprobantes.");
  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
- const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+ const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)});
  const path=currentUser.id+"/"+orderId+"/"+token+"."+ext;
  const upload=await db.storage.from("payment-proofs").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
  if(upload.error)throw new Error("No se pudo subir la captura: "+upload.error.message);
@@ -547,7 +547,7 @@ async function uploadWalletDepositProof(depositId,method,file,reference){
  const invalid=validateProofFile(file);if(invalid)throw new Error(invalid);
  if(method==="Transferencia CUP"&&!String(reference||"").trim())throw new Error("Escribe el número de transferencia.");
  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
- const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+ const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)});
  const path=currentUser.id+"/"+depositId+"/"+token+"."+ext;
  const upload=await db.storage.from("payment-proofs").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
  if(upload.error)throw new Error("No se pudo subir la captura: "+upload.error.message);
