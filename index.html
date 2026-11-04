@@ -20,7 +20,14 @@ button.secondary{background:#344056;color:white}
 small{color:#b7bdca}
 .hidden{display:none}
 .product{padding:12px;border-bottom:1px solid #394256}
-.status{color:#e7bd69}
+.status{color:#e7bd69;font-weight:bold}
+.order-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:12px}
+.order-actions select{margin:0}
+.order-actions button{width:auto;min-width:112px;margin:0;padding:12px}
+.order-detail{margin:5px 0;color:#d2d7e1;font-size:14px;line-height:1.5}
+.order-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.order-toolbar button{width:auto}
+@media(max-width:430px){.order-actions{grid-template-columns:1fr}.order-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -96,7 +103,11 @@ small{color:#b7bdca}
 <p id="adminmsg"></p>
 </div>
 <div class="card">
+<div class="order-toolbar">
 <h2>Pedidos de clientes</h2>
+<button class="secondary" type="button" onclick="loadAllOrders()">Actualizar</button>
+</div>
+<p id="orderadminmsg" role="status"></p>
 <div id="allorders">Cargando...</div>
 </div>
 </div>
@@ -223,7 +234,7 @@ async function loadMyOrders(){
  `<div class="product"><b>${clean(o.order_code)}</b><br>
  ${clean(o.game)} - ${clean(o.package_name)}<br>
  ${money(o.price)} ${clean(o.payment_method)}<br>
- <span class="status">${clean(o.status)}</span></div>`).join("")
+ <span class="status">${statusText(o.status)}</span></div>`).join("")
  :"Todavía no tienes pedidos.";
 }
 
@@ -242,16 +253,80 @@ async function addProduct(){
  if(!error){await loadProducts();["game","pname","description","amount","transfer","mobile","usdt","cost"].forEach(id=>$(id).value="")}
 }
 
+const orderStatuses=[
+ {value:"pending",label:"Pendiente"},
+ {value:"payment_review",label:"Verificando pago"},
+ {value:"processing",label:"Recarga en proceso"},
+ {value:"completed",label:"Completado"},
+ {value:"rejected",label:"Rechazado"}
+];
+function statusText(value){
+ const status=orderStatuses.find(s=>s.value===value);
+ return status?status.label:clean(value||"Sin estado");
+}
+
+async function updateOrderStatus(orderId,selectId){
+ const select=$(selectId);
+ const newStatus=select?.value;
+ if(!orderId||!newStatus)return;
+ const button=document.querySelector(`[data-order-id="${CSS.escape(orderId)}"]`);
+ if(button){button.disabled=true;button.textContent="Guardando...";}
+ $("orderadminmsg").textContent="";
+ try{
+  const {data,error}=await db.from("orders")
+   .update({status:newStatus})
+   .eq("id",orderId)
+   .select("id,status")
+   .maybeSingle();
+  if(error){
+   $("orderadminmsg").textContent="No se pudo actualizar: "+error.message;
+   return;
+  }
+  if(!data){
+   $("orderadminmsg").textContent="Supabase no confirmó el cambio. Es posible que falte una política RLS que permita a los administradores actualizar pedidos.";
+   return;
+  }
+  $("orderadminmsg").textContent="Pedido actualizado: "+statusText(data.status)+".";
+  await loadAllOrders();
+  await loadMyOrders();
+ }catch(e){
+  $("orderadminmsg").textContent="Error de conexión: "+(e.message||"inténtalo de nuevo.");
+ }finally{
+  const current=document.querySelector(`[data-order-id="${CSS.escape(orderId)}"]`);
+  if(current){current.disabled=false;current.textContent="Guardar estado";}
+ }
+}
+
 async function loadAllOrders(){
+ const container=$("allorders");
+ container.textContent="Cargando pedidos...";
  const {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
- $("allorders").innerHTML=error?"Error: "+clean(error.message):
- (data||[]).length?(data||[]).map(o=>
- `<div class="product"><b>${clean(o.order_code)}</b><br>
- ${clean(o.game)} - ${clean(o.package_name)}<br>
- Jugador: ${clean(o.player_id)}<br>
- Precio: ${money(o.price)} ${clean(o.payment_method)}<br>
- Estado: ${clean(o.status)}</div>`).join("")
- :"No hay pedidos todavía.";
+ if(error){container.textContent="Error: "+error.message;return;}
+ if(!(data||[]).length){container.textContent="No hay pedidos todavía.";return;}
+ container.innerHTML=(data||[]).map((o,i)=>{
+  const selectId="order-status-"+i;
+  const options=orderStatuses.map(s=>
+   `<option value="${s.value}" ${o.status===s.value?"selected":""}>${s.label}</option>`
+  ).join("");
+  const unknown=orderStatuses.some(s=>s.value===o.status)?"":`<option value="${clean(o.status)}" selected>${clean(o.status||"Sin estado")}</option>`;
+  return `<div class="product">
+   <b>${clean(o.order_code)}</b>
+   <div class="order-detail">${clean(o.game)} – ${clean(o.package_name)}<br>
+   Jugador: ${clean(o.player_id)} ${o.player_name?"("+clean(o.player_name)+")":""}<br>
+   Precio: ${money(o.price)} ${clean(o.payment_method)}<br>
+   Referencia: ${clean(o.payment_reference||"No indicada")}<br>
+   Estado actual: <span class="status">${statusText(o.status)}</span></div>
+   <div class="order-actions">
+    <select id="${selectId}" aria-label="Nuevo estado para pedido ${clean(o.order_code)}">${unknown}${options}</select>
+    <button type="button" data-update-order data-order-id="${clean(o.id)}" data-select-id="${selectId}">Guardar estado</button>
+   </div>
+  </div>`;
+ }).join("");
+ container.querySelectorAll("[data-update-order]").forEach(button=>{
+  button.addEventListener("click",()=>{
+   updateOrderStatus(button.dataset.orderId,button.dataset.selectId);
+  });
+ });
 }
 
 async function logout(){
