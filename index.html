@@ -134,6 +134,13 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 .game-method-section{margin:10px 0 22px}.game-payment-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.game-method{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border:1px solid #dfe7f2;background:#fff;border-radius:13px;color:#41536f;font-weight:800;font-size:12px;padding:9px}.game-method.active{background:#edf4ff;border-color:#6c9af0;color:#205ac1;box-shadow:0 0 0 2px rgba(36,104,242,.08)}.game-method:disabled{opacity:.38;cursor:not-allowed;background:#f5f6f8}.method-icon{font-size:18px;line-height:1}
 .game-plans-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.game-plan-card{min-width:0;display:grid;grid-template-columns:48px minmax(0,1fr) auto;grid-template-rows:auto auto;gap:7px 10px;align-items:center;padding:13px;border:1px solid #e1e8f2;background:#fff;border-radius:16px;box-shadow:0 5px 16px rgba(15,37,75,.04)}.plan-currency{grid-row:1/3;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#eaf2ff,#f7faff);font-size:25px;color:#285fb7}.plan-info{min-width:0}.plan-info strong{display:block;font-size:14px;line-height:1.3}.plan-info small{display:block;color:#71809a;font-size:10px;line-height:1.4;margin-top:3px;overflow-wrap:anywhere}.plan-price{grid-column:3;grid-row:1;text-align:right}.plan-price strong{display:block;color:#1e5fc9;font-size:16px}.plan-price small{font-size:9px;color:#72819a}.plan-buy{grid-column:2/4;grid-row:2;width:100%;padding:10px 12px;margin:0;font-size:12px}.game-empty-state{grid-column:1/-1;text-align:center;padding:28px 18px;background:#f7f9fd;border:1px dashed #d5deeb;border-radius:16px}.game-empty-state>span{display:block;font-size:31px;margin-bottom:8px}.game-empty-state strong{font-size:14px}.game-empty-state p{font-size:12px;color:#71809a;margin:7px 0 0;line-height:1.55}
 @media(max-width:560px){.game-detail-hero{grid-template-columns:112px minmax(0,1fr);gap:12px;padding:11px}.game-detail-art{height:112px}.game-detail-copy h1{font-size:23px}.game-detail-copy p{font-size:11px}.game-payment-choices{gap:6px}.game-method{min-height:58px;flex-direction:column;gap:3px;font-size:10px;padding:7px 3px}.method-icon{font-size:17px}.game-plans-grid{grid-template-columns:1fr}.game-plan-card{grid-template-columns:45px minmax(0,1fr) auto}.plan-currency{width:42px;height:42px}.game-detail-panel{padding:13px}}
+
+/* Checkout: datos de pago destacados y comprobante moderno */
+.payment-data-panel{margin:15px 0;padding:17px;border:1px solid #dce7f7;border-radius:20px;background:linear-gradient(145deg,#fbfdff,#edf4ff);box-shadow:0 9px 24px rgba(23,67,135,.07)}
+.payment-panel-head{display:flex;align-items:center;gap:11px;margin-bottom:14px}.payment-panel-icon{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#e0edff;color:#205ecb;font-size:20px;font-weight:900;flex-shrink:0}.payment-panel-head strong{display:block;font-size:16px;letter-spacing:-.02em}.payment-panel-head small{display:block;color:#71809a;font-size:11px;margin-top:3px}
+.payment-copy-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.payment-copy-card{min-width:0;border:1px solid #e0e8f5;border-radius:15px;background:#fff;padding:12px;box-shadow:0 3px 10px rgba(22,54,103,.035)}.payment-copy-card.payment-card-number,.payment-copy-card.payment-card-amount{grid-column:span 2}.payment-copy-meta{font-size:10px;line-height:1.4;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#71809a}.payment-copy-value{font-size:clamp(18px,4vw,24px);font-weight:900;letter-spacing:-.025em;line-height:1.25;overflow-wrap:anywhere;color:#142c52;margin:7px 0 10px}.payment-card-amount .payment-copy-value{font-size:clamp(25px,6vw,32px);color:#165bc9}.copy-payment-btn{width:100%;border:1px solid #cfe0fb;background:#eff5ff;color:#205ab9;border-radius:11px;padding:10px 12px;font-weight:850;font-size:12px}.copy-payment-btn:active{transform:scale(.985)}.copy-payment-btn.copied{background:#eaf8f1;border-color:#cbeedb;color:#24794e}.payment-unavailable{padding:12px;border-radius:13px;background:#fff8e8;color:#79571a;font-size:12px}.payment-unavailable strong,.payment-unavailable span{display:block}.payment-unavailable span{margin-top:4px}.payment-instructions-fallback{font-size:12px;color:#687992;line-height:1.55;margin:12px 2px 0}
+.proof-field{margin:19px 0}.proof-field>label:first-child{font-size:13px;color:#253c60}.proof-input{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.proof-dropzone{display:flex!important;align-items:center;gap:14px;min-height:112px;padding:17px;border:1.5px dashed #9bb9e9;border-radius:18px;background:linear-gradient(135deg,#f8fbff,#edf4ff);cursor:pointer;transition:border-color .18s,background .18s,transform .18s}.proof-dropzone:active{transform:scale(.99);background:#e8f1ff}.proof-icon{height:48px;width:48px;display:grid;place-items:center;flex-shrink:0;border-radius:15px;background:#dceaff;color:#2464ca;font-size:29px;font-weight:600}.proof-copy{min-width:0;display:flex;flex-direction:column;gap:4px}.proof-copy strong{font-size:14px;color:#1d355b;overflow-wrap:anywhere}.proof-copy small{font-size:11px;color:#71809a;line-height:1.4}.proof-copy .proof-limits{font-size:10px;color:#91a0b5}.proof-preview{width:72px;height:72px;object-fit:cover;border-radius:13px;border:1px solid #d7e3f4;margin-left:auto;flex-shrink:0}
+@media(max-width:480px){.payment-data-panel{padding:13px}.payment-copy-grid{grid-template-columns:1fr}.payment-copy-card.payment-card-number,.payment-copy-card.payment-card-amount{grid-column:auto}.payment-copy-value{font-size:21px}.proof-dropzone{padding:13px;gap:10px}.proof-icon{width:42px;height:42px}.proof-preview{width:60px;height:60px}}
 </style><link rel="preload" as="image" href="./assets/game-art.webp?v=1" type="image/webp"></head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./castle-icon.svg" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -170,8 +177,8 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete</label><select id="product" onchange="updateCheckoutSummary()"></select></div><div class="field"><label for="player">ID del jugador</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID"></div><div class="field"><label for="playername">Nombre del jugador (opcional)</label><input id="playername" autocomplete="off" placeholder="Nombre que aparece en el juego"></div><p class="track-note">La verificación automática del ID aún no está disponible. Revisa que el ID y el nombre de la cuenta sean correctos antes de pagar.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option><option value="Billetera CUP">Billetera CUP</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><p id="walletCheckoutNote" class="track-note"></p><div id="paymentInstructions" class="notice" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
-  <div class="field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp"><small id="proofHelp" class="subtle">Adjunta una captura clara del comprobante. JPG, PNG o WEBP; máximo 5 MB.</small></div>
+  <div class="field"><label for="product">Paquete</label><select id="product" onchange="updateCheckoutSummary()"></select></div><div class="field"><label for="player">ID del jugador</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID"></div><div class="field"><label for="playername">Nombre del jugador (opcional)</label><input id="playername" autocomplete="off" placeholder="Nombre que aparece en el juego"></div><p class="track-note">La verificación automática del ID aún no está disponible. Revisa que el ID y el nombre de la cuenta sean correctos antes de pagar.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option><option value="Billetera CUP">Billetera CUP</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><p id="walletCheckoutNote" class="track-note"></p><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
+  <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">Toca aquí para elegir una captura de tu teléfono</small><small class="proof-limits">JPG, PNG o WEBP · Máximo 5 MB</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
   <div class="notice">El comprobante es obligatorio. El pedido pasará a «Verificando pago» y la recarga se hará manualmente después de confirmar que recibimos el pago.</div><div class="notice">Importante: esta primera etapa trabaja con revisión manual. Enviar el pedido no significa que esté pagado. <strong>No envíes dinero hasta recibir la confirmación y las instrucciones de la tienda.</strong></div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()">Crear pedido y enviar comprobante</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
  </div></section>
  <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
@@ -381,15 +388,59 @@ async function loadPaymentMethods(){
  renderPaymentMethodAdmin();
  updateCheckoutSummary();
 }
+function paymentCopyCard(label,value,extraClass=""){
+ if(!value)return "";
+ return '<div class="payment-copy-card '+extraClass+'"><div class="payment-copy-meta">'+label+'</div><div class="payment-copy-value">'+clean(value)+'</div><button type="button" class="copy-payment-btn" data-copy="'+clean(value)+'">Copiar</button></div>';
+}
 function updatePaymentInstructions(){
  const box=$("paymentInstructions");if(!box)return;
  const name=$("payment")?.value||"";
- if(name==="Billetera CUP"){box.classList.remove("hidden");box.textContent="El importe se descontará de tu billetera CUP al crear el pedido. No necesitas enviar una captura. La recarga se realizará manualmente después del descuento.";return}
- const method=paymentMethods.find(item=>item.name===name&&item.active);
- if(method&&method.instructions){box.classList.remove("hidden");box.innerHTML="<strong>Cómo realizar el pago</strong><br>"+clean(method.instructions).replace(/\n/g,"<br>")}
- else{box.classList.remove("hidden");box.textContent="Este método todavía no está configurado. No realices ningún pago."}
+ if(name==="Billetera CUP"){box.classList.remove("hidden");box.innerHTML='<div class="payment-panel-head"><span class="payment-panel-icon">✓</span><div><strong>Pago con tu billetera</strong><small>El importe se descontará de tu saldo disponible al confirmar el pedido.</small></div></div>';return}
+ const method=paymentMethods.find(item=>item.name===name&&item.active),raw=method?.instructions||"";
+ if(!method||!raw){box.classList.remove("hidden");box.innerHTML='<div class="payment-unavailable"><strong>Datos de pago no disponibles</strong><span>No realices ningún pago con este método hasta que la tienda lo configure.</span></div>';return}
+ const product=products.find(item=>String(item.id)===$("product").value);
+ const amount=name==="USDT"?product?.price_usdt:name==="Saldo móvil"?product?.price_mobile:product?.price_transfer;
+ const moneyText=Number(amount)>0?money(amount)+(name==="USDT"?" USDT":" CUP"):"";
+ const digits=raw.replace(/\s+/g," ");
+ let rows="";
+ if(name==="Transferencia CUP"){
+  const card=digits.match(/tarjeta\s*:?\s*([0-9][0-9-]{8,})/i)?.[1]||"";
+  const confirm=digits.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
+  rows+=paymentCopyCard("Tarjeta para transferir",card,"payment-card-number");
+  rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
+  rows+=paymentCopyCard("Número a confirmar en la transferencia",confirm,"payment-card-confirm");
+ }else if(name==="Saldo móvil"){
+  const phone=digits.match(/n[uú]mero\s*:?\s*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
+  rows+=paymentCopyCard("Número al que debes enviar el saldo",phone,"payment-card-number");
+  rows+=paymentCopyCard("Importe exacto a enviar",moneyText,"payment-card-amount");
+ }else rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
+ const fallback=rows.includes("payment-copy-card")?"":'<p class="payment-instructions-fallback">'+clean(raw)+'</p>';
+ box.classList.remove("hidden");
+ box.innerHTML='<div class="payment-panel-head"><span class="payment-panel-icon">↗</span><div><strong>Realiza tu pago</strong><small>Copia los datos y después adjunta el comprobante</small></div></div><div class="payment-copy-grid">'+rows+'</div>'+fallback;
+}
+async function copyPaymentText(value){
+ try{
+  if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return true}
+  const field=document.createElement("textarea");field.value=value;field.style.position="fixed";field.style.opacity="0";document.body.appendChild(field);field.select();const ok=document.execCommand("copy");field.remove();return ok;
+ }catch(e){return false}
+}
+async function copyPaymentButton(button){
+ const value=button?.dataset.copy||"";if(!value)return;
+ const ok=await copyPaymentText(value),original=button.textContent;
+ button.textContent=ok?"¡Copiado!":"No se pudo copiar";
+ if(ok)button.classList.add("copied");
+ setTimeout(()=>{button.textContent=original;button.classList.remove("copied")},1600);
+}
+function previewPaymentProof(){
+ const input=$("paymentProof"),file=input?.files?.[0],title=$("proofTitle"),help=$("proofHelp"),preview=$("proofPreview"),icon=document.querySelector(".proof-icon");
+ if(!title||!help||!preview)return;
+ if(window.proofPreviewUrl){URL.revokeObjectURL(window.proofPreviewUrl);window.proofPreviewUrl=null}
+ if(!file){title.textContent="Añadir comprobante";help.textContent="Toca aquí para elegir una captura de tu teléfono";preview.removeAttribute("src");preview.classList.add("hidden");if(icon)icon.classList.remove("hidden");return}
+ title.textContent=file.name;help.textContent=(file.size/1024/1024).toFixed(2)+" MB · Archivo seleccionado";
+ if(file.type.startsWith("image/")){window.proofPreviewUrl=URL.createObjectURL(file);preview.src=window.proofPreviewUrl;preview.classList.remove("hidden");if(icon)icon.classList.add("hidden")}
 }
 function updatePaymentFields(){
+ const copyBox=$("paymentInstructions");if(copyBox&&!copyBox.dataset.copyHandler){copyBox.dataset.copyHandler="1";copyBox.addEventListener("click",event=>{const button=event.target.closest("[data-copy]");if(button)copyPaymentButton(button)})}
  const method=$("payment")?.value||"";
  const isWallet=method==="Billetera CUP",isTransfer=method==="Transferencia CUP";
  $("referenceWrap")?.classList.toggle("hidden",!isTransfer);
@@ -510,7 +561,7 @@ async function placeOrder(){
    await loadMyOrders();showView("orders");return;
   }
   $("ordermsg").textContent="Comprobante recibido. Pedido "+data.order_code+" enviado a revisión. La recarga se realizará después de verificar el pago.";
-  $("player").value="";$("playername").value="";$("reference").value="";$("paymentProof").value="";
+  $("player").value="";$("playername").value="";$("reference").value="";$("paymentProof").value="";previewPaymentProof();
   await loadMyOrders();showView("orders");
  }catch(e){$("ordermsg").textContent="Error de conexión. Comprueba tu conexión e inténtalo de nuevo. Si el pedido llegó a crearse, revisa «Mis pedidos» antes de repetirlo."}
  finally{if(button){button.disabled=false;button.textContent="Crear pedido y enviar comprobante";}}
