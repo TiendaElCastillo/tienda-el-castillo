@@ -170,8 +170,9 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete</label><select id="product" onchange="updateCheckoutSummary()"></select></div><div class="field"><label for="player">ID del jugador</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID"></div><div class="field"><label for="playername">Nombre del jugador (opcional)</label><input id="playername" autocomplete="off" placeholder="Nombre que aparece en el juego"></div><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="notice" role="status" aria-live="polite"></div><div class="field"><label for="reference">Referencia (solo si ya recibiste instrucciones de pago)</label><input id="reference" placeholder="Opcional"></div>
-  <div class="notice">Importante: esta primera etapa trabaja con revisión manual. Enviar el pedido no significa que esté pagado. <strong>No envíes dinero hasta recibir la confirmación y las instrucciones de la tienda.</strong></div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()">Enviar solicitud de pedido</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
+  <div class="field"><label for="product">Paquete</label><select id="product" onchange="updateCheckoutSummary()"></select></div><div class="field"><label for="player">ID del jugador</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID"></div><div class="field"><label for="playername">Nombre del jugador (opcional)</label><input id="playername" autocomplete="off" placeholder="Nombre que aparece en el juego"></div><p class="track-note">La verificación automática del ID aún no está disponible. Revisa que el ID y el nombre de la cuenta sean correctos antes de pagar.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="notice" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
+  <div class="field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp"><small id="proofHelp" class="subtle">Adjunta una captura clara del comprobante. JPG, PNG o WEBP; máximo 5 MB.</small></div>
+  <div class="notice">El comprobante es obligatorio. El pedido pasará a «Verificando pago» y la recarga se hará manualmente después de confirmar que recibimos el pago.</div><div class="notice">Importante: esta primera etapa trabaja con revisión manual. Enviar el pedido no significa que esté pagado. <strong>No envíes dinero hasta recibir la confirmación y las instrucciones de la tienda.</strong></div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()">Enviar solicitud de pedido</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
  </div></section>
  <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
  <section id="profileView" class="store-view hidden"><div class="panel"><div class="profile-card"><div class="profile-avatar">EC</div><div><h2 id="welcome">Mi cuenta</h2><p id="profileEmail" class="profile-email"></p></div></div><div class="section"><h3>Tu cuenta</h3><p class="subtle">Aquí puedes consultar tus pedidos y gestionar tu sesión.</p></div><button class="secondary-btn block-btn" type="button" onclick="logout()">Cerrar sesión</button></div></section>
@@ -338,13 +339,17 @@ function updateCheckoutSummary(){
  const p=products.find(item=>String(item.id)===$("product").value);if(!p)return;
  const prices={"Transferencia CUP":p.price_transfer,"Saldo móvil":p.price_mobile,"USDT":p.price_usdt};
  const select=$("payment"),available=[];
- Array.from(select.options).forEach(option=>{const enabled=Number(prices[option.value])>0;option.disabled=!enabled;if(enabled)available.push(option.value)});
+ Array.from(select.options).forEach(option=>{
+  const configured=paymentMethods.some(item=>item.name===option.value&&item.active&&item.instructions);
+  const enabled=Number(prices[option.value])>0&&configured;option.disabled=!enabled;if(enabled)available.push(option.value)
+ });
  if(available.length&&!available.includes(select.value))select.value=available[0];
  const method=select.value,raw=prices[method];
  const unit=method==="USDT"?"USDT":method==="Saldo móvil"?"saldo móvil":"CUP";
- const amount=Number(raw)>0?money(raw):"—",label=Number(raw)>0?unit:"Sin métodos con precio publicado";
+ const amount=Number(raw)>0?money(raw):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
  $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong><small>Precio final según el método de pago</small></div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
  updatePaymentInstructions();
+ updatePaymentFields();
 }
 async function loadPaymentMethods(){
  const result=await db.from("payment_methods").select("id,name,instructions,active").order("name");
@@ -358,7 +363,16 @@ function updatePaymentInstructions(){
  const name=$("payment")?.value||"";
  const method=paymentMethods.find(item=>item.name===name&&item.active);
  if(method&&method.instructions){box.classList.remove("hidden");box.innerHTML="<strong>Cómo realizar el pago</strong><br>"+clean(method.instructions).replace(/\n/g,"<br>")}
- else{box.classList.remove("hidden");box.textContent="Las instrucciones de este método todavía no están configuradas. No realices el pago; espera la confirmación de la tienda."}
+ else{box.classList.remove("hidden");box.textContent="Este método todavía no está configurado. No realices ningún pago."}
+}
+function updatePaymentFields(){
+ const method=$("payment")?.value||"";
+ const isTransfer=method==="Transferencia CUP";
+ $("referenceWrap")?.classList.toggle("hidden",!isTransfer);
+ $("reference").required=isTransfer;
+ $("referenceLabel").textContent=isTransfer?"Número de transferencia (obligatorio)":"Referencia de pago";
+ $("proofLabel").textContent=method==="Saldo móvil"?"Captura del SMS de ETECSA (obligatoria)":"Captura de la transferencia (obligatoria)";
+ $("proofHelp").textContent=method==="Saldo móvil"?"Adjunta una captura clara del SMS de ETECSA que confirma el envío del saldo. JPG, PNG o WEBP; máximo 5 MB.":"Adjunta una captura clara del comprobante de transferencia. JPG, PNG o WEBP; máximo 5 MB.";
 }
 function renderPaymentMethodAdmin(){
  const list=$("paymentAdminList");if(!list)return;
@@ -389,6 +403,44 @@ async function loadProducts(){
  if(error){$("gamesProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo. '+clean(error.message)+'</p>';$("giftProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo.</p>';return;}
  products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();updateCheckoutSummary();if(currentProfile?.role==="admin"){const all=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,cost,active").order("created_at",{ascending:false});productsForAdmin=all.data||[];await loadAdminProducts()}
 }
+function validateProofFile(file){
+ if(!file)return "Selecciona la captura del comprobante.";
+ const allowed=["image/jpeg","image/png","image/webp"];
+ if(!allowed.includes(file.type))return "El comprobante debe ser una imagen JPG, PNG o WEBP.";
+ if(file.size>5*1024*1024)return "La imagen supera 5 MB. Elige una captura más ligera.";
+ return "";
+}
+async function uploadProofForOrder(orderId,method,file,reference){
+ const invalid=validateProofFile(file);if(invalid)throw new Error(invalid);
+ if(method==="Transferencia CUP"&&!String(reference||"").trim())throw new Error("Escribe el número de transferencia.");
+ const {data:order,error:orderError}=await db.from("orders").select("id,payment_method,status,payment_source").eq("id",orderId).eq("user_id",currentUser.id).maybeSingle();
+ if(orderError||!order)throw new Error("No se pudo comprobar el pedido de tu cuenta.");
+ if(order.payment_source!=="direct"||!["pending","payment_review"].includes(order.status))throw new Error("Este pedido ya no admite comprobantes.");
+ const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
+ const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+ const path=currentUser.id+"/"+orderId+"/"+token+"."+ext;
+ const upload=await db.storage.from("payment-proofs").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
+ if(upload.error)throw new Error("No se pudo subir la captura: "+upload.error.message);
+ const result=await db.rpc("submit_payment_proof",{p_order_id:orderId,p_proof_path:path,p_reference:method==="Transferencia CUP"?String(reference||"").trim():null});
+ if(result.error)throw new Error("La imagen se subió, pero no se pudo asociar al pedido: "+result.error.message);
+ return result.data;
+}
+async function attachProofToOrder(orderId,method){
+ if(!currentUser)return;
+ const file=$("retry-proof-"+orderId)?.files?.[0];
+ const reference=$("retry-reference-"+orderId)?.value||"";
+ const button=$("retry-proof-button-"+orderId);
+ if(button){button.disabled=true;button.textContent="Enviando…";}
+ try{
+  await uploadProofForOrder(orderId,method,file,reference);
+  await loadMyOrders();
+  if(currentProfile?.role==="admin")await loadAllOrders();
+ }catch(e){
+  const msg=$("retry-proof-msg-"+orderId);if(msg)msg.textContent=e.message||"No se pudo enviar el comprobante.";
+ }finally{
+  const current=$("retry-proof-button-"+orderId);if(current){current.disabled=false;current.textContent="Enviar comprobante";}
+ }
+}
 async function placeOrder(){
  if(!currentUser){pendingCheckoutAfterLogin=true;openAccount();$("authmsg").textContent="Inicia sesión o crea tu cuenta para enviar y seguir este pedido.";return}
  const product=products.find(p=>p.id===$("product").value);
@@ -398,29 +450,46 @@ async function placeOrder(){
  const method=$("payment").value;
  const price=method==="USDT"?product.price_usdt:method==="Saldo móvil"?product.price_mobile:method==="Transferencia CUP"?product.price_transfer:null;
  if(!(Number(price)>0)){$("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";return}
+ if(!paymentMethods.some(item=>item.name===method&&item.active&&item.instructions)){$("ordermsg").textContent="Este método de pago todavía no está configurado. Elige otro método o espera la confirmación de la tienda.";return}
+ const file=$("paymentProof")?.files?.[0];
+ const invalid=validateProofFile(file);if(invalid){$("ordermsg").textContent=invalid;return}
+ const reference=$("reference").value.trim();
+ if(method==="Transferencia CUP"&&!reference){$("ordermsg").textContent="Escribe el número de transferencia para poder verificar el pago.";return}
  const button=$("placeOrderBtn");
- if(button){button.disabled=true;button.textContent="Enviando solicitud…";}
+ if(button){button.disabled=true;button.textContent="Creando pedido…";}
  $("ordermsg").textContent="";
  try{
-  const result=await db.from("orders").insert({user_id:currentUser.id,product_id:product.id,player_id:player,player_name:$("playername").value.trim(),payment_method:method,payment_reference:$("reference").value.trim(),status:"pending"}).select("order_code,price,payment_method").single();
-  if(result.error){$("ordermsg").textContent="No pudimos enviar el pedido: "+result.error.message;return}
+  const result=await db.from("orders").insert({user_id:currentUser.id,product_id:product.id,player_id:player,player_name:$("playername").value.trim(),payment_method:method,status:"pending"}).select("id,order_code,price,payment_method").single();
+  if(result.error){$("ordermsg").textContent="No pudimos crear el pedido: "+result.error.message;return}
   const data=result.data;
-  $("ordermsg").textContent="Solicitud recibida. Código "+data.order_code+". Precio confirmado en la base de datos: "+money(data.price)+" "+(data.payment_method==="USDT"?"USDT":data.payment_method==="Saldo móvil"?"saldo móvil":"CUP")+". Espera las instrucciones de pago antes de enviar dinero.";
-  $("player").value="";$("playername").value="";$("reference").value="";
+  if(button)button.textContent="Subiendo comprobante…";
+  try{
+   await uploadProofForOrder(data.id,method,file,reference);
+  }catch(uploadError){
+   $("ordermsg").textContent="El pedido "+data.order_code+" quedó creado, pero el comprobante no se pudo enviar: "+(uploadError.message||"error de carga")+". No crees otro pedido. Entra en «Mis pedidos» y adjunta allí la captura.";
+   await loadMyOrders();showView("orders");return;
+  }
+  $("ordermsg").textContent="Comprobante recibido. Pedido "+data.order_code+" enviado a revisión. La recarga se realizará después de verificar el pago.";
+  $("player").value="";$("playername").value="";$("reference").value="";$("paymentProof").value="";
   await loadMyOrders();showView("orders");
- }catch(e){$("ordermsg").textContent="Error de conexión. Conservamos los datos del formulario; comprueba la conexión e inténtalo de nuevo."}
- finally{if(button){button.disabled=false;button.textContent="Enviar solicitud de pedido";}}
+ }catch(e){$("ordermsg").textContent="Error de conexión. Comprueba tu conexión e inténtalo de nuevo. Si el pedido llegó a crearse, revisa «Mis pedidos» antes de repetirlo."}
+ finally{if(button){button.disabled=false;button.textContent="Crear pedido y enviar comprobante";}}
 }
 
 async function loadMyOrders(){
+ if(!currentUser)return;
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
  $("myorders").innerHTML=error?"Error: "+clean(error.message):
- (data||[]).length?(data||[]).map(o=>
- '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>' +
- '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>' +
- '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>' +
- '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+'</article>').join("")
- :"Todavía no tienes pedidos.";
+ (data||[]).length?(data||[]).map(o=>{
+  const canUpload=o.payment_source==="direct"&&!o.proof_path&&["pending","payment_review"].includes(o.status);
+  const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
+   (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Número de transferencia</label><input id="retry-reference-'+clean(o.id)+'" inputmode="numeric" placeholder="Número de transferencia"></div>':'')+
+   '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
+  return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
+   '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
+   '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
+   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+retry+'</article>';
+ }).join(""):"Todavía no tienes pedidos.";
 }
 
 async function loadAdminProducts(){
@@ -522,29 +591,32 @@ async function loadAllOrders(){
  const {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
  if(error){container.textContent="Error: "+error.message;return;}
  if(!(data||[]).length){container.textContent="No hay pedidos todavía.";return;}
- container.innerHTML=(data||[]).map((o,i)=>{
+ const cards=await Promise.all((data||[]).map(async(o,i)=>{
   const selectId="order-status-"+i;
-  const options=orderStatuses.map(s=>
-   `<option value="${s.value}" ${o.status===s.value?"selected":""}>${s.label}</option>`
-  ).join("");
+  const options=orderStatuses.map(s=>`<option value="${s.value}" ${o.status===s.value?"selected":""}>${s.label}</option>`).join("");
   const unknown=orderStatuses.some(s=>s.value===o.status)?"":`<option value="${clean(o.status)}" selected>${clean(o.status||"Sin estado")}</option>`;
-  return `<div class="product">
+  let proofLink='<span class="subtle">Sin comprobante</span>';
+  if(o.proof_path){
+   const signed=await db.storage.from("payment-proofs").createSignedUrl(o.proof_path,600);
+   proofLink=signed.error?'<span class="subtle">No se pudo abrir el comprobante</span>':'<a href="'+clean(signed.data.signedUrl)+'" target="_blank" rel="noopener">Ver comprobante (10 min)</a>';
+  }
+  return `<div class="order-card">
    <b>${clean(o.order_code)}</b>
    <div class="order-detail">${clean(o.game)} – ${clean(o.package_name)}<br>
    Jugador: ${clean(o.player_id)} ${o.player_name?"("+clean(o.player_name)+")":""}<br>
    Precio: ${money(o.price)} ${clean(o.payment_method)}<br>
-   Referencia: ${clean(o.payment_reference||"No indicada")}<br>
+   Referencia / transferencia: ${clean(o.payment_reference||"No indicada")}<br>
+   Comprobante: ${proofLink}<br>
    Estado actual: <span class="status">${statusText(o.status)}</span></div>
    <div class="order-actions">
     <select id="${selectId}" aria-label="Nuevo estado para pedido ${clean(o.order_code)}">${unknown}${options}</select>
     <button type="button" data-update-order data-order-id="${clean(o.id)}" data-select-id="${selectId}">Guardar estado</button>
    </div>
   </div>`;
- }).join("");
+ })).join("");
+ container.innerHTML=cards;
  container.querySelectorAll("[data-update-order]").forEach(button=>{
-  button.addEventListener("click",()=>{
-   updateOrderStatus(button.dataset.orderId,button.dataset.selectId);
-  });
+  button.addEventListener("click",()=>updateOrderStatus(button.dataset.orderId,button.dataset.selectId));
  });
 }
 
