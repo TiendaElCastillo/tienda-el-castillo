@@ -60,7 +60,7 @@ main{max-width:1120px;margin:0 auto;padding:18px 18px 30px}
 @media(max-width:420px){.header-inner{padding:0 12px}.brand-mark{height:38px;width:38px}.brand-name strong{font-size:13px}.header-btn{padding:8px 9px;font-size:11px}.hero{grid-template-columns:1fr;padding:22px 18px}.hero-visual{display:none}.hero h1{font-size:29px}.field-row{grid-template-columns:1fr}.product-grid{grid-template-columns:1fr}.section-head h2{font-size:18px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
-.game-art{height:auto;aspect-ratio:1.48;background-image:url('./assets/game-art.webp');background-size:400% 200%;background-repeat:no-repeat;display:block;isolation:isolate}
+.game-art{height:auto;aspect-ratio:1.48;background-image:url('./assets/game-art.svg');background-size:400% 200%;background-repeat:no-repeat;display:block;isolation:isolate}
 .game-art:before,.game-art .art-icon{display:none}
 .game-art:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,13,30,.04) 25%,rgba(5,13,30,.78) 100%);z-index:0}
 .game-art .art-tag{z-index:1;left:10px;bottom:9px;color:#fff;background:rgba(8,18,39,.58);border:1px solid rgba(255,255,255,.2);padding:5px 8px;border-radius:30px;backdrop-filter:blur(6px);font-size:9px;letter-spacing:.1em}
@@ -69,7 +69,7 @@ main{max-width:1120px;margin:0 auto;padding:18px 18px 30px}
 .game-tile{border-radius:19px;box-shadow:0 7px 20px rgba(20,45,90,.075);transition:transform .18s ease,box-shadow .18s ease}
 .game-tile:hover{transform:translateY(-3px);box-shadow:0 13px 28px rgba(20,45,90,.13)}
 .tile-info{padding:12px 13px 13px}.tile-title{font-size:13px}.tile-status{font-size:9px;letter-spacing:.02em}
-.hero-visual{min-height:176px;border-radius:23px;border:1px solid rgba(255,255,255,.25);overflow:hidden;background-image:linear-gradient(90deg,rgba(11,34,78,.28),rgba(11,34,78,.18)),url('./assets/game-art.webp');background-size:auto,400% 200%;background-position:center,0 0;box-shadow:0 18px 36px rgba(4,18,48,.22)}
+.hero-visual{min-height:176px;border-radius:23px;border:1px solid rgba(255,255,255,.25);overflow:hidden;background-image:linear-gradient(90deg,rgba(11,34,78,.28),rgba(11,34,78,.18)),url('./assets/game-art.svg');background-size:auto,400% 200%;background-position:center,0 0;box-shadow:0 18px 36px rgba(4,18,48,.22)}
 .hero-visual>div{display:none}
 .catalog-product{padding:15px;border-radius:18px;box-shadow:0 5px 15px rgba(18,41,78,.035);display:flex;flex-direction:column}
 .product-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
@@ -91,7 +91,7 @@ main{max-width:1120px;margin:0 auto;padding:18px 18px 30px}
 .auth-explore{width:100%;margin-top:14px;border:1px solid #e2eaf6;background:#f7faff;color:#345b97;border-radius:13px;padding:12px;font-weight:750;font-size:13px}
 @media(max-width:760px){.game-art{aspect-ratio:1.4}.hero-visual{min-height:142px}.product-prices{gap:5px}.price-option{padding:7px 5px}}
 @media(max-width:420px){.product-prices{grid-template-columns:repeat(3,minmax(0,1fr))}.price-option strong{font-size:10px}}
-</style></head>
+</style><link rel="preload" as="image" href="./assets/game-art.svg" type="image/svg+xml"></head>
 <body>
 <header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><span class="brand-mark">EC</span><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
 <main id="appMain">
