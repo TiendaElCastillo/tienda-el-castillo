@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://tiendaelcastillo.github.io/tienda-el-castillo/sitemap.xml

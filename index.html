@@ -1,205 +1,102 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tienda El Castillo</title>
+<html lang="es-CU"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f8ff">
+<meta name="description" content="Recargas de Free Fire en Cuba y productos digitales. Haz tu pedido por ID y paga mediante transferencia CUP, saldo móvil o USDT. Atención manual y seguimiento desde tu cuenta.">
+<meta name="keywords" content="recargar Free Fire Cuba, diamantes Free Fire Cuba, recargas juegos Cuba, saldo móvil, transferencia CUP, USDT, Gift Cards Cuba">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://tiendaelcastillo.github.io/tienda-el-castillo/">
+<link rel="alternate" hreflang="es-CU" href="https://tiendaelcastillo.github.io/tienda-el-castillo/">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./castle-icon.svg">
+<meta property="og:type" content="website"><meta property="og:title" content="Tienda El Castillo | Recargas de Free Fire en Cuba">
+<meta property="og:description" content="Recargas por ID, pagos en CUP, saldo móvil y USDT. Haz tu pedido y sigue su estado desde tu cuenta.">
+<meta property="og:url" content="https://tiendaelcastillo.github.io/tienda-el-castillo/"><meta property="og:site_name" content="Tienda El Castillo">
+<meta name="twitter:card" content="summary"><title>Recargas Free Fire en Cuba | Tienda El Castillo</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#10131b;color:#f4f4f6;font-family:Arial,sans-serif}
-header{background:#191e2a;padding:20px;text-align:center;border-bottom:1px solid #30394b}
-h1{margin:0;color:#e7bd69}
-main{max-width:700px;margin:22px auto;padding:0 15px}
-.card{background:#1b2230;border:1px solid #30394b;border-radius:13px;padding:17px;margin-bottom:15px}
-h2{margin-top:0;color:#e7bd69}
-input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:8px;border:1px solid #46516a;font-size:15px}
-input,select{background:#111722;color:white}
-button{background:#c99b49;color:#171717;border:0;font-weight:bold;cursor:pointer}
-button.secondary{background:#344056;color:white}
-small{color:#b7bdca}
-.hidden{display:none}
-.product{padding:12px;border-bottom:1px solid #394256}
-.status{color:#e7bd69;font-weight:bold}
-.order-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:12px}
-.order-actions select{margin:0}
-.order-actions button{width:auto;min-width:112px;margin:0;padding:12px}
-.order-detail{margin:5px 0;color:#d2d7e1;font-size:14px;line-height:1.5}
-.order-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.order-toolbar button{width:auto}
-.store-nav{display:flex;gap:7px;overflow-x:auto;padding:10px 0 14px;position:sticky;top:0;z-index:5;background:#10131b;scrollbar-width:none}
-.store-nav::-webkit-scrollbar{display:none}
-.store-nav button{flex:0 0 auto;width:auto;margin:0;padding:10px 14px;border:1px solid #344056;background:#1b2230;color:#dce2ec;border-radius:22px;font-size:13px}
-.store-nav button.active{background:#e7bd69;color:#171717;border-color:#e7bd69}
-.store-view{min-height:55vh}
-.hero{padding:25px 20px;background:linear-gradient(135deg,#252e40,#151a25);border:1px solid #3a465c;border-radius:18px;margin:10px 0 18px}
-.hero h2{font-size:26px;line-height:1.15;margin-bottom:8px}
-.hero p{color:#c8cfda;line-height:1.5}
-.hero-actions{display:flex;gap:9px;flex-wrap:wrap}
-.hero-actions button{width:auto;flex:1;min-width:130px}
-.section-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.section-heading button{width:auto}
-.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-.catalog-card{background:#1b2230;border:1px solid #30394b;border-radius:14px;padding:13px;min-width:0}
-.catalog-card h3{font-size:15px;margin:0 0 7px;color:#f4f4f6}
-.catalog-card p{font-size:12px;color:#b7bdca;min-height:30px;margin:5px 0}
-.catalog-card strong{color:#e7bd69}
-.catalog-card button{padding:10px;margin:9px 0 0}
-.empty-note{color:#b7bdca;padding:12px 0}
-.profile-email{overflow-wrap:anywhere;color:#c8cfda}
-@media(min-width:650px){.catalog-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:430px){.order-actions{grid-template-columns:1fr}.order-actions button{width:100%}.hero h2{font-size:22px}.hero-actions button{width:100%}}
-</style>
-</head>
+:root{--bg:#f4f7fc;--surface:#fff;--ink:#17233c;--muted:#71809a;--line:#e5eaf3;--blue:#2468f2;--blue2:#1455d8;--gold:#e6b957;--shadow:0 10px 30px rgba(20,45,90,.08);--radius:20px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.45;padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(36,104,242,.22);outline-offset:2px}.hidden{display:none!important}
+.site-header{height:68px;position:sticky;top:0;z-index:30;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:1120px;height:100%;margin:auto;padding:0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);min-width:0}.brand-mark{height:42px;width:42px;border-radius:13px;background:linear-gradient(145deg,#102d61,#2468f2);display:grid;place-items:center;color:#fff;font-weight:900;font-size:16px;letter-spacing:-1px;box-shadow:0 5px 14px rgba(36,104,242,.24);position:relative}.brand-mark:after{content:"";position:absolute;inset:4px;border:1px solid rgba(255,255,255,.34);border-radius:10px}
+.brand-name{display:flex;flex-direction:column;line-height:1.05}.brand-name strong{font-size:15px}.brand-name span{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-top:4px}
+.header-actions{display:flex;align-items:center;gap:8px}.header-btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:13px;padding:9px 12px;font-size:13px;font-weight:700}.header-btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+main{max-width:1120px;margin:0 auto;padding:18px 18px 30px}
+.auth-layout{max-width:940px;margin:28px auto;display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:stretch}
+.auth-visual{background:linear-gradient(145deg,#102b59 0%,#1d57c8 58%,#4189ff 100%);color:#fff;border-radius:28px;padding:34px;min-height:430px;position:relative;overflow:hidden;box-shadow:0 18px 45px rgba(26,76,168,.18)}
+.auth-visual:before,.auth-visual:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.17);border-radius:50%;width:260px;height:260px;right:-70px;top:50px}.auth-visual:after{width:180px;height:180px;right:-26px;top:91px;border-color:rgba(255,255,255,.23)}
+.auth-visual .eyebrow,.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);padding:7px 11px;border-radius:30px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.auth-visual h1{font-size:clamp(30px,5vw,48px);line-height:1.04;letter-spacing:-.04em;max-width:440px;margin:24px 0 14px}.auth-visual p{color:#dce9ff;max-width:370px}
+.auth-visual .orb{position:absolute;right:35px;bottom:34px;width:140px;height:140px;border-radius:40px;background:linear-gradient(145deg,rgba(255,255,255,.27),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:58px;transform:rotate(-8deg);box-shadow:inset 0 1px rgba(255,255,255,.3)}
+.auth-benefits{position:absolute;left:34px;bottom:28px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#e3edff}
+.auth-panel,.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.auth-panel{padding:28px}.auth-panel h2{margin:0 0 6px;font-size:23px;letter-spacing:-.03em}.subtle{color:var(--muted);font-size:13px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#f1f4fa;padding:4px;border-radius:13px;margin:22px 0}.auth-tabs button{border:0;background:transparent;color:var(--muted);padding:10px;border-radius:10px;font-weight:700;font-size:13px}.auth-tabs button.active{background:#fff;color:var(--blue);box-shadow:0 2px 8px rgba(20,45,90,.08)}
+.field{margin:13px 0}.field label{display:block;font-size:12px;color:#53627b;font-weight:700;margin:0 0 6px}.field input,.field select,.search-input{width:100%;border:1px solid #dce3ef;background:#fbfcff;color:var(--ink);border-radius:12px;padding:13px 14px}
+.primary-btn,.secondary-btn{border:0;border-radius:13px;padding:13px 16px;font-weight:800}.primary-btn{background:linear-gradient(135deg,#347cff,#185bdf);color:#fff;box-shadow:0 6px 15px rgba(36,104,242,.2)}.secondary-btn{background:#edf3ff;color:#255fc9}.block-btn{width:100%;margin-top:9px}
+.msg{font-size:13px;line-height:1.45;margin-top:10px;color:#365b9e}
+.top-search{margin:14px 0 18px;display:flex;gap:10px;align-items:center}.search-wrap{position:relative;flex:1}.search-wrap:before{content:"⌕";font-size:26px;color:#8391a8;position:absolute;left:14px;top:5px;pointer-events:none}.search-input{padding-left:42px;background:#fff;border-color:#e6ebf3;box-shadow:0 3px 12px rgba(20,45,90,.035)}
+.promo-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eaf2ff;color:#2456a9;border:1px solid #d8e6ff;padding:10px 14px;border-radius:13px;font-size:12px;font-weight:700;margin:2px 0 16px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:18px;overflow:hidden;position:relative;background:linear-gradient(115deg,#102754 0%,#174da8 58%,#337df2 100%);color:#fff;border-radius:26px;padding:30px 32px;min-height:250px;box-shadow:0 16px 38px rgba(25,74,160,.16)}
+.hero:after{content:"";position:absolute;width:340px;height:340px;border:1px solid rgba(255,255,255,.15);border-radius:50%;right:25px;top:-85px;box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 65px rgba(255,255,255,.025)}
+.hero-copy{position:relative;z-index:1}.hero h1{font-size:clamp(27px,4.2vw,43px);line-height:1.06;letter-spacing:-.04em;margin:15px 0 12px;max-width:590px}.hero p{color:#dce8ff;max-width:580px;font-size:14px}
+.hero-buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.hero-buttons button{width:auto}.hero-visual{position:relative;z-index:1;display:grid;place-items:center;min-height:160px}.hero-emblem{width:160px;height:160px;border-radius:45px;transform:rotate(-8deg);background:linear-gradient(145deg,rgba(255,255,255,.24),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.3);display:grid;place-items:center;font-size:70px;box-shadow:inset 0 1px rgba(255,255,255,.35),0 20px 45px rgba(7,25,65,.2)}.hero-note{font-size:11px;color:#dce8ff;margin-top:12px;text-align:center}
+.payment-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:17px}.payment-pill{font-size:11px;font-weight:800;padding:7px 10px;border:1px solid rgba(255,255,255,.22);border-radius:30px;background:rgba(255,255,255,.1);color:#fff}
+.section{margin:24px 0}.section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:0 0 13px}.section-head h2{margin:0;font-size:21px;letter-spacing:-.03em}.section-head p{margin:4px 0 0;color:var(--muted);font-size:12px}.text-link{border:0;background:transparent;color:var(--blue);font-size:12px;font-weight:800;padding:7px}
+.catalog-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.game-tile{border:1px solid var(--line);background:#fff;border-radius:18px;padding:0;text-align:left;overflow:hidden;color:var(--ink);box-shadow:0 4px 14px rgba(20,45,90,.04);transition:transform .15s ease,box-shadow .15s ease}.game-tile:active{transform:scale(.985)}
+.game-art{height:112px;display:grid;place-items:center;position:relative;overflow:hidden;color:#fff}.game-art:before{content:"";position:absolute;width:150px;height:150px;border:1px solid rgba(255,255,255,.22);border-radius:50%;right:-35px;top:-55px;box-shadow:0 0 0 16px rgba(255,255,255,.04)}.game-art .art-icon{font-size:43px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));z-index:1}.game-art .art-tag{position:absolute;left:10px;bottom:9px;font-size:9px;letter-spacing:.12em;font-weight:900;color:rgba(255,255,255,.82);text-transform:uppercase}
+.art-fire{background:linear-gradient(135deg,#451b28,#ed5b29)}.art-strike{background:linear-gradient(135deg,#10254e,#6c263e)}.art-mobile{background:linear-gradient(135deg,#37246f,#3175ba)}.art-arena{background:linear-gradient(135deg,#1d3f43,#738b62)}.art-honor{background:linear-gradient(135deg,#532a22,#d49a4d)}.art-genshin{background:linear-gradient(135deg,#245c8c,#66b8d7)}.art-wuther{background:linear-gradient(135deg,#182b4c,#5964a6)}.art-roblox{background:linear-gradient(135deg,#266b4f,#96bb63)}
+.tile-info{padding:11px 12px 12px}.tile-title{font-size:13px;font-weight:850;line-height:1.2}.tile-meta{font-size:10px;color:var(--muted);margin-top:5px}.tile-status{display:inline-block;margin-top:8px;padding:4px 7px;border-radius:30px;font-size:9px;font-weight:850;background:#edf3ff;color:#2b63c5}.tile-status.off{background:#f0f2f6;color:#7b879a}
+.gift-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.gift-tile{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#fff;text-align:left;color:var(--ink);padding:0}.gift-art{height:96px;display:grid;place-items:center;color:white;font-size:30px;font-weight:900}.gift-xbox{background:linear-gradient(135deg,#08783e,#38b56c)}.gift-ps{background:linear-gradient(135deg,#143976,#3979d5)}.gift-apple{background:linear-gradient(135deg,#31394e,#9299aa)}.gift-nintendo{background:linear-gradient(135deg,#a91f30,#ec4c53)}.gift-info{padding:10px 12px;font-size:12px;font-weight:800}.gift-info small{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:3px}
+.benefit-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:17px 0}.benefit{background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px;display:flex;gap:10px;align-items:center}.benefit-icon{height:35px;width:35px;border-radius:11px;background:#edf3ff;color:var(--blue);display:grid;place-items:center;font-size:17px;flex-shrink:0}.benefit strong{display:block;font-size:12px}.benefit span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.panel{padding:19px;margin:15px 0}.panel h2,.panel h3{margin:0 0 8px}.store-view{min-height:46vh}.product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.catalog-product{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;min-width:0}.catalog-product h3{font-size:14px;margin:0 0 6px}.catalog-product p{font-size:11px;color:var(--muted);min-height:30px;margin:4px 0 10px}.catalog-product .price{font-size:15px;font-weight:900;color:var(--blue)}.catalog-product button{margin-top:10px}
+.empty-note{color:var(--muted);font-size:13px;padding:14px}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.order-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}.order-code{font-size:12px;color:var(--muted);font-weight:800}.order-detail{margin:7px 0;color:#53627b;font-size:12px;line-height:1.6}.status{color:var(--blue);font-weight:850}.track-note{font-size:12px;color:#5e6e88;margin:7px 0 0}
+.order-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:12px}.order-actions select{margin:0}.order-actions button{width:auto;min-width:112px;margin:0}.order-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.order-toolbar button{width:auto}
+.profile-card{display:flex;align-items:center;gap:13px}.profile-avatar{height:54px;width:54px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,#2059cc,#4c91ff);color:white;font-size:22px;font-weight:900}.profile-email{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:none;justify-content:center}.bottom-nav-inner{width:min(100%,650px);display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.nav-item{border:0;background:transparent;color:#8995a9;border-radius:13px;padding:7px 4px 5px;font-size:10px;font-weight:750;display:flex;flex-direction:column;align-items:center;gap:3px}.nav-item .nav-icon{font-size:19px;line-height:1.1}.nav-item.active{background:#edf3ff;color:var(--blue)}
+.site-footer{margin:28px 0 0;border-top:1px solid var(--line);padding:20px 4px;color:var(--muted);font-size:11px}.notice{padding:12px 14px;border-radius:13px;background:#fff8e8;color:#765319;border:1px solid #f2e0b8;font-size:12px;line-height:1.5}
+@media(max-width:760px){main{padding:14px 13px 24px}.auth-layout{grid-template-columns:1fr;margin:12px auto;gap:12px}.auth-visual{min-height:230px;padding:25px}.auth-visual h1{font-size:32px;margin:15px 0 8px}.auth-visual .orb{width:92px;height:92px;right:18px;bottom:18px;font-size:39px;border-radius:27px}.auth-benefits{left:25px;bottom:18px}.auth-panel{padding:22px}.hero{padding:24px 21px;min-height:220px;grid-template-columns:1fr .55fr}.hero-visual{min-height:120px}.hero-emblem{width:105px;height:105px;font-size:47px;border-radius:31px}.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.game-art{height:100px}.gift-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom-nav{display:flex}.benefit-row{grid-template-columns:1fr}.benefit{padding:10px}.store-view{min-height:55vh}}
+@media(max-width:420px){.header-inner{padding:0 12px}.brand-mark{height:38px;width:38px}.brand-name strong{font-size:13px}.header-btn{padding:8px 9px;font-size:11px}.hero{grid-template-columns:1fr;padding:22px 18px}.hero-visual{display:none}.hero h1{font-size:29px}.field-row{grid-template-columns:1fr}.product-grid{grid-template-columns:1fr}.section-head h2{font-size:18px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style></head>
 <body>
-<header>
-<h1>🏰 Tienda El Castillo</h1>
-<p>Recargas y productos digitales</p>
-</header>
-<main>
-
-<section id="setup" class="card">
-<h2>Conectar la tienda</h2>
-<p>Introduce los datos públicos de tu proyecto Supabase.</p>
-<input id="url" placeholder="URL del proyecto Supabase">
-<input id="key" placeholder="Clave pública sb_publishable_..." >
-<button onclick="connect()">Conectar</button>
-<small>Usa la clave pública, nunca la clave secreta o service_role.</small>
+<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><span class="brand-mark">EC</span><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="currentUser?showView('profile'):setAuthMode('login')">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
+<main id="appMain">
+<section id="setup" class="hidden"><input id="url"><input id="key"><button onclick="connect()">Conectar</button></section>
+<section id="auth" class="auth-layout">
+ <div class="auth-visual"><span class="eyebrow">♛ TIENDA EL CASTILLO</span><h1>Recarga tu juego. Disfruta más.</h1><p>Diamantes de Free Fire y recargas digitales desde Cuba. Haz tu pedido por ID y consulta su estado desde tu cuenta.</p><div class="auth-benefits"><span>✦ Pagos en CUP</span><span>✦ Saldo móvil</span><span>✦ USDT</span></div><div class="orb">◆</div></div>
+ <div class="auth-panel"><h2 id="authTitle">Crea tu cuenta</h2><p class="subtle" id="authSubtitle">Regístrate para ver el catálogo y gestionar tus pedidos.</p><div class="auth-tabs"><button id="registerTab" type="button" class="active" onclick="setAuthMode('register')">Crear cuenta</button><button id="loginTab" type="button" onclick="setAuthMode('login')">Iniciar sesión</button></div>
+  <div class="field" id="fullnameWrap"><label for="fullname">Tu nombre</label><input id="fullname" autocomplete="name" placeholder="Cómo te llamas"></div><div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="email" placeholder="nombre@correo.com"></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></div><button class="primary-btn block-btn" id="authSubmit" type="button" onclick="register()">Crear cuenta</button><p id="authmsg" class="msg" role="status" aria-live="polite"></p><p class="subtle">No necesitas compartir la contraseña de tu juego. Para una recarga solo te pediremos los datos necesarios del pedido, como tu ID de jugador.</p>
+ </div>
 </section>
-
-<section id="auth" class="card hidden">
-<h2>Entrar a tu cuenta</h2>
-<input id="email" type="email" placeholder="Correo electrónico">
-<input id="password" type="password" placeholder="Contraseña">
-<input id="fullname" placeholder="Nombre (solo para registrarte)">
-<button onclick="register()">Crear cuenta</button>
-<button class="secondary" onclick="login()">Iniciar sesión</button>
-<p id="authmsg"></p>
-</section>
-
 <section id="store" class="hidden">
-<nav class="store-nav" aria-label="Navegación principal">
- <button type="button" data-view="home" class="active" onclick="showView('home')">Inicio</button>
- <button type="button" data-view="games" onclick="showView('games')">Juegos</button>
- <button type="button" data-view="giftcards" onclick="showView('giftcards')">Gift Cards</button>
- <button type="button" data-view="search" onclick="showView('search')">Buscar</button>
- <button type="button" data-view="orders" onclick="showView('orders')">Mis pedidos</button>
- <button type="button" data-view="profile" onclick="showView('profile')">Perfil</button>
- <button type="button" id="adminNav" data-view="admin" class="hidden" onclick="showView('admin')">Administrar</button>
-</nav>
-
-<section id="homeView" class="store-view">
- <div class="hero">
-  <h2>Todo lo que necesitas para jugar</h2>
-  <p>Recargas y productos digitales, de forma sencilla y segura con Tienda El Castillo.</p>
-  <div class="hero-actions">
-   <button type="button" onclick="showView('games')">Ver juegos</button>
-   <button type="button" class="secondary" onclick="showView('giftcards')">Ver Gift Cards</button>
-  </div>
- </div>
- <div class="card">
-  <div class="section-heading"><h2>Productos destacados</h2><button type="button" class="secondary" onclick="showView('games')">Ver catálogo</button></div>
-  <div id="homeProducts" class="catalog-grid"><p class="empty-note">Cargando catálogo...</p></div>
- </div>
- <div class="card">
-  <h2>Compra en pocos pasos</h2>
-  <p>1. Elige tu juego o tarjeta.</p>
-  <p>2. Escribe los datos necesarios.</p>
-  <p>3. Selecciona cómo pagar y envía tu pedido.</p>
- </div>
-</section>
-
-<section id="gamesView" class="store-view hidden">
- <div class="card">
-  <h2>Juegos</h2>
-  <p>Elige el juego y el paquete que deseas recargar.</p>
-  <div id="gamesProducts" class="catalog-grid"><p class="empty-note">Cargando...</p></div>
- </div>
-</section>
-
-<section id="giftcardsView" class="store-view hidden">
- <div class="card">
-  <h2>Gift Cards</h2>
-  <p>Tarjetas y códigos digitales disponibles.</p>
-  <div id="giftProducts" class="catalog-grid"><p class="empty-note">Cargando...</p></div>
- </div>
-</section>
-
-<section id="searchView" class="store-view hidden">
- <div class="card">
-  <h2>Buscar productos</h2>
-  <input id="productSearch" type="search" placeholder="Escribe el nombre del juego o producto..." oninput="renderSearchProducts()">
-  <div id="searchProducts" class="catalog-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div>
- </div>
-</section>
-
-<section id="checkoutView" class="store-view hidden">
- <div class="card">
-  <div class="section-heading"><h2>Completar pedido</h2><button type="button" class="secondary" onclick="showView('games')">Volver</button></div>
-  <p id="selectedProductText" class="status"></p>
-  <label for="product">Paquete</label>
-  <select id="product"></select>
-  <label for="player">ID del jugador</label>
-  <input id="player" placeholder="ID del jugador">
-  <label for="playername">Nombre del jugador (opcional)</label>
-  <input id="playername" placeholder="Nombre del jugador">
-  <label for="payment">Método de pago</label>
-  <select id="payment">
-   <option value="Transferencia CUP">Transferencia CUP</option>
-   <option value="Saldo móvil">Saldo móvil</option>
-   <option value="USDT">USDT</option>
-  </select>
-  <label for="reference">Referencia del pago (opcional)</label>
-  <input id="reference" placeholder="Referencia del pago">
-  <button onclick="placeOrder()">Enviar pedido</button>
-  <p id="ordermsg" role="status"></p>
- </div>
-</section>
-
-<section id="ordersView" class="store-view hidden">
- <div class="card">
-  <h2>Mis pedidos</h2>
-  <p>Consulta el estado y el progreso de tus compras.</p>
-  <div id="myorders">Cargando...</div>
- </div>
-</section>
-
-<section id="profileView" class="store-view hidden">
- <div class="card">
-  <h2>Mi perfil</h2>
-  <p id="welcome"></p>
-  <p id="profileEmail" class="profile-email"></p>
-  <button class="secondary" onclick="logout()">Cerrar sesión</button>
- </div>
-</section>
-
-<section id="admin" class="store-view hidden">
- <div class="card">
-  <h2>Administrar productos</h2>
-  <input id="game" placeholder="Juego (ej. Free Fire)">
-  <input id="pname" placeholder="Nombre del paquete">
-  <input id="description" placeholder="Descripción (opcional)">
-  <input id="amount" type="number" placeholder="Cantidad de diamantes o saldo">
-  <input id="transfer" type="number" placeholder="Precio transferencia CUP">
-  <input id="mobile" type="number" placeholder="Precio saldo móvil">
-  <input id="usdt" type="number" step="0.01" placeholder="Precio USDT">
-  <input id="cost" type="number" step="0.01" placeholder="Costo del paquete">
-  <button onclick="addProduct()">Guardar producto</button>
-  <p id="adminmsg"></p>
- </div>
- <div class="card">
-  <div class="order-toolbar">
-   <h2>Pedidos de clientes</h2>
-   <button class="secondary" type="button" onclick="loadAllOrders()">Actualizar</button>
-  </div>
-  <p id="orderadminmsg" role="status"></p>
-  <div id="allorders">Cargando...</div>
- </div>
-</section>
+ <div class="promo-strip"><span>♛ <strong>TIENDA EL CASTILLO</strong> · Atención personalizada</span><span>Pedidos con seguimiento</span></div>
+ <div class="top-search"><div class="search-wrap"><input class="search-input" id="productSearch" type="search" placeholder="Buscar un juego o una tarjeta..." onfocus="showView('search')" oninput="renderSearchProducts()"></div></div>
+ <section id="homeView" class="store-view">
+  <div class="hero"><div class="hero-copy"><span class="hero-eyebrow">RECARGAS POR ID · CUBA</span><h1>Tu próxima partida empieza aquí.</h1><p>Recarga Free Fire y descubre productos digitales. Elige tu paquete, envía tu ID y recibe atención personalizada en cada pedido.</p><div class="hero-buttons"><button class="primary-btn" type="button" onclick="showView('games')">Explorar juegos</button><button class="secondary-btn" type="button" onclick="showView('giftcards')">Ver Gift Cards</button></div><div class="payment-pills"><span class="payment-pill">Transferencia CUP</span><span class="payment-pill">Saldo móvil</span><span class="payment-pill">USDT</span></div></div><div class="hero-visual"><div><div class="hero-emblem">♛</div><div class="hero-note">RÁPIDO · CLARO · PERSONAL</div></div></div></div>
+  <div class="benefit-row"><div class="benefit"><span class="benefit-icon">⌁</span><div><strong>Pedido por ID</strong><span>Sin pedir acceso a tu cuenta</span></div></div><div class="benefit"><span class="benefit-icon">✓</span><div><strong>Revisión personal</strong><span>Confirmamos cada solicitud</span></div></div><div class="benefit"><span class="benefit-icon">◷</span><div><strong>Seguimiento</strong><span>Consulta el estado del pedido</span></div></div></div>
+  <div class="section"><div class="section-head"><div><h2>Elige tu juego</h2><p>Explora las recargas disponibles</p></div><button class="text-link" onclick="showView('games')">Ver todos →</button></div><div id="homeGames" class="catalog-grid"></div></div>
+  <div class="section"><div class="section-head"><div><h2>Gift Cards</h2><p>Tarjetas digitales de tus plataformas favoritas</p></div><button class="text-link" onclick="showView('giftcards')">Ver todas →</button></div><div id="homeGifts" class="gift-grid"></div></div>
+  <div class="panel"><h2>¿Cómo funciona?</h2><div class="field-row"><div><strong>01 · Elige</strong><p class="subtle">Selecciona el juego y el paquete que necesitas.</p></div><div><strong>02 · Identifícate</strong><p class="subtle">Escribe tu ID de jugador para preparar el pedido.</p></div><div><strong>03 · Confirma</strong><p class="subtle">Revisamos disponibilidad y te indicamos cómo pagar.</p></div><div><strong>04 · Seguimiento</strong><p class="subtle">Consulta el progreso desde “Mis pedidos”.</p></div></div></div>
+ </section>
+ <section id="gamesView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Juegos</h2><p>Selecciona un juego para ver sus paquetes</p></div><button class="text-link" type="button" onclick="clearGameFilter()">Todos</button></div><div id="gamesTiles" class="catalog-grid"></div></div><div class="panel"><div class="section-head"><div><h2 id="gamesProductsTitle">Paquetes disponibles</h2><p>Precios y métodos de pago según el producto</p></div></div><div id="gamesProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
+ <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
+ <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
+ <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
+  <div class="field"><label for="product">Paquete</label><select id="product"></select></div><div class="field"><label for="player">ID del jugador</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID"></div><div class="field"><label for="playername">Nombre del jugador (opcional)</label><input id="playername" autocomplete="off" placeholder="Nombre que aparece en el juego"></div><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div class="field"><label for="reference">Referencia (solo si ya recibiste instrucciones de pago)</label><input id="reference" placeholder="Opcional"></div>
+  <div class="notice">Importante: esta primera etapa trabaja con revisión manual. Enviar el pedido no significa que esté pagado. <strong>No envíes dinero hasta recibir la confirmación y las instrucciones de la tienda.</strong></div><button class="primary-btn block-btn" type="button" onclick="placeOrder()">Enviar solicitud de pedido</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
+ </div></section>
+ <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
+ <section id="profileView" class="store-view hidden"><div class="panel"><div class="profile-card"><div class="profile-avatar">EC</div><div><h2 id="welcome">Mi cuenta</h2><p id="profileEmail" class="profile-email"></p></div></div><div class="section"><h3>Tu cuenta</h3><p class="subtle">Aquí puedes consultar tus pedidos y gestionar tu sesión.</p></div><button class="secondary-btn block-btn" type="button" onclick="logout()">Cerrar sesión</button></div></section>
+ <section id="admin" class="store-view hidden"><div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div><div class="field"><label>Costo interno</label><input id="cost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button class="primary-btn block-btn" onclick="addProduct()">Guardar producto</button><p id="adminmsg" class="msg"></p></div><div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button></div><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div></section>
+ <footer class="site-footer"><strong>Tienda El Castillo</strong> · Recargas digitales independientes. No afiliada ni respaldada por Garena ni por las marcas de juegos mostradas. Nunca compartas tu contraseña de juego con terceros.<div style="margin-top:9px"><a href="./recargar-free-fire-cuba.html">Guía: recargar Free Fire desde Cuba</a></div></footer>
 </section>
 </main>
-
+<nav id="bottomNav" class="bottom-nav hidden" aria-label="Navegación inferior"><div class="bottom-nav-inner"><button class="nav-item active" data-view="home" onclick="showView('home')"><span class="nav-icon">⌂</span>Inicio</button><button class="nav-item" data-view="games" onclick="showView('games')"><span class="nav-icon">▦</span>Juegos</button><button class="nav-item" data-view="orders" onclick="showView('orders')"><span class="nav-icon">▤</span>Pedidos</button><button class="nav-item" data-view="profile" onclick="showView('profile')"><span class="nav-icon">♙</span>Perfil</button></div></nav>
 <script>
+const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
+const STORE_SUPABASE_KEY="sb_publishable_pDt0-wcwx7CBljuafRCwAw_jGJYh3U";
 let db=null, currentUser=null, currentProfile=null, products=[];
 
 const $=id=>document.getElementById(id);
@@ -221,8 +118,8 @@ async function start(url,key){
   $("setup").classList.add("hidden");
   const {data}=await db.auth.getSession();
   if(data.session) await openStore(data.session.user);
-  else $("auth").classList.remove("hidden");
- }catch(e){alert("No se pudo conectar: "+e.message)}
+  else { $("auth").classList.remove("hidden"); $("bottomNav").classList.add("hidden"); setAuthMode("register"); }
+ }catch(e){$("authmsg").textContent="No pudimos conectar con la tienda. Comprueba tu conexión e inténtalo de nuevo."; $("auth").classList.remove("hidden");}
 }
 
 async function register(){
@@ -270,55 +167,40 @@ async function openStore(user){
  if(currentProfile.role==="admin") await loadAllOrders();
 }
 
-function isGiftCard(p){
- const value=(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).toLowerCase();
- return /gift.?card|xbox|playstation|\bpsn\b|apple|nintendo|google play|steam|tarjeta regalo/.test(value);
-}
-function productCard(p){
- return `<article class="catalog-card">
-  <h3>${clean(p.game)} · ${clean(p.name)}</h3>
-  <p>${clean(p.description||"Recarga digital disponible.")}</p>
-  <strong>${money(p.price_transfer)} CUP</strong>
-  <button type="button" onclick="openCheckout('${clean(p.id)}')">Comprar</button>
- </article>`;
-}
+const gameCatalog=[
+ {name:"Free Fire",icon:"🔥",art:"fire",tag:"Battle Royale",match:["free fire"]},
+ {name:"Blood Strike",icon:"🎯",art:"strike",tag:"Shooter",match:["blood strike"]},
+ {name:"Mobile Legends",icon:"⚔️",art:"mobile",tag:"MOBA",match:["mobile legends"]},
+ {name:"Arena Breakout",icon:"🛡️",art:"arena",tag:"Shooter",match:["arena breakout"]},
+ {name:"Honor of Kings",icon:"👑",art:"honor",tag:"MOBA",match:["honor of kings"]},
+ {name:"Genshin Impact",icon:"✨",art:"genshin",tag:"RPG",match:["genshin impact"]},
+ {name:"Wuthering Waves",icon:"🌊",art:"wuther",tag:"RPG",match:["wuthering waves"]},
+ {name:"Roblox",icon:"▣",art:"roblox",tag:"Plataforma",match:["roblox"]}
+];
+const giftCatalog=[{name:"Xbox",icon:"X",art:"xbox",match:["xbox"]},{name:"PlayStation",icon:"PS",art:"ps",match:["playstation","psn"]},{name:"Apple",icon:"",art:"apple",match:["apple","app store"]},{name:"Nintendo",icon:"N",art:"nintendo",match:["nintendo"]}];
+let activeGameFilter="",activeGiftFilter="";
+function fold(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
+function isGiftCard(p){const value=fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||""));return /gift.?card|xbox|playstation|\bpsn\b|apple|nintendo|google play|steam|tarjeta regalo/.test(value)}
+function productCard(p){const price=Number(p.price_transfer)>0?"Desde "+money(p.price_transfer)+" CUP":"Consultar precio";return '<article class="catalog-product"><h3>'+clean(p.game)+' · '+clean(p.name)+'</h3><p>'+clean(p.description||"Producto digital disponible bajo confirmación.")+'</p><div class="price">'+price+'</div><button class="primary-btn block-btn" type="button" onclick="openCheckout(\''+clean(p.id)+'\')">Elegir paquete</button></article>'}
+function availableFor(item){const words=item.match||[fold(item.name)];return products.filter(p=>{if(item.kind==="gift"&&!isGiftCard(p))return false;if(item.kind!=="gift"&&isGiftCard(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return words.some(w=>label.includes(fold(w)))})}
+function gameTile(item){const matches=availableFor(item);return '<button class="game-tile" type="button" onclick="chooseGame(\''+clean(item.name)+'\')"><div class="game-art art-'+item.art+'"><span class="art-icon">'+item.icon+'</span><span class="art-tag">'+item.tag+'</span></div><div class="tile-info"><div class="tile-title">'+clean(item.name)+'</div><div class="tile-meta">'+(matches.length?matches.length+' paquete(s)':'Catálogo en preparación')+'</div><span class="tile-status '+(matches.length?'':'off')+'">'+(matches.length?'Disponible':'Próximamente')+'</span></div></button>'}
+function giftTile(item){const matches=availableFor({...item,kind:"gift"});return '<button class="gift-tile" type="button" onclick="chooseGift(\''+clean(item.name)+'\')"><div class="gift-art gift-'+item.art+'">'+item.icon+'</div><div class="gift-info">'+clean(item.name)+'<small>'+(matches.length?'Disponible':'Próximamente')+'</small></div></button>'}
 function renderProductCatalogs(){
- const games=products.filter(p=>!isGiftCard(p));
- const cards=products.filter(isGiftCard);
- $("homeProducts").innerHTML=games.length?games.slice(0,4).map(productCard).join(""):'<p class="empty-note">Próximamente añadiremos productos.</p>';
- $("gamesProducts").innerHTML=games.length?games.map(productCard).join(""):'<p class="empty-note">Todavía no hay recargas de juegos disponibles.</p>';
- $("giftProducts").innerHTML=cards.length?cards.map(productCard).join(""):'<p class="empty-note">Todavía no hay Gift Cards publicadas.</p>';
- renderSearchProducts();
+ $("homeGames").innerHTML=gameCatalog.map(gameTile).join("");$("gamesTiles").innerHTML=gameCatalog.map(gameTile).join("");$("homeGifts").innerHTML=giftCatalog.map(giftTile).join("");$("giftTiles").innerHTML=giftCatalog.map(giftTile).join("");
+ const gameList=products.filter(p=>!isGiftCard(p));const visibleGames=activeGameFilter?gameList.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGameFilter))):gameList;
+ $("gamesProductsTitle").textContent=activeGameFilter?"Paquetes de "+activeGameFilter:"Paquetes disponibles";$("gamesProducts").innerHTML=visibleGames.length?visibleGames.map(productCard).join(""):'<p class="empty-note">Todavía no hay paquetes disponibles en esta categoría. Pronto añadiremos más opciones.</p>';
+ const gifts=products.filter(isGiftCard);const visibleGifts=activeGiftFilter?gifts.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGiftFilter))):gifts;
+ $("giftProductsTitle").textContent=activeGiftFilter?"Tarjetas de "+activeGiftFilter:"Tarjetas disponibles";$("giftProducts").innerHTML=visibleGifts.length?visibleGifts.map(productCard).join(""):'<p class="empty-note">Todavía no hay tarjetas publicadas. Consulta nuevamente más adelante.</p>';renderSearchProducts();
 }
-function renderSearchProducts(){
- const term=($("productSearch")?.value||"").trim().toLowerCase();
- const matches=products.filter(p=>(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).toLowerCase().includes(term));
- $("searchProducts").innerHTML=matches.length?matches.map(productCard).join(""):'<p class="empty-note">No encontramos productos con ese nombre.</p>';
-}
-function showView(name){
- const views={home:"homeView",games:"gamesView",giftcards:"giftcardsView",search:"searchView",checkout:"checkoutView",orders:"ordersView",profile:"profileView",admin:"admin"};
- Object.values(views).forEach(id=>$(id)?.classList.add("hidden"));
- $(views[name]||views.home)?.classList.remove("hidden");
- document.querySelectorAll(".store-nav [data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
- window.scrollTo({top:0,behavior:"smooth"});
-}
-function openCheckout(productId){
- const p=products.find(item=>String(item.id)===String(productId));
- if(!p)return;
- $("product").value=String(p.id);
- $("selectedProductText").textContent=p.game+" · "+p.name;
- $("ordermsg").textContent="";
- showView("checkout");
-}
-async function loadProducts(){
+function chooseGame(name){activeGameFilter=name;renderProductCatalogs();showView("games")}function chooseGift(name){activeGiftFilter=name;renderProductCatalogs();showView("giftcards")}function clearGameFilter(){activeGameFilter="";renderProductCatalogs()}
+function renderSearchProducts(){const term=fold($("productSearch")?.value||"");const matches=products.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).includes(term));$("searchProducts").innerHTML=matches.length?matches.map(productCard).join():'<p class="empty-note">'+(term?"No encontramos productos con ese nombre.":"Escribe para buscar en el catálogo.")+'</p>'}
+function showView(name){const views={home:"homeView",games:"gamesView",giftcards:"giftcardsView",search:"searchView",checkout:"checkoutView",orders:"ordersView",profile:"profileView",admin:"admin"};Object.values(views).forEach(id=>$(id)?.classList.add("hidden"));$(views[name]||views.home)?.classList.remove("hidden");document.querySelectorAll("#bottomNav [data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("bottomNav").classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+function setAuthMode(mode){const registering=mode!=="login";$("authTitle").textContent=registering?"Crea tu cuenta":"Qué bueno verte de nuevo";$("authSubtitle").textContent=registering?"Regístrate para ver el catálogo y gestionar tus pedidos.":"Entra para consultar tus pedidos y continuar comprando.";$("fullnameWrap").classList.toggle("hidden",!registering);$("registerTab").classList.toggle("active",registering);$("loginTab").classList.toggle("active",!registering);$("authSubmit").textContent=registering?"Crear cuenta":"Iniciar sesión";$("authSubmit").onclick=registering?register:login;$("password").autocomplete=registering?"new-password":"current-password";$("authmsg").textContent=""}
+function openCheckout(productId){const p=products.find(item=>String(item.id)===String(productId));if(!p)return;$("product").value=String(p.id);$("selectedProductText").textContent=p.game+" · "+p.name;$("ordermsg").textContent="";showView("checkout")}async function loadProducts(){
  const {data,error}=await db.from("products").select("*").eq("active",true).order("name");
- if(error){$("gamesProducts").textContent="Error: "+error.message;return}
- products=data||[];
- $("product").innerHTML=products.map(p=>
-  `<option value="${p.id}">${clean(p.game)} - ${clean(p.name)}</option>`).join("");
- renderProductCatalogs();
+ if(error){$("gamesProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo. '+clean(error.message)+'</p>';$("giftProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo.</p>';return;}
+ products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();
 }
-
 async function placeOrder(){
  const product=products.find(p=>p.id===$("product").value);
  if(!product){$("ordermsg").textContent="No hay productos disponibles.";return}
@@ -343,7 +225,7 @@ async function placeOrder(){
   status:"pending"
  });
  if(error){$("ordermsg").textContent="Error: "+error.message;return}
- $("ordermsg").textContent="Pedido enviado. Código: "+code+". Está pendiente de revisión.";
+ $("ordermsg").textContent="Solicitud enviada. Código: "+code+". No realices el pago hasta recibir la confirmación e instrucciones de la tienda."
  $("player").value="";
  $("playername").value="";
  $("reference").value="";
@@ -389,7 +271,7 @@ function customerOrderProgress(status){
  if(status==="rejected") return '<p class="track-note">Pedido rechazado. Contacta con la tienda por tu canal habitual antes de volver a pagar.</p>';
  const steps=[["pending","Recibido"],["payment_review","Pago"],["processing","Recarga"],["completed","Listo"]];
  const pos=Math.max(0,steps.findIndex(s=>s[0]===status));
- const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#e7bd69':'#46516a')+';font-size:11px">'+s[1]+'</span>').join("");
+ const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#2468f2':'#d9e3f4')+';font-size:11px">'+s[1]+'</span>').join("");
  const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"La recarga está en proceso.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
  return '<div style="margin:12px 0">'+bar+'</div><p class="track-note">'+(notes[status]||"Estamos revisando tu pedido.")+'</p>';
 }
@@ -463,17 +345,12 @@ async function loadAllOrders(){
 }
 
 async function logout(){
- await db.auth.signOut();
- currentUser=null;
- $("store").classList.add("hidden");
- $("adminNav").classList.add("hidden");
- $("auth").classList.remove("hidden");
+ await db.auth.signOut();currentUser=null;currentProfile=null;$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");$("auth").classList.remove("hidden");setAuthMode("login");
 }
-
 window.addEventListener("load",()=>{
- const url=localStorage.getItem("castle_url");
- const key=localStorage.getItem("castle_key");
- if(url&&key) start(url,key);
+ if(window.supabase&&window.supabase.createClient) start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY);
+ else $("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo.";
+ if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 });
 </script>
 </body>
