@@ -838,8 +838,11 @@ function renderCentralOnePriceProposals(payload){
  const freeFire=items.filter(item=>{
   const family=String(item?.product_family_id||item?.product_family_name||"").toLowerCase();
   const name=String(item?.name||"").toLowerCase();
+  const region=String(item?.region||"").toUpperCase();
+  const currency=String(item?.currency||"USD").toUpperCase();
   return (family.includes("free-fire")||family.includes("free fire")||name.includes("free fire"))
-    && String(item?.product_type||"").toLowerCase().includes("topup");
+    && String(item?.product_type||"").toLowerCase().includes("topup")
+    && region==="LATAM" && currency==="USD";
  }).sort((a,b)=>Number(a?.reseller_price||0)-Number(b?.reseller_price||0));
  if(!freeFire.length){container.innerHTML='<p class="empty-note">El catálogo guardado no contiene paquetes identificados como Free Fire. No se ha inventado ningún precio.</p>';return;}
  const rate=Number($("pricingUsdtRate")?.value||1200);
