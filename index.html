@@ -912,7 +912,9 @@ async function authorizeCentralOneOrder(orderId,orderCode){
   const result=await requestCentralOneOrder("submit",orderId);
   $("orderadminmsg").textContent=result.already_submitted
    ?"Este pedido ya estaba enviado. No se creó otra recarga."
-   :"Pedido enviado a Central One. Estado: "+(result.provider_status||"recibido")+(result.reference_code?" · "+result.reference_code:"")+".";
+   :"Pedido enviado a Central One. Estado: "+(result.provider_status||"recibido")+(result.reference_code?" · "+result.reference_code:"")+
+    (result.provider_total_sale_amount?" · Coste proveedor: "+result.provider_total_sale_amount+" "+(result.provider_currency||"USD"):"")+
+    (Number.isFinite(Number(result.preflight_margin_percent))?" · Margen estimado: "+Number(result.preflight_margin_percent).toFixed(2)+" %":"")+".";
   await loadAllOrders();
   await loadMyOrders();
  }catch(e){
