@@ -232,7 +232,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete</label><select id="product" onchange="updateCheckoutSummary()"></select></div><div class="field"><label for="player">ID del jugador</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID"></div><div class="field"><label for="playername">Nombre del jugador (opcional)</label><input id="playername" autocomplete="off" placeholder="Nombre que aparece en el juego"></div><p class="track-note"><strong>Antes de continuar:</strong> comprueba cuidadosamente el ID en el juego. La validación automática con el proveedor todavía está en preparación. Nunca compartas tu contraseña.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
+  <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="field hidden"><button id="playerValidationBtn" class="secondary-btn block-btn" type="button" onclick="validatePlayerId()">Verificar ID y región con Central One</button><p id="playerValidationMsg" class="msg" role="status" aria-live="polite"></p></div><div class="field"><label for="playername">Nombre devuelto por el proveedor</label><input id="playername" autocomplete="off" placeholder="Se completará tras verificar el ID" readonly></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
   <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">Toca aquí para elegir una captura de tu teléfono</small><small class="proof-limits">JPG, PNG o WEBP · Máximo 5 MB</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
   <div class="notice">El comprobante es obligatorio. El pedido pasará a «Verificando pago» y la recarga se hará manualmente después de confirmar que recibimos el pago.</div><div class="notice">Importante: esta primera etapa trabaja con revisión manual. Enviar el pedido no significa que esté pagado. <strong>No envíes dinero hasta recibir la confirmación y las instrucciones de la tienda.</strong></div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()">Crear pedido y enviar comprobante</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
  </div></section>
@@ -260,7 +260,7 @@ window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=do
 function resetCastleCaptcha(){window.castleCaptchaToken=null;if(window.turnstile&&document.getElementById("castleTurnstile")){try{window.turnstile.reset("#castleTurnstile")}catch(e){}}}
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0;
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -383,11 +383,11 @@ function renderGameDetail(){const item=gameFor(activeGameFilter);if(!item)return
 function selectGamePaymentMethod(method){const rows=gameProductsFor(activeGameFilter);if(!rows.some(p=>Number(priceForMethod(p,method))>0))return;gamePaymentMethod=method;renderGameDetail();}
 function fold(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
 function isGiftCard(p){const value=fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||""));return /gift.?card|xbox|playstation|\bpsn\b|apple|nintendo|google play|steam|tarjeta regalo/.test(value)}
-function productArtwork(p){const label=fold(String(p.name||"")+" "+String(p.description||""));let type="diamond",file="product-diamonds.svg";if(/booyah|pase/.test(label)){type="pass";file="product-pass.svg"}else if(/semanal|mensual|tarjeta/.test(label)){type="card";file="product-card.svg"}else if(/nivel|level/.test(label)){type="level";file="product-level.svg"}return '<div class="product-art product-art-'+type+'" aria-hidden="true"><img src="./assets/'+file+'" alt="" loading="lazy" decoding="async" width="560" height="180"></div>'}
+function productArtwork(p){if(p.provider_image_url&&/^https?:\\/\\//i.test(String(p.provider_image_url)))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Free Fire")+'" loading="lazy" decoding="async" width="560" height="180"></div>';const label=fold(String(p.name||"")+" "+String(p.description||""));let type="diamond",file="product-diamonds.svg";if(/booyah|pase/.test(label)){type="pass";file="product-pass.svg"}else if(/semanal|mensual|tarjeta/.test(label)){type="card";file="product-card.svg"}else if(/nivel|level/.test(label)){type="level";file="product-level.svg"}return '<div class="product-art product-art-'+type+'" aria-hidden="true"><img src="./assets/'+file+'" alt="" loading="lazy" decoding="async" width="560" height="180"></div>'}
 function productCard(p){
  const options=[["CUP",p.price_transfer,"CUP"],["Saldo",p.price_mobile,"saldo"],["USDT",p.price_usdt,"USDT"]].filter(item=>Number(item[1])>0);
  const prices=options.length?options.map(item=>'<div class="price-option"><small>'+item[0]+'</small><strong>'+money(item[1])+' '+item[2]+'</strong></div>').join(""):'<div class="price-option"><small>Precio</small><strong>Por confirmar</strong></div>';
- return '<article class="catalog-product"><div class="product-head"><span class="product-game">'+clean(p.game)+'</span><span class="product-badge"><span aria-hidden="true">✓</span> Disponible</span></div>'+productArtwork(p)+'<h3>'+clean(p.name)+'</h3><p>'+clean(p.description||"Recarga digital por ID. Disponibilidad sujeta a confirmación.")+'</p><div class="product-prices">'+prices+'</div><button class="primary-btn block-btn" type="button" onclick="openCheckout(\''+clean(p.id)+'\')">Elegir paquete <span aria-hidden="true">→</span></button></article>';
+ const regionTag=p.provider_product_id?'<span class="provider-region-tag">Servidor '+clean(p.provider_region||"")+'</span>':"";return '<article class="catalog-product"><div class="product-head"><span class="product-game">'+clean(p.game)+'</span><span class="product-badge"><span aria-hidden="true">✓</span> Disponible</span></div>'+regionTag+productArtwork(p)+'<h3>'+clean(p.name)+'</h3><p>'+clean(p.description||"Recarga digital por ID. Disponibilidad sujeta a confirmación.")+'</p><div class="product-prices">'+prices+'</div><button class="primary-btn block-btn" type="button" onclick="openCheckout(\''+clean(p.id)+'\')">Elegir paquete <span aria-hidden="true">→</span></button></article>';
 }
 function availableFor(item){const words=item.match||[fold(item.name)];return products.filter(p=>{if(item.kind==="gift"&&!isGiftCard(p))return false;if(item.kind!=="gift"&&isGiftCard(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return words.some(w=>label.includes(fold(w)))})}
 function gameTile(item){const matches=availableFor(item);return '<button class="game-tile" type="button" onclick="chooseGame(&quot;'+clean(item.name)+'&quot;)"><div class="game-art art-'+item.art+'" role="img" aria-label="Ilustración original de '+clean(item.name)+'"><span class="art-tag">'+item.tag+'</span></div><div class="tile-info"><div class="tile-title">'+clean(item.name)+'</div><div class="tile-meta">'+(matches.length?matches.length+' paquete(s)':'Planes en preparación')+'</div><span class="tile-status '+(matches.length?'':'off')+'">'+(matches.length?'Ver paquetes':'Próximamente')+'</span></div></button>'}
@@ -416,7 +416,60 @@ function showView(name){
 }
 function setAuthMode(mode){const registering=mode!=="login";$("authTitle").textContent=registering?"Crea tu cuenta":"Qué bueno verte de nuevo";$("authSubtitle").textContent=registering?"Regístrate para acceder a la tienda y guardar tus pedidos.":"Entra para consultar tus pedidos y continuar comprando.";$("fullnameWrap").classList.toggle("hidden",!registering);$("registerTab").classList.toggle("active",registering);$("loginTab").classList.toggle("active",!registering);$("authSubmit").textContent=registering?"Crear cuenta":"Iniciar sesión";$("authSubmit").onclick=registering?register:login;$("password").autocomplete=registering?"new-password":"current-password";$("authmsg").textContent=""}
 function openAccount(){$("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("auth").classList.remove("hidden");setAuthMode("login")}
-function openCheckout(productId,preferredMethod){const p=products.find(item=>String(item.id)===String(productId));if(!p)return;$("product").value=String(p.id);if(preferredMethod&&Number(priceForMethod(p,preferredMethod))>0)$("payment").value=preferredMethod;$("selectedProductText").textContent=p.game+" · "+p.name;$("ordermsg").textContent="";updateCheckoutSummary();showView("checkout")}
+function resetPlayerValidation(){
+ validatedPlayerCheckout=null;
+ if($("playerValidationMsg"))$("playerValidationMsg").textContent="";
+ if($("playerValidationBtn")){$("playerValidationBtn").disabled=false;$("playerValidationBtn").textContent="Verificar ID y región con Central One";}
+ if($("playername"))$("playername").value="";
+}
+function syncPlayerRegionUI(){
+ const p=products.find(item=>String(item.id)===$("product")?.value);
+ const providerProduct=Boolean(p?.provider_product_id);
+ $("playerValidationWrap")?.classList.toggle("hidden",!providerProduct);
+ if($("playerRegionNote")){
+  if(providerProduct){
+   const supported=p.provider_validation_supported===true;
+   $("playerRegionNote").textContent=supported
+    ?"Región del paquete: servidor "+String(p.provider_region||"").toUpperCase()+". Central One verificará el ID antes de permitir el pedido."
+    :"Región "+String(p.provider_region||"").toUpperCase()+": la validación del proveedor no está habilitada. No se pueden crear pedidos de este paquete.";
+  }else{
+   $("playerRegionNote").textContent="Revisa cuidadosamente el ID del jugador y confirma que corresponde a la región de este paquete.";
+  }
+ }
+ if($("playername"))$("playername").readOnly=providerProduct;
+ if($("playerValidationBtn"))$("playerValidationBtn").disabled=providerProduct&&p.provider_validation_supported!==true;
+}
+async function validatePlayerId(){
+ if(!currentUser||!db){$("ordermsg").textContent="Inicia sesión para verificar el ID.";return}
+ const p=products.find(item=>String(item.id)===$("product").value);
+ const playerId=$("player").value.trim();
+ if(!p?.provider_product_id){$("playerValidationMsg").textContent="Este paquete no usa la validación integrada de Central One.";return}
+ if(p.provider_validation_supported!==true){$("playerValidationMsg").textContent="Central One todavía no admite la validación para esta región. No se puede continuar.";return}
+ if(playerId.length<3||playerId.length>64){$("playerValidationMsg").textContent="Escribe un ID de jugador válido (3 a 64 caracteres).";return}
+ const button=$("playerValidationBtn"),msg=$("playerValidationMsg");
+ button.disabled=true;button.textContent="Verificando con Central One…";msg.textContent="Consultando el ID y la región del paquete…";
+ validatedPlayerCheckout=null;$("playername").value="";
+ try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  const accessToken=sessionData?.session?.access_token;
+  if(sessionError||!accessToken)throw new Error("La sesión caducó. Vuelve a entrar en tu cuenta.");
+  const response=await fetch(STORE_SUPABASE_URL+"/functions/v1/central-one-player-validate",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Authorization":"Bearer "+accessToken,"apikey":STORE_SUPABASE_KEY},
+   body:JSON.stringify({product_id:p.id,player_id:playerId})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||result?.valid!==true)throw new Error(result?.message||"Central One no confirmó este ID para la región seleccionada.");
+  validatedPlayerCheckout={productId:String(p.id),playerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,validatedAt:new Date().toISOString()};
+  $("playername").value=result.player_name||"ID aceptado por Central One";
+  msg.textContent=result.message||("ID aceptado para el servidor "+String(result.region||p.provider_region||"").toUpperCase()+".");
+ }catch(e){
+  validatedPlayerCheckout=null;msg.textContent=e.message||"No se pudo verificar el ID. No se ha creado ningún pedido.";
+ }finally{
+  button.disabled=false;button.textContent="Verificar ID y región con Central One";
+ }
+}
+function openCheckout(productId,preferredMethod){const p=products.find(item=>String(item.id)===String(productId));if(!p)return;resetPlayerValidation();$("product").value=String(p.id);$("player").value="";$("playername").value="";if(preferredMethod&&Number(priceForMethod(p,preferredMethod))>0)$("payment").value=preferredMethod;$("selectedProductText").textContent=p.game+" · "+p.name; $("ordermsg").textContent="";updateCheckoutSummary();syncPlayerRegionUI();showView("checkout")}
 function updateCheckoutSummary(){
  const p=products.find(item=>String(item.id)===$("product").value);if(!p)return;
  const prices={"Transferencia CUP":p.price_transfer,"Saldo móvil":p.price_mobile,"USDT":p.price_usdt};
@@ -430,7 +483,9 @@ function updateCheckoutSummary(){
  const method=select.value,raw=prices[method];
  const unit=method==="USDT"?"USDT":"CUP";
  const amount=Number(raw)>0?money(raw):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
- $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong><small>Precio final según el método de pago</small></div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
+ const regionLine=p.provider_product_id?'<small>Servidor '+clean(p.provider_region||"")+' · ID verificado antes del pedido</small>':'<small>Precio final según el método de pago</small>';
+ $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong>'+regionLine+'</div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
+ syncPlayerRegionUI();
  $("walletCheckoutNote").textContent=method==="Billetera CUP"?"Tu saldo actual es "+money(walletBalanceCUP)+" CUP. "+(walletBalanceCUP>=Number(raw)?"Tienes saldo suficiente para este paquete.":"Te faltan "+money(Number(raw)-walletBalanceCUP)+" CUP."):"";
  updatePaymentInstructions();
  updatePaymentFields();
@@ -531,9 +586,9 @@ async function togglePaymentMethod(id,active){
  if(!result.error)await loadPaymentMethods();
 }
 async function loadProducts(){
- const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active").eq("active",true).order("name");
+ const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_sku,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
  if(error){$("gamesProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo. '+clean(error.message)+'</p>';$("giftProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo.</p>';return;}
- products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();updateCheckoutSummary();if(currentProfile?.role==="admin"){const all=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active").order("created_at",{ascending:false});productsForAdmin=all.data||[];await loadAdminProducts()}
+ products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();updateCheckoutSummary();if(currentProfile?.role==="admin"){const all=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});productsForAdmin=all.data||[];await loadAdminProducts()}
 }
 function validateProofFile(file){
  if(!file)return "Selecciona la captura del comprobante.";
@@ -579,6 +634,12 @@ async function placeOrder(){
  if(!product){$("ordermsg").textContent="No hay productos disponibles.";return}
  const player=$("player").value.trim();
  if(player.length<3||player.length>64){$("ordermsg").textContent="Revisa el ID del jugador (debe tener entre 3 y 64 caracteres).";return}
+ if(product.provider_product_id){
+  if(product.provider_validation_supported!==true){$("ordermsg").textContent="Central One no ha habilitado la verificación de ID para esta región. No se puede crear el pedido.";return}
+  if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(product.id)||validatedPlayerCheckout.playerId!==player){
+   $("ordermsg").textContent="Primero verifica con Central One el ID del jugador y la región de este paquete.";return
+  }
+ }
  const method=$("payment").value;
  const price=method==="USDT"?product.price_usdt:method==="Saldo móvil"?product.price_mobile:method==="Transferencia CUP"?product.price_transfer:null;
  if(!(Number(price)>0)){$("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";return}
@@ -592,7 +653,7 @@ async function placeOrder(){
  if(button){button.disabled=true;button.textContent="Creando pedido…";}
  $("ordermsg").textContent="";
  try{
-  const result=await db.from("orders").insert({user_id:currentUser.id,product_id:product.id,player_id:player,player_name:$("playername").value.trim(),payment_method:method,status:"pending"}).select("id,order_code,price,payment_method").single();
+  const result=await db.from("orders").insert({user_id:currentUser.id,product_id:product.id,player_id:player,player_name:validatedPlayerCheckout?.playerName||$("playername").value.trim(),payment_method:method,status:"pending",provider_product_id:product.provider_product_id||null,provider_region:product.provider_region||null,player_id_validated:Boolean(product.provider_product_id&&validatedPlayerCheckout?.productId===String(product.id)&&validatedPlayerCheckout?.playerId===player),player_id_validated_at:product.provider_product_id?validatedPlayerCheckout?.validatedAt||null:null}).select("id,order_code,price,payment_method").single();
   if(result.error){$("ordermsg").textContent="No pudimos crear el pedido: "+result.error.message;return}
   const data=result.data;
   if(button)button.textContent="Subiendo comprobante…";
@@ -603,7 +664,7 @@ async function placeOrder(){
    await loadMyOrders();showView("orders");return;
   }
   $("ordermsg").textContent="Comprobante recibido. Pedido "+data.order_code+" enviado a revisión. La recarga se realizará después de verificar el pago.";
-  $("player").value="";$("playername").value="";$("reference").value="";$("paymentProof").value="";previewPaymentProof();
+  $("player").value="";$("playername").value="";resetPlayerValidation();$("reference").value="";$("paymentProof").value="";previewPaymentProof();
   await loadMyOrders();showView("orders");
  }catch(e){$("ordermsg").textContent="Error de conexión. Comprueba tu conexión e inténtalo de nuevo. Si el pedido llegó a crearse, revisa «Mis pedidos» antes de repetirlo."}
  finally{if(button){button.disabled=false;button.textContent="Crear pedido y enviar comprobante";}}
@@ -720,7 +781,7 @@ async function reviewWalletDeposit(id,approve){
 }
 async function loadAdminProducts(){
  if(currentProfile?.role!=="admin")return;
- const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active").order("created_at",{ascending:false});
+ const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});
  const list=$("adminProducts");if(!list)return;
  if(result.error){list.textContent="No se pudo cargar el catálogo de administración: "+result.error.message;return}
  const rows=result.data||[];
