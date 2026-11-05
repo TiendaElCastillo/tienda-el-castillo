@@ -78,7 +78,60 @@ function installViewHook(){
  const wrapped=function(name){const result=original.apply(this,arguments);if(name==="admin")showAdminSection("overview");return result;};
  wrapped.__castleWrapped=true;window.showView=wrapped;
 }
-function start(){initAdminLayout();installOrderRefreshFilter();installViewHook();if(document.getElementById("allorders"))applyOrderFilter(activeOrderFilter);}
+
+function refreshCheckoutButton(){
+ const button=document.getElementById("placeOrderBtn");if(!button)return;
+ const productId=document.getElementById("product")?.value||"";
+ const product=(typeof products!=="undefined"?products:[]).find(p=>String(p.id)===String(productId));
+ const player=(document.getElementById("player")?.value||"").trim();
+ const method=document.getElementById("payment")?.value||"";
+ const proof=document.getElementById("paymentProof")?.files?.[0]||null;
+ const reference=(document.getElementById("reference")?.value||"").trim();
+ const verified=!product?.provider_product_id||(typeof validatedPlayerCheckout!=="undefined"&&validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(product.id)&&validatedPlayerCheckout.playerId===player);
+ const validFile=Boolean(proof)&&typeof validateProofFile==="function"&&!validateProofFile(proof);
+ const needsReference=method==="Transferencia CUP";
+ const price=typeof priceForMethod==="function"&&product?Number(priceForMethod(product,method)):0;
+ const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&validFile&&(!needsReference||reference)&&price>0);
+ button.disabled=!ready;
+ button.textContent=ready?"Confirmar que pagué y enviar pedido":!verified?"Primero verifica tu ID de jugador":!validFile?"Adjunta el comprobante para continuar":needsReference&&!reference?"Escribe el número de transferencia":"Completa los datos del pedido";
+}
+function installCheckoutFlow(){
+ document.addEventListener("click",event=>{
+  const card=event.target.closest("[data-product-id]");
+  if(!card||event.target.closest("button"))return;
+  if(typeof window.openCheckout!=="function")return;
+  event.preventDefault();
+  window.openCheckout(card.dataset.productId,card.dataset.paymentMethod||undefined);
+ });
+ ["player","paymentProof","reference","payment"].forEach(id=>{
+  const node=document.getElementById(id);if(!node||node.dataset.checkoutGate==="1")return;
+  node.dataset.checkoutGate="1";
+  node.addEventListener("input",refreshCheckoutButton);
+  node.addEventListener("change",refreshCheckoutButton);
+ });
+ if(typeof window.openCheckout==="function"&&!window.openCheckout.__checkoutGateWrapped){
+  const original=window.openCheckout;
+  const wrapped=function(){const result=original.apply(this,arguments);refreshCheckoutButton();return result;};
+  wrapped.__checkoutGateWrapped=true;window.openCheckout=wrapped;
+ }
+ if(typeof window.validatePlayerId==="function"&&!window.validatePlayerId.__checkoutGateWrapped){
+  const original=window.validatePlayerId;
+  const wrapped=async function(){const result=await original.apply(this,arguments);refreshCheckoutButton();return result;};
+  wrapped.__checkoutGateWrapped=true;window.validatePlayerId=wrapped;
+ }
+ if(typeof window.resetPlayerValidation==="function"&&!window.resetPlayerValidation.__checkoutGateWrapped){
+  const original=window.resetPlayerValidation;
+  const wrapped=function(){const result=original.apply(this,arguments);refreshCheckoutButton();return result;};
+  wrapped.__checkoutGateWrapped=true;window.resetPlayerValidation=wrapped;
+ }
+ if(typeof window.previewPaymentProof==="function"&&!window.previewPaymentProof.__checkoutGateWrapped){
+  const original=window.previewPaymentProof;
+  const wrapped=function(){const result=original.apply(this,arguments);refreshCheckoutButton();return result;};
+  wrapped.__checkoutGateWrapped=true;window.previewPaymentProof=wrapped;
+ }
+}
+
+function start(){initAdminLayout();installCheckoutFlow();installOrderRefreshFilter();installViewHook();if(document.getElementById("allorders"))applyOrderFilter(activeOrderFilter);}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
 window.showAdminSection=showAdminSection;
 window.applyAdminOrderFilter=applyOrderFilter;
