@@ -243,7 +243,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 </section>
  <section id="admin" class="store-view hidden">
  <div class="panel"><h2>Conexión con Central One</h2><p class="subtle">Prueba segura de lectura. No crea pedidos ni utiliza saldo.</p><button id="centralOneTestBtn" class="secondary-btn block-btn" type="button" onclick="testCentralOneConnection()">Probar conexión (ping)</button><p id="centralOneTestMsg" class="msg" role="status">La clave se lee desde los secretos de Supabase; nunca se muestra aquí.</p></div>
- <div class="panel"><h2>Catálogo mayorista de Central One</h2><p class="subtle">Consulta los productos y costes reales habilitados para tu cuenta. Esta acción solo lee datos; no crea pedidos ni descuenta saldo.</p><div class="field-row"><button id="centralOneCatalogBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneCatalog()">Cargar catálogo</button><button id="centralOneBalanceBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneBalance()">Consultar saldo</button></div><p id="centralOneCatalogMsg" class="msg" role="status">Todavía no se ha consultado el catálogo.</p><div class="field"><label>Respuesta del catálogo (datos originales del proveedor)</label><pre id="centralOneCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f5f8fd;border:1px solid #e2eaf5;border-radius:12px;padding:12px;font-size:11px;color:#263957">Aún no hay datos guardados.</pre></div><p id="centralOneBalanceMsg" class="msg" role="status"></p></div>
+ <div class="panel"><h2>Catálogo mayorista de Central One</h2><p class="subtle">Consulta los productos y costes reales habilitados para tu cuenta. Esta acción solo lee datos; no crea pedidos ni descuenta saldo.</p><div class="field-row"><button id="centralOneCatalogBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneCatalog()">Cargar catálogo</button><button id="centralOneBalanceBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneBalance()">Consultar saldo</button></div><p id="centralOneCatalogMsg" class="msg" role="status">Todavía no se ha consultado el catálogo.</p><p id="centralOneAutoSyncMsg" class="msg" role="status">Sincronización automática cada 15 minutos: preparando primera consulta.</p><div class="field"><label>Catálogo y precios más recientes recibidos del proveedor (datos originales del proveedor)</label><pre id="centralOneCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f5f8fd;border:1px solid #e2eaf5;border-radius:12px;padding:12px;font-size:11px;color:#263957">Aún no hay datos guardados.</pre></div><p id="centralOneBalanceMsg" class="msg" role="status"></p></div>
  <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estos valores sirven para calcular propuestas. Guardarlos no modifica los precios publicados a tus clientes.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1200"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Coste de esas unidades (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="2000"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
  <div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button id="adminProductSubmit" class="primary-btn block-btn" type="button" onclick="addProduct()">Guardar producto</button><button id="cancelProductEdit" class="secondary-btn block-btn hidden" type="button" onclick="cancelProductEdit()">Cancelar edición</button><p id="adminmsg" class="msg" role="status"></p><div id="adminProducts"></div></div>
  <div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div></div>
@@ -828,7 +828,27 @@ async function requestCentralOneRead(action){
 function renderCentralOneSnapshot(payload,status){
  const raw=JSON.stringify(payload,null,2);
  $("centralOneCatalogRaw").textContent=raw.length>50000?raw.slice(0,50000)+"\n\n[Vista truncada a 50 000 caracteres; el registro completo se conserva en Supabase.]":raw;
- $("centralOneCatalogMsg").textContent="Catálogo leído correctamente. HTTP "+status+". Respuesta original guardada para revisar los campos reales; no se cambiaron los productos ni sus precios.";
+ $("centralOneCatalogMsg").textContent="Catálogo leído correctamente. HTTP "+status+". No se modificaron los precios minoristas publicados.";
+}
+async function buildCentralOnePriceSignature(payload){
+ const items=Array.isArray(payload?.items)?payload.items:(Array.isArray(payload?.data?.items)?payload.data.items:null);
+ if(!items)throw new Error("La respuesta del proveedor no contiene una lista válida de productos.");
+ const rows=items.map(item=>({
+  product_id:item?.product_id??null,sku:item?.sku??null,name:item?.name??null,
+  category:item?.category??null,product_type:item?.product_type??null,
+  product_family_id:item?.product_family_id??null,product_family_name:item?.product_family_name??null,
+  market:item?.market??null,region:item?.region??null,currency:item?.currency??null,
+  reseller_price:item?.reseller_price??null,status:item?.status??null,
+  in_stock:item?.in_stock??null,available_stock:item?.available_stock??null,
+  requires_target:item?.requires_target??null,target_fields:item?.target_fields??null,
+  target_schema:item?.target_schema??null,price_updated_at:item?.price_updated_at??null,
+  updated_at:item?.updated_at??null
+ }));
+ rows.sort((a,b)=>String(a.product_id??a.sku??a.name).localeCompare(String(b.product_id??b.sku??b.name)));
+ const bytes=new TextEncoder().encode(JSON.stringify(rows));
+ const digest=await crypto.subtle.digest("SHA-256",bytes);
+ const hash=Array.from(new Uint8Array(digest)).map(v=>v.toString(16).padStart(2,"0")).join("");
+ return {sha256:hash,count:items.length};
 }
 async function loadCentralOneCatalog(){
  if(currentProfile?.role!=="admin")return;
@@ -836,11 +856,25 @@ async function loadCentralOneCatalog(){
  button.disabled=true;button.textContent="Consultando catálogo…";msg.textContent="Consultando catálogo de solo lectura…";
  try{
   const result=await requestCentralOneRead("catalog");
-  const saved=await db.from("central_one_catalog_snapshots").insert({provider_status:result.providerStatus,payload:result.data,fetched_by:currentUser.id});
+  const signature=await buildCentralOnePriceSignature(result.data);
+  const saved=await db.from("central_one_catalog_snapshots").insert({provider_status:result.providerStatus,payload:result.data,price_signature:signature,fetched_by:currentUser.id});
   renderCentralOneSnapshot(result.data,result.providerStatus);
   if(saved.error)msg.textContent+=" No se pudo guardar la copia: "+saved.error.message;
+  else await loadCentralOneSyncStatus();
+  await loadLatestCentralOneCatalog();
  }catch(e){msg.textContent="No se pudo leer el catálogo: "+(e.message||"error desconocido");}
  finally{button.disabled=false;button.textContent="Cargar catálogo";}
+}
+async function loadCentralOneSyncStatus(){
+ if(currentProfile?.role!=="admin"||!db)return;
+ const el=$("centralOneAutoSyncMsg");
+ const result=await db.from("central_one_catalog_sync_status").select("checked_at,last_success_at,provider_status,last_error,product_count,changed").eq("id",1).maybeSingle();
+ if(result.error){el.textContent="No se pudo leer el estado de sincronización: "+result.error.message;return;}
+ const s=result.data;
+ if(!s){el.textContent="Sincronización automática cada 15 minutos: pendiente de la primera consulta.";return;}
+ const checked=s.checked_at?new Date(s.checked_at).toLocaleString("es-ES"):"sin fecha";
+ if(s.last_error){el.textContent="Sincronización automática cada 15 minutos. Último intento ("+checked+"): "+s.last_error+". Se conserva el último catálogo correcto.";return;}
+ el.textContent="Sincronización automática cada 15 minutos. Última revisión correcta: "+checked+". "+Number(s.product_count||0).toLocaleString("es-ES")+" productos revisados. "+(s.changed?"Se detectaron cambios y se guardó una nueva versión.":"Sin cambios de precios ni disponibilidad.");
 }
 async function loadLatestCentralOneCatalog(){
  if(currentProfile?.role!=="admin")return;
@@ -848,8 +882,9 @@ async function loadLatestCentralOneCatalog(){
  if(result.error){$("centralOneCatalogMsg").textContent="No se pudo recuperar la última consulta guardada: "+result.error.message;return;}
  if(result.data){
   renderCentralOneSnapshot(result.data.payload,result.data.provider_status);
-  $("centralOneCatalogMsg").textContent+=" Última consulta guardada: "+new Date(result.data.fetched_at).toLocaleString("es-ES")+".";
+  $("centralOneCatalogMsg").textContent+=" Última versión guardada: "+new Date(result.data.fetched_at).toLocaleString("es-ES")+".";
  }
+ await loadCentralOneSyncStatus();
 }
 async function loadCentralOneBalance(){
  if(currentProfile?.role!=="admin")return;
