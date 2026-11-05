@@ -694,7 +694,7 @@ async function placeOrder(){
   $("player").value="";$("playername").value="";resetPlayerValidation();$("reference").value="";$("paymentProof").value="";previewPaymentProof();
   await loadMyOrders();showView("orders");
  }catch(e){$("ordermsg").textContent="Error de conexión. Comprueba tu conexión e inténtalo de nuevo. Si el pedido llegó a crearse, revisa «Mis pedidos» antes de repetirlo."}
- finally{if(button){button.disabled=false;button.textContent="Crear pedido y enviar comprobante";}}
+ finally{if(button)window.updateCheckoutSubmitState?.();}
 }
 
 async function loadMyOrders(){
