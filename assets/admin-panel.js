@@ -37,10 +37,10 @@ function showAdminSection(key){
  document.querySelectorAll("#admin [data-admin-tab]").forEach(n=>n.classList.toggle("active",n.dataset.adminTab===selected));
 }
 function classifyOrder(card){
- if(card.querySelector("[data-provider-submit]"))return "ready";
- if(card.querySelector("[data-provider-refresh]"))return "provider";
  const status=(card.querySelector(".status")?.textContent||"").toLowerCase();
  if(status.includes("completada")||status.includes("fallida")||status.includes("rechazado")||status.includes("cancelado"))return "history";
+ if(card.querySelector("[data-provider-submit]"))return "ready";
+ if(card.querySelector("[data-provider-refresh]"))return "provider";
  if(status.includes("pendiente")||status.includes("verificando"))return "pending";
  if(status.includes("pago confirmado"))return "ready";
  return "pending";
