@@ -764,7 +764,7 @@ function customerOrderProgress(status){
  const steps=[["pending","Recibido"],["payment_review","Pago"],["processing","Recarga"],["completed","Listo"]];
  const pos=Math.max(0,steps.findIndex(s=>s[0]===status));
  const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#2468f2':'#d9e3f4')+';font-size:11px">'+s[1]+'</span>').join("");
- const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"Pago confirmado. La recarga queda pendiente de envío automático.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
+ const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"Pago confirmado. La recarga está pendiente de envío por la tienda.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
  return '<div style="margin:12px 0">'+bar+'</div><p class="track-note">'+(notes[status]||"Estamos revisando tu pedido.")+'</p>';
 }
 function statusText(value){
