@@ -755,7 +755,7 @@ async function addProduct(){
 const orderStatuses=[
  {value:"pending",label:"Pendiente"},
  {value:"payment_review",label:"Verificando pago"},
- {value:"processing",label:"Recarga en proceso"},
+ {value:"processing",label:"Pago confirmado · pendiente de envío"},
  {value:"completed",label:"Completado"},
  {value:"rejected",label:"Rechazado"}
 ];
@@ -764,7 +764,7 @@ function customerOrderProgress(status){
  const steps=[["pending","Recibido"],["payment_review","Pago"],["processing","Recarga"],["completed","Listo"]];
  const pos=Math.max(0,steps.findIndex(s=>s[0]===status));
  const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#2468f2':'#d9e3f4')+';font-size:11px">'+s[1]+'</span>').join("");
- const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"La recarga está en proceso.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
+ const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"Pago confirmado. La recarga queda pendiente de envío automático.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
  return '<div style="margin:12px 0">'+bar+'</div><p class="track-note">'+(notes[status]||"Estamos revisando tu pedido.")+'</p>';
 }
 function statusText(value){
@@ -780,11 +780,7 @@ async function updateOrderStatus(orderId,selectId){
  if(button){button.disabled=true;button.textContent="Guardando...";}
  $("orderadminmsg").textContent="";
  try{
-  const {data,error}=await db.from("orders")
-   .update({status:newStatus})
-   .eq("id",orderId)
-   .select("id,status")
-   .maybeSingle();
+  const {data,error}=await db.rpc("admin_update_order_status",{p_order_id:orderId,p_status:newStatus});
   if(error){
    $("orderadminmsg").textContent="No se pudo actualizar: "+error.message;
    return;
@@ -812,8 +808,9 @@ async function loadAllOrders(){
  if(!(data||[]).length){container.textContent="No hay pedidos todavía.";return;}
  const cards=await Promise.all((data||[]).map(async(o,i)=>{
   const selectId="order-status-"+i;
-  const options=orderStatuses.map(s=>`<option value="${s.value}" ${o.status===s.value?"selected":""}>${s.label}</option>`).join("");
-  const unknown=orderStatuses.some(s=>s.value===o.status)?"":`<option value="${clean(o.status)}" selected>${clean(o.status||"Sin estado")}</option>`;
+  const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
+  const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return `<option value="${value}">${item.label}</option>`;}).join("");
+  const actionLabel=o.status==="payment_review"?"Confirmar pago y autorizar recarga":"Rechazar pedido";
   let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
    const signed=await db.storage.from("payment-proofs").createSignedUrl(o.proof_path,600);
@@ -827,10 +824,8 @@ async function loadAllOrders(){
    Referencia / transferencia: ${clean(o.payment_reference||"No indicada")}<br>
    Comprobante: ${proofLink}<br>
    Estado actual: <span class="status">${statusText(o.status)}</span></div>
-   <div class="order-actions">
-    <select id="${selectId}" aria-label="Nuevo estado para pedido ${clean(o.order_code)}">${unknown}${options}</select>
-    <button type="button" data-update-order data-order-id="${clean(o.id)}" data-select-id="${selectId}">Guardar estado</button>
-   </div>
+   ${allowed.length?'<div class="order-actions"><select id="'+selectId+'" aria-label="Acción para pedido '+clean(o.order_code)+'">'+options+'</select><button type="button" data-update-order data-order-id="'+clean(o.id)+'" data-select-id="'+selectId+'">'+actionLabel+'</button></div>':(o.status==="processing"?'<p class="track-note">Pago confirmado por administrador. Pendiente de integración y envío con Central One.</p>':'')}
+   ${o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':''}
   </div>`;
  })).join("");
  container.innerHTML=cards;
