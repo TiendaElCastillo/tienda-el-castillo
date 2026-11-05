@@ -687,13 +687,16 @@ async function loadMyOrders(){
   const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
    (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Número de transferencia</label><input id="retry-reference-'+clean(o.id)+'" inputmode="numeric" placeholder="Número de transferencia"></div>':'')+
    '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
+  const providerInfo=o.central_one_reference_code
+   ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+clean(o.central_one_status||"en proceso")+'</p>'
+   :o.status==="failed"&&o.central_one_error_message
+    ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
-   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+retry+'</article>';
+   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+providerInfo+retry+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
 }
-
 async function loadWalletData(){
  if(!currentUser){walletBalanceCUP=0;return}
  const result=await db.from("wallet_transactions").select("kind,amount,currency,description,created_at").eq("user_id",currentUser.id).eq("currency","CUP").order("created_at",{ascending:false});
