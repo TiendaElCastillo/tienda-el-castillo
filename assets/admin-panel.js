@@ -133,6 +133,7 @@ function installCheckoutFlow(){
 
 function start(){initAdminLayout();installCheckoutFlow();installOrderRefreshFilter();installViewHook();if(document.getElementById("allorders"))applyOrderFilter(activeOrderFilter);}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
+window.updateCheckoutSubmitState=refreshCheckoutButton;
 window.showAdminSection=showAdminSection;
 window.applyAdminOrderFilter=applyOrderFilter;
 })();
