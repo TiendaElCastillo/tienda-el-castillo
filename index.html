@@ -688,7 +688,7 @@ async function loadMyOrders(){
    (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Número de transferencia</label><input id="retry-reference-'+clean(o.id)+'" inputmode="numeric" placeholder="Número de transferencia"></div>':'')+
    '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
   const providerInfo=o.central_one_reference_code
-   ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+clean(o.central_one_status||"en proceso")+'</p>'
+   ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
     ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
@@ -855,6 +855,24 @@ function statusText(value){
  return status?status.label:clean(value||"Sin estado");
 }
 
+function centralOneStatusText(value){
+ const labels={
+  not_submitted:"Pendiente de autorización",
+  submitting:"Autorizando",
+  unknown:"Respuesta pendiente de confirmar",
+  retryable:"Revisar y reintentar",
+  rejected:"Solicitud bloqueada",
+  created:"Pedido creado",
+  confirmed:"Saldo reservado",
+  processing:"En proceso",
+  partially_completed:"Entrega parcial",
+  completed:"Entregado",
+  failed:"Fallido",
+  cancelled:"Cancelado"
+ };
+ return labels[value]||clean(value||"Sin estado");
+}
+
 async function updateOrderStatus(orderId,selectId){
  if(currentProfile?.role!=="admin"||!currentUser)return;
  const select=$(selectId);
@@ -912,7 +930,7 @@ async function authorizeCentralOneOrder(orderId,orderCode){
   const result=await requestCentralOneOrder("submit",orderId);
   $("orderadminmsg").textContent=result.already_submitted
    ?"Este pedido ya estaba enviado. No se creó otra recarga."
-   :"Pedido enviado a Central One. Estado: "+(result.provider_status||"recibido")+(result.reference_code?" · "+result.reference_code:"")+
+   :"Pedido enviado a Central One. Estado: "+centralOneStatusText(result.provider_status||"confirmed")+(result.reference_code?" · "+result.reference_code:"")+
     (result.provider_total_sale_amount?" · Coste proveedor: "+result.provider_total_sale_amount+" "+(result.provider_currency||"USD"):"")+
     (Number.isFinite(Number(result.preflight_margin_percent))?" · Recargo estimado: "+Number(result.preflight_margin_percent).toFixed(2)+" %":"")+".";
   await loadAllOrders();
@@ -932,7 +950,7 @@ async function refreshCentralOneOrder(orderId){
  $("orderadminmsg").textContent="Consultando el estado real del pedido en Central One…";
  try{
   const result=await requestCentralOneOrder("refresh",orderId);
-  $("orderadminmsg").textContent="Estado actualizado desde Central One: "+(result.provider_status||"sin estado")+(result.reference_code?" · "+result.reference_code:"")+".";
+  $("orderadminmsg").textContent="Estado actualizado desde Central One: "+centralOneStatusText(result.provider_status||"unknown")+(result.reference_code?" · "+result.reference_code:"")+".";
   await loadAllOrders();
   await loadMyOrders();
  }catch(e){
@@ -1174,7 +1192,7 @@ async function loadAllOrders(){
   const canRefresh=Boolean(o.central_one_order_id);
   let providerInfo="";
   if(o.central_one_order_id){
-   providerInfo='<p class="track-note"><strong>Central One:</strong> '+clean(providerStatus)+
+   providerInfo='<p class="track-note"><strong>Central One:</strong> '+centralOneStatusText(providerStatus)+
     (o.central_one_reference_code?' · Referencia: '+clean(o.central_one_reference_code):"")+
     (o.central_one_error_message?' · '+clean(o.central_one_error_message):"")+'</p>';
   }else if(o.central_one_error_message){
