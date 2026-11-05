@@ -250,7 +250,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estos valores sirven para calcular propuestas. Guardarlos no modifica los precios publicados a tus clientes.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1200"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Coste de esas unidades (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="2000"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
  <div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button id="adminProductSubmit" class="primary-btn block-btn" type="button" onclick="addProduct()">Guardar producto</button><button id="cancelProductEdit" class="secondary-btn block-btn hidden" type="button" onclick="cancelProductEdit()">Cancelar edición</button><p id="adminmsg" class="msg" role="status"></p><div id="adminProducts"></div></div>
  <div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div></div>
- <div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button></div><p class="track-note">Estado de integración: confirmar el pago del cliente todavía no descuenta saldo de Central One. La autorización única de recarga se activará cuando la llave del proveedor tenga <strong>orders:write</strong> y quede conectada la solicitud idempotente de pedido. No marques la recarga como enviada antes de recibir y consultar el pedido de Central One.</p><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div>
+ <div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button></div><p class="track-note">Flujo de recarga: primero revisa y confirma el pago del cliente. Después aparecerá el botón <strong>«Autorizar recarga y reservar saldo»</strong>; ese segundo botón envía el pedido a Central One y es el único que usa saldo del proveedor. La solicitud queda protegida contra duplicados y podrás consultar aquí el estado real de la entrega. No marques la recarga como completada hasta que Central One informe «completed».</p><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div>
 </section>
  <footer class="site-footer"><div class="footer-brand"><img src="./assets/castle-logo.webp" alt="" width="42" height="42"><div><strong>Tienda El Castillo</strong><span>Recargas digitales con atención personalizada</span></div></div><div class="footer-columns"><div><strong>Tu compra</strong><span>Catálogo Free Fire</span><span>Transferencia CUP y saldo móvil</span><span>Seguimiento de pedidos</span></div><div><strong>Ayuda e información</strong><a href="./recargar-free-fire-cuba.html">Guía de recarga</a><span>No compartas tu contraseña de juego</span><span>Pagos y recargas con revisión manual</span></div></div><p class="footer-legal">Tienda El Castillo es un servicio independiente. No está afiliada ni respaldada por Garena. Las marcas y juegos pertenecen a sus respectivos propietarios.</p></footer>
 </section>
@@ -831,16 +831,20 @@ async function addProduct(){
 const orderStatuses=[
  {value:"pending",label:"Pendiente"},
  {value:"payment_review",label:"Verificando pago"},
- {value:"processing",label:"Pago confirmado · pendiente de envío"},
- {value:"completed",label:"Completado"},
- {value:"rejected",label:"Rechazado"}
+ {value:"processing",label:"Pago confirmado · pendiente de recarga"},
+ {value:"completed",label:"Recarga completada"},
+ {value:"failed",label:"Recarga fallida · revisar"},
+ {value:"rejected",label:"Pedido rechazado"},
+ {value:"cancelled",label:"Cancelado"}
 ];
 function customerOrderProgress(status){
  if(status==="rejected") return '<p class="track-note">Pedido rechazado. Contacta con la tienda por tu canal habitual antes de volver a pagar.</p>';
+ if(status==="failed") return '<p class="track-note">Central One informó que la recarga no se pudo completar. No marques este pedido como entregado. Contacta con Tienda El Castillo para revisar la devolución de tu pago o una nueva compra.</p>';
+ if(status==="cancelled") return '<p class="track-note">La orden de recarga fue cancelada. Contacta con Tienda El Castillo para revisar tu pago.</p>';
  const steps=[["pending","Recibido"],["payment_review","Pago"],["processing","Recarga"],["completed","Listo"]];
  const pos=Math.max(0,steps.findIndex(s=>s[0]===status));
  const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#2468f2':'#d9e3f4')+';font-size:11px">'+s[1]+'</span>').join("");
- const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"Pago confirmado. La recarga está pendiente de envío por la tienda.",completed:"La recarga aparece como completada. ¡Gracias por comprar!"};
+ const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando el pago.",processing:"Pago confirmado. Estamos enviando la recarga a Central One o esperando su entrega.",completed:"Central One confirmó la entrega de tu recarga. ¡Gracias por comprar!"};
  return '<div style="margin:12px 0">'+bar+'</div><p class="track-note">'+(notes[status]||"Estamos revisando tu pedido.")+'</p>';
 }
 function statusText(value){
@@ -877,6 +881,62 @@ async function updateOrderStatus(orderId,selectId){
  }
 }
 
+
+async function requestCentralOneOrder(action,orderId){
+ if(currentProfile?.role!=="admin"||!currentUser||!db)throw new Error("Solo el administrador puede gestionar recargas de Central One.");
+ const {data:sessionData,error:sessionError}=await db.auth.getSession();
+ const accessToken=sessionData?.session?.access_token;
+ if(sessionError||!accessToken)throw new Error("No encontramos una sesión activa. Cierra sesión y vuelve a entrar.");
+ const response=await fetch(STORE_SUPABASE_URL+"/functions/v1/central-one-order",{
+  method:"POST",
+  headers:{"Content-Type":"application/json","Authorization":"Bearer "+accessToken,"apikey":STORE_SUPABASE_KEY},
+  body:JSON.stringify({action,order_id:orderId})
+ });
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(result?.message||result?.error||("Error HTTP "+response.status));
+ return result;
+}
+async function authorizeCentralOneOrder(orderId,orderCode){
+ if(currentProfile?.role!=="admin"||!currentUser||!orderId)return;
+ const accepted=window.confirm(
+  "AUTORIZAR RECARGA REAL\n\nPedido "+(orderCode||orderId)+"\n\nSe enviará a Central One y se reservará saldo real de tu cuenta. Esta acción no es una simulación.\n\n¿Aceptas descontar/reservar el saldo y realizar esta recarga?"
+ );
+ if(!accepted)return;
+ const button=document.querySelector('[data-provider-submit][data-order-id="'+CSS.escape(orderId)+'"]');
+ if(button){button.disabled=true;button.textContent="Enviando a Central One…";}
+ $("orderadminmsg").textContent="Autorización en curso. No cierres la página ni pulses otra vez.";
+ try{
+  const result=await requestCentralOneOrder("submit",orderId);
+  $("orderadminmsg").textContent=result.already_submitted
+   ?"Este pedido ya estaba enviado. No se creó otra recarga."
+   :"Pedido enviado a Central One. Estado: "+(result.provider_status||"recibido")+(result.reference_code?" · "+result.reference_code:"")+".";
+  await loadAllOrders();
+  await loadMyOrders();
+ }catch(e){
+  $("orderadminmsg").textContent="No se pudo confirmar el envío: "+(e.message||"error desconocido")+". Revisa el estado antes de volver a autorizar.";
+  await loadAllOrders();
+ }finally{
+  const current=document.querySelector('[data-provider-submit][data-order-id="'+CSS.escape(orderId)+'"]');
+  if(current){current.disabled=false;current.textContent="Reintentar autorización segura";}
+ }
+}
+async function refreshCentralOneOrder(orderId){
+ if(currentProfile?.role!=="admin"||!currentUser||!orderId)return;
+ const button=document.querySelector('[data-provider-refresh][data-order-id="'+CSS.escape(orderId)+'"]');
+ if(button){button.disabled=true;button.textContent="Consultando…";}
+ $("orderadminmsg").textContent="Consultando el estado real del pedido en Central One…";
+ try{
+  const result=await requestCentralOneOrder("refresh",orderId);
+  $("orderadminmsg").textContent="Estado actualizado desde Central One: "+(result.provider_status||"sin estado")+(result.reference_code?" · "+result.reference_code:"")+".";
+  await loadAllOrders();
+  await loadMyOrders();
+ }catch(e){
+  $("orderadminmsg").textContent="No se pudo consultar Central One: "+(e.message||"error desconocido");
+ }finally{
+  const current=document.querySelector('[data-provider-refresh][data-order-id="'+CSS.escape(orderId)+'"]');
+  if(current){current.disabled=false;current.textContent="Actualizar estado en Central One";}
+ }
+}
 
 async function requestCentralOneRead(action){
  if(currentProfile?.role!=="admin"||!currentUser||!db)throw new Error("Solo el administrador puede consultar Central One.");
@@ -1093,31 +1153,61 @@ async function loadAllOrders(){
  const cards=await Promise.all((data||[]).map(async(o,i)=>{
   const selectId="order-status-"+i;
   const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
-  const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return `<option value="${value}">${item.label}</option>`;}).join("");
+  const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return '<option value="'+value+'">'+(item?.label||value)+'</option>';}).join("");
   const actionLabel=o.status==="payment_review"?"Confirmar pago":"Rechazar pedido";
   let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
    const signed=await db.storage.from("payment-proofs").createSignedUrl(o.proof_path,600);
    proofLink=signed.error?'<span class="subtle">No se pudo abrir el comprobante</span>':'<a href="'+clean(signed.data.signedUrl)+'" target="_blank" rel="noopener">Ver comprobante (10 min)</a>';
   }
-  return `<div class="order-card">
-   <b>${clean(o.order_code)}</b>
-   <div class="order-detail">${clean(o.game)} – ${clean(o.package_name)}<br>
-   Jugador: ${clean(o.player_id)} ${o.player_name?"("+clean(o.player_name)+")":""}<br>
-   Precio: ${money(o.price)} ${clean(o.payment_method)}<br>
-   Referencia / transferencia: ${clean(o.payment_reference||"No indicada")}<br>
-   Comprobante: ${proofLink}<br>
-   Estado actual: <span class="status">${statusText(o.status)}</span></div>
-   ${allowed.length?'<div class="order-actions"><select id="'+selectId+'" aria-label="Acción para pedido '+clean(o.order_code)+'">'+options+'</select><button type="button" data-update-order data-order-id="'+clean(o.id)+'" data-select-id="'+selectId+'">'+actionLabel+'</button></div>':(o.status==="processing"?'<p class="track-note">Pago confirmado. La recarga espera tu autorización de débito en Central One; la integración de compra requiere habilitar orders:write.</p>':'')}
-   ${o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':''}
-  </div>`;
+  const providerStatus=String(o.central_one_status||"not_submitted");
+  const providerDate=o.central_one_submitted_at?new Date(o.central_one_submitted_at).getTime():0;
+  const staleSubmitting=providerStatus==="submitting"&&providerDate>0&&(Date.now()-providerDate)>90000;
+  const canAuthorize=o.status==="processing"&&Boolean(o.payment_confirmed_at||o.payment_source==="wallet"&&o.paid_at)&&
+   o.player_id_validated===true&&Boolean(o.provider_product_id)&&!o.central_one_order_id&&
+   (["not_submitted","unknown","retryable","rejected"].includes(providerStatus)||staleSubmitting);
+  const canRefresh=Boolean(o.central_one_order_id);
+  let providerInfo="";
+  if(o.central_one_order_id){
+   providerInfo='<p class="track-note"><strong>Central One:</strong> '+clean(providerStatus)+
+    (o.central_one_reference_code?' · Referencia: '+clean(o.central_one_reference_code):"")+
+    (o.central_one_error_message?' · '+clean(o.central_one_error_message):"")+'</p>';
+  }else if(o.central_one_error_message){
+   providerInfo='<p class="track-note"><strong>Central One:</strong> '+clean(providerStatus)+' · '+clean(o.central_one_error_message)+'</p>';
+  }else if(o.status==="processing"&&!o.player_id_validated){
+   providerInfo='<p class="track-note">Este pedido no puede enviarse automáticamente: no tiene la validación de jugador exigida por Central One.</p>';
+  }else if(providerStatus==="submitting"&&!staleSubmitting){
+   providerInfo='<p class="track-note">La autorización ya está en curso. Espera a que responda; no la repitas.</p>';
+  }
+  const providerAction=canAuthorize
+   ?'<div class="order-actions"><button type="button" data-provider-submit data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">'+(providerStatus==="not_submitted"?"Autorizar recarga y reservar saldo":"Reintentar autorización segura")+'</button></div>'
+   :canRefresh
+    ?'<div class="order-actions"><button type="button" data-provider-refresh data-order-id="'+clean(o.id)+'">Actualizar estado en Central One</button></div>'
+    :"";
+  return '<div class="order-card"><b>'+clean(o.order_code)+'</b>'+
+   '<div class="order-detail">'+clean(o.game)+' – '+clean(o.package_name)+'<br>'+
+   'Jugador: '+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'<br>'+
+   'Precio cliente: '+money(o.price)+' '+clean(o.payment_method)+'<br>'+
+   'Referencia / transferencia: '+clean(o.payment_reference||"No indicada")+'<br>'+
+   'Comprobante: '+proofLink+'<br>'+
+   'Estado actual: <span class="status">'+statusText(o.status)+'</span></div>'+
+   providerInfo+
+   (allowed.length?'<div class="order-actions"><select id="'+selectId+'" aria-label="Acción para pedido '+clean(o.order_code)+'">'+options+'</select><button type="button" data-update-order data-order-id="'+clean(o.id)+'" data-select-id="'+selectId+'">'+actionLabel+'</button></div>':"")+
+   providerAction+
+   (o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':"")+
+  '</div>';
  })).join("");
  container.innerHTML=cards;
  container.querySelectorAll("[data-update-order]").forEach(button=>{
   button.addEventListener("click",()=>updateOrderStatus(button.dataset.orderId,button.dataset.selectId));
  });
+ container.querySelectorAll("[data-provider-submit]").forEach(button=>{
+  button.addEventListener("click",()=>authorizeCentralOneOrder(button.dataset.orderId,button.dataset.orderCode));
+ });
+ container.querySelectorAll("[data-provider-refresh]").forEach(button=>{
+  button.addEventListener("click",()=>refreshCentralOneOrder(button.dataset.orderId));
+ });
 }
-
 async function logout(){
  await db.auth.signOut();pendingCheckoutAfterLogin=false;currentUser=null;currentProfile=null;
  $("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");
