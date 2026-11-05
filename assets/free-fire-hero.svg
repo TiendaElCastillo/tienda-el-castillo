@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-label="Escena original de batalla royale">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#12264a"/><stop offset=".5" stop-color="#3978c3"/><stop offset="1" stop-color="#e9a16a"/></linearGradient>
+ <linearGradient id="flare" x2="0" y2="1"><stop stop-color="#fff0b3"/><stop offset="1" stop-color="#f18c52"/></linearGradient>
+ <linearGradient id="armor" x2="1" y2="1"><stop stop-color="#8298b5"/><stop offset=".45" stop-color="#30445f"/><stop offset="1" stop-color="#15243b"/></linearGradient>
+ <linearGradient id="blue" x2="1" y2="1"><stop stop-color="#79ceff"/><stop offset="1" stop-color="#2465ca"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="15"/></filter>
+ <filter id="shadow"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="960" height="560" fill="url(#sky)"/>
+<circle cx="710" cy="135" r="84" fill="#ffdba0" opacity=".62" filter="url(#blur)"/><circle cx="710" cy="135" r="49" fill="url(#flare)" opacity=".85"/>
+<path d="M0 290 110 202l70 56 108-116 86 128 108-88 96 96 110-135 99 121 90-56 83 95v257H0Z" fill="#263b5c" opacity=".68"/>
+<path d="M0 346 123 277l88 49 107-83 93 80 113-55 108 70 112-96 99 93 117-50v275H0Z" fill="#162c4c" opacity=".75"/>
+<path d="M0 425 180 355l110 73 135-85 135 79 115-66 120 88 165-83v199H0Z" fill="#0b1c34"/>
+<g opacity=".7" fill="#e5a76f"><rect x="72" y="318" width="35" height="85"/><rect x="116" y="295" width="50" height="108"/><rect x="181" y="331" width="30" height="72"/><rect x="798" y="315" width="40" height="95"/><rect x="847" y="286" width="60" height="124"/></g>
+<path d="M0 455q120-50 225 0t218-7 221 13 296-8v107H0Z" fill="#0b172a"/>
+<g opacity=".85" stroke="#dceeff" fill="none" stroke-width="3">
+ <path d="M140 92q48-55 96 0M188 92v50M140 92 188 142 236 92" opacity=".65"/>
+ <path d="M765 55q35-39 70 0M800 55v44M765 55l35 44 35-44" opacity=".6"/>
+</g>
+<g transform="translate(525 88)">
+ <ellipse cx="185" cy="433" rx="150" ry="25" fill="#050e1c" opacity=".6" filter="url(#shadow)"/>
+ <path d="M130 125q45-55 91 0l-12 57h-65Z" fill="#1a2c48"/>
+ <path d="M138 151q38-48 78 0l-6 37h-67Z" fill="#c3d3e6"/>
+ <path d="M142 153q34-34 70 0l-8 29h-54Z" fill="#18283e"/>
+ <path d="m139 191 77-4 60 73-23 100-85 21-66-59 9-84Z" fill="url(#armor)" stroke="#9bb1ca" stroke-width="4"/>
+ <path d="m140 207-64 61 17 22 79-52M211 206l76 53-18 27-76-50" fill="#304765" stroke="#9bb1ca" stroke-width="4"/>
+ <path d="m154 372-39 88 43 8 59-87M238 361l48 94-41 14-63-81" fill="#20334d" stroke="#8097b5" stroke-width="4"/>
+ <path d="m177 218 42 3 18 50-47 22-34-31Z" fill="#416b99"/>
+ <path d="m201 242 94-52 11 15-87 67" fill="#c6d5e7" stroke="#172941" stroke-width="4"/>
+ <path d="m284 192 54-10 7 12-56 17" fill="#182a42"/>
+ <path d="m129 208-18 92 29 19 29-92" fill="#172a43"/>
+ <path d="m155 336 84 2 10 26-89 9Z" fill="#d19b5b"/>
+ <circle cx="175" cy="165" r="4" fill="#90d8ff"/><circle cx="200" cy="165" r="4" fill="#90d8ff"/>
+ <path d="M126 136q-7-19 8-30l19-12 28 5 22 19-6 23-18-12-36 10Z" fill="#182840"/>
+</g>
+<g transform="translate(55 75)" opacity=".85">
+ <path d="M0 50q64-78 128 0Z" fill="#f4d59a" opacity=".75"/>
+ <path d="M64 50v75M0 50l64 75 64-75" stroke="#f8e2bd" stroke-width="2" fill="none"/>
+ <path d="M44 125h40l-9 20H53Z" fill="#e4a75e"/>
+</g>
+<g fill="#e3f3ff" opacity=".8"><circle cx="390" cy="82" r="3"/><circle cx="440" cy="138" r="2"/><circle cx="865" cy="208" r="3"/><circle cx="318" cy="230" r="2"/></g>
+<path d="M30 510h900" stroke="#8bbcf1" stroke-width="2" opacity=".3"/>
+</svg>
