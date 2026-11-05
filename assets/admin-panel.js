@@ -39,6 +39,8 @@ function showAdminSection(key){
 function classifyOrder(card){
  const status=(card.querySelector(".status")?.textContent||"").toLowerCase();
  if(status.includes("completada")||status.includes("fallida")||status.includes("rechazado")||status.includes("cancelado"))return "history";
+ const detail=card.textContent.toLowerCase();
+ if(detail.includes("la autorización ya está en curso")||detail.includes("autorizando")||detail.includes("respuesta pendiente de confirmar"))return "provider";
  if(card.querySelector("[data-provider-submit]"))return "ready";
  if(card.querySelector("[data-provider-refresh]"))return "provider";
  if(status.includes("pendiente")||status.includes("verificando"))return "pending";
