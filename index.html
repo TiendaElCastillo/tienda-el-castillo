@@ -199,7 +199,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 </style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp></head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
-<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><img class="brand-logo" src="./assets/castle-logo.webp" alt="Logo de Tienda El Castillo" width="42" height="42"><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="currentUser?showView('profile'):openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
+<header id="siteHeader" class="site-header hidden"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><img class="brand-logo" src="./assets/castle-logo.webp" alt="Logo de Tienda El Castillo" width="42" height="42"><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="currentUser?showView('profile'):openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
 <main id="appMain">
 <section id="setup" class="hidden"><input id="url"><input id="key"><button onclick="connect()">Conectar</button></section>
 <section id="auth" class="auth-layout">
@@ -274,8 +274,8 @@ async function start(url,key){
   $("setup").classList.add("hidden");
   const {data}=await db.auth.getSession();
   if(data.session) await openStore(data.session.user);
-  else { currentUser=null; currentProfile=null; $("store").classList.add("hidden"); $("bottomNav").classList.add("hidden"); $("auth").classList.remove("hidden"); setAuthMode("login"); }
- }catch(e){$("authmsg").textContent="No pudimos conectar con la tienda. Comprueba tu conexión e inténtalo de nuevo."; $("auth").classList.remove("hidden");}
+  else { currentUser=null; currentProfile=null; $("siteHeader").classList.add("hidden"); $("store").classList.add("hidden"); $("bottomNav").classList.add("hidden"); $("auth").classList.remove("hidden"); setAuthMode("login"); }
+ }catch(e){$("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("authmsg").textContent="No pudimos conectar con la tienda. Comprueba tu conexión e inténtalo de nuevo.";$("auth").classList.remove("hidden");setAuthMode("login");}
 
  finally{setTimeout(()=>{$("brandLoader")?.classList.add("done")},280)}
 }
@@ -313,6 +313,7 @@ async function login(){
 
 async function openStore(user){
  currentUser=user;
+ $("siteHeader").classList.remove("hidden");
  $("auth").classList.add("hidden");
  $("store").classList.remove("hidden");
  showView("home");
@@ -407,8 +408,7 @@ function showView(name){
  $("bottomNav").classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});
 }
 function setAuthMode(mode){const registering=mode!=="login";$("authTitle").textContent=registering?"Crea tu cuenta":"Qué bueno verte de nuevo";$("authSubtitle").textContent=registering?"Regístrate para acceder a la tienda y guardar tus pedidos.":"Entra para consultar tus pedidos y continuar comprando.";$("fullnameWrap").classList.toggle("hidden",!registering);$("registerTab").classList.toggle("active",registering);$("loginTab").classList.toggle("active",!registering);$("authSubmit").textContent=registering?"Crear cuenta":"Iniciar sesión";$("authSubmit").onclick=registering?register:login;$("password").autocomplete=registering?"new-password":"current-password";$("authmsg").textContent=""}
-async function showGuestStore(){currentUser=null;currentProfile=null;$("auth").classList.add("hidden");$("store").classList.remove("hidden");$("adminNav").classList.add("hidden");$("bottomNav").classList.remove("hidden");showView("home");await loadProducts();await loadPaymentMethods()}
-function openAccount(){$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("auth").classList.remove("hidden");setAuthMode("login")}
+function openAccount(){$("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("auth").classList.remove("hidden");setAuthMode("login")}
 function openCheckout(productId,preferredMethod){const p=products.find(item=>String(item.id)===String(productId));if(!p)return;$("product").value=String(p.id);if(preferredMethod&&Number(priceForMethod(p,preferredMethod))>0)$("payment").value=preferredMethod;$("selectedProductText").textContent=p.game+" · "+p.name;$("ordermsg").textContent="";updateCheckoutSummary();showView("checkout")}
 function updateCheckoutSummary(){
  const p=products.find(item=>String(item.id)===$("product").value);if(!p)return;
@@ -840,7 +840,9 @@ async function loadAllOrders(){
 }
 
 async function logout(){
- await db.auth.signOut();pendingCheckoutAfterLogin=false;await showGuestStore();
+ await db.auth.signOut();pendingCheckoutAfterLogin=false;currentUser=null;currentProfile=null;
+ $("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");
+ $("auth").classList.remove("hidden");setAuthMode("login");window.scrollTo({top:0,behavior:"smooth"});
 }
 window.addEventListener("load",()=>{
  if(window.supabase&&window.supabase.createClient) start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY);
