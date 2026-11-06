@@ -228,6 +228,216 @@ window.addEventListener("DOMContentLoaded",function(){
  }
 },{once:true});
 </script>
+<style id="castle-premium-visual-2026">
+
+/* Tienda El Castillo — identidad visual premium, solo presentación (sin tocar lógica) */
+:root{
+  --bg:#f5f4ef;
+  --surface:#ffffff;
+  --ink:#18263b;
+  --muted:#6e7b8f;
+  --line:#e5e1d8;
+  --blue:#183553;
+  --blue2:#10263f;
+  --gold:#d4ad65;
+  --shadow:0 14px 36px rgba(17,35,58,.075);
+  --radius:21px;
+}
+body{background:#f5f4ef;color:#18263b}
+#appMain{max-width:1180px}
+.site-header{
+  background:rgba(15,29,48,.98);
+  border-bottom:1px solid rgba(212,173,101,.38);
+  box-shadow:0 8px 24px rgba(12,25,43,.15);
+}
+.brand-logo{border:1.5px solid #d4ad65;box-shadow:0 0 0 3px rgba(212,173,101,.13),0 6px 16px rgba(0,0,0,.22)}
+.brand-name strong{color:#fff;letter-spacing:.01em}
+.brand-name span{color:#d9bd87;letter-spacing:.18em}
+.header-btn{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#f7f8fb}
+.header-btn.primary{background:linear-gradient(135deg,#f0d497,#d4ad65);border-color:#d4ad65;color:#15243a;box-shadow:0 5px 14px rgba(0,0,0,.12)}
+.header-btn:focus-visible,.header-btn:hover{border-color:#d4ad65}
+main{padding-top:20px}
+.promo-strip{
+  background:linear-gradient(110deg,#132b46,#1a3a5b);
+  color:#f7f1e5;
+  border:1px solid rgba(212,173,101,.55);
+  border-radius:15px;
+  padding:11px 15px;
+  box-shadow:0 8px 20px rgba(17,35,58,.08);
+}
+.promo-crown{color:#e6c37e}
+.promo-live{color:#e6d5b4}
+.promo-live i{background:#54bd8a;box-shadow:0 0 0 3px rgba(84,189,138,.16)}
+.search-input{background:#fff;border-color:#dedbd2;border-radius:15px;box-shadow:0 4px 13px rgba(17,35,58,.035)}
+.search-input:focus{border-color:#c49a50;box-shadow:0 0 0 3px rgba(212,173,101,.17)}
+.hero{
+  background:
+    radial-gradient(circle at 85% 8%,rgba(212,173,101,.2),transparent 29%),
+    linear-gradient(118deg,#101f33 0%,#173653 57%,#254d70 100%);
+  border:1px solid rgba(212,173,101,.48);
+  border-radius:27px;
+  min-height:290px;
+  padding:34px 35px;
+  box-shadow:0 20px 44px rgba(16,37,61,.19);
+}
+.hero-eyebrow{border-color:rgba(227,194,130,.55);background:rgba(212,173,101,.13);color:#f2dba9}
+.hero h1{font-size:clamp(30px,4.5vw,46px);letter-spacing:-.045em;line-height:1.03}
+.hero p{color:#e0e8f0;line-height:1.6}
+.hero-visual{
+  border:1px solid rgba(230,199,141,.48);
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 14px 28px rgba(0,0,0,.2);
+  min-height:205px;
+}
+.hero-visual-copy{padding:12px 13px;border-radius:13px;background:rgba(9,22,38,.68);backdrop-filter:blur(8px)}
+.hero-visual-copy span{color:#e7c98d}
+.hero-buttons .primary-btn,
+.catalog-product .primary-btn,
+#authSubmit,
+#placeOrderBtn{
+  background:linear-gradient(135deg,#f0d99e,#d2a957);
+  border:1px solid #d2a957;
+  color:#172941;
+  box-shadow:0 8px 18px rgba(171,127,51,.18);
+}
+.hero-buttons .primary-btn:hover,
+.catalog-product .primary-btn:hover,
+#authSubmit:hover,
+#placeOrderBtn:not(:disabled):hover{filter:brightness(1.035);transform:translateY(-1px)}
+.hero-buttons .secondary-btn{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.3);color:#fff}
+.payment-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#f7f2e8}
+.benefit-row{gap:12px;margin:18px 0 25px}
+.benefit{
+  min-height:82px;
+  border:1px solid #e5e0d5;
+  border-radius:18px;
+  background:linear-gradient(150deg,#fff,#fbfaf7);
+  box-shadow:0 7px 20px rgba(17,35,58,.045);
+}
+.benefit-icon{background:#f5eedf;border:1px solid #ead9b8;color:#87652b}
+.benefit strong{color:#20344f;font-size:12px}
+.benefit span{color:#728096}
+.section{margin:28px 0}
+.section-head{margin-bottom:15px}
+.section-head h2{color:#1a2f49;font-size:22px;letter-spacing:-.035em}
+.section-head p{color:#768397}
+.text-link{color:#87652b}
+.game-tile,.gift-tile{
+  border:1px solid #e4dfd4;
+  border-radius:20px;
+  box-shadow:0 8px 20px rgba(17,35,58,.055);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.game-tile:hover,.gift-tile:hover{transform:translateY(-3px);border-color:#d5b778;box-shadow:0 14px 26px rgba(17,35,58,.1)}
+.tile-status{background:#f5eddc;color:#7b5a24}
+.catalog-product{
+  border:1px solid #e4dfd4;
+  border-radius:20px;
+  padding:15px;
+  box-shadow:0 8px 22px rgba(17,35,58,.055);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.catalog-product:hover{transform:translateY(-2px);border-color:#d5b778;box-shadow:0 14px 27px rgba(17,35,58,.095)}
+.catalog-product h3{color:#1b304b;font-size:15px;letter-spacing:-.015em;line-height:1.3}
+.catalog-product p{color:#728096;line-height:1.5}
+.product-head{margin-bottom:5px}
+.product-badge{background:#eef7f1;color:#28734c}
+.provider-region-tag{background:#f6efdf;color:#80612d}
+.product-prices{gap:8px}
+.price-option{border:1px solid #e9e3d8;border-radius:12px;background:#fbfaf7;padding:9px}
+.price-option small{color:#7c8796}
+.price-option strong{color:#213b59}
+.catalog-product .primary-btn{border-radius:13px}
+.panel,.auth-panel{
+  border:1px solid #e4dfd5;
+  border-radius:22px;
+  box-shadow:0 12px 30px rgba(17,35,58,.055);
+}
+.how-panel{background:linear-gradient(145deg,#fff,#fbfaf7)}
+.how-step{border-color:#e8e1d3;background:linear-gradient(160deg,#fff,#faf8f2)}
+.how-number{color:#a47a32}
+.how-icon{background:#f5eedf;color:#88652b}
+.site-footer{
+  margin-top:34px;
+  padding:25px 20px 18px;
+  border:1px solid rgba(212,173,101,.35);
+  border-radius:22px 22px 0 0;
+  background:linear-gradient(135deg,#12253d,#1a3855);
+  color:#d7e0ea;
+}
+.footer-brand strong{color:#fff}
+.footer-brand span,.footer-columns span{color:#c0ccda}
+.footer-columns strong{color:#e7c88d}
+.footer-columns a{color:#f5f0e6}
+.footer-columns a:hover{color:#f0d18f}
+.footer-legal{color:#aebdce}
+.bottom-nav{
+  background:rgba(255,255,255,.98);
+  border-top:1px solid #d9c49b;
+  box-shadow:0 -8px 24px rgba(17,35,58,.07);
+}
+.nav-item{color:#7f8a9a}
+.nav-item.active{background:#f5eedf;color:#815f27}
+.nav-item .nav-icon{color:inherit}
+.primary-btn{background:linear-gradient(135deg,#f0d99e,#d2a957);color:#172941;box-shadow:0 7px 16px rgba(171,127,51,.16)}
+.secondary-btn{border:1px solid #dcd6ca;background:#fff;color:#25405f}
+.field input,.field select,.search-input,textarea{
+  border-color:#dedbd2;
+  border-radius:13px;
+  background:#fff;
+}
+.field input:focus,.field select:focus,textarea:focus{border-color:#c49a50;outline:0;box-shadow:0 0 0 3px rgba(212,173,101,.16)}
+.auth-visual{
+  background:
+    radial-gradient(circle at 90% 8%,rgba(212,173,101,.2),transparent 32%),
+    linear-gradient(145deg,#101f33 0%,#173653 65%,#244b6c 100%);
+  border:1px solid rgba(212,173,101,.42);
+}
+.auth-visual .eyebrow{border-color:rgba(227,194,130,.55);background:rgba(212,173,101,.13);color:#f2dba9}
+.auth-panel h2{color:#192f49}
+.auth-tabs{background:#f4f0e7}
+.auth-tabs button.active{color:#735420;box-shadow:0 3px 10px rgba(108,82,38,.1)}
+.msg{border-radius:12px}
+:focus-visible{outline-color:rgba(194,151,72,.75)}
+#admin .admin-heading{
+  background:radial-gradient(circle at 92% 12%,rgba(255,255,255,.18),transparent 30%),linear-gradient(125deg,#101f33,#173653 68%,#285170);
+  border:1px solid rgba(212,173,101,.38);
+}
+#admin .admin-kicker{color:#f0d18f}
+#admin .admin-tab.active{background:linear-gradient(135deg,#e8ce96,#d2a957);border-color:#d2a957;color:#1a2d45;box-shadow:0 8px 18px rgba(171,127,51,.18)}
+#admin .order-actions button,#admin [data-provider-submit],#admin [data-provider-refresh]{background:linear-gradient(135deg,#e8ce96,#d2a957);color:#1a2d45;box-shadow:0 6px 14px rgba(171,127,51,.15)}
+@media(max-width:760px){
+  .hero{grid-template-columns:1fr .6fr;gap:12px;padding:25px 21px;min-height:235px}
+  .hero-visual{min-height:150px}
+  .benefit-row{grid-template-columns:1fr;gap:8px}
+  .benefit{min-height:67px}
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .catalog-grid,.gift-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .site-footer{padding:20px 15px 16px}
+}
+@media(max-width:480px){
+  .site-header{height:64px}
+  .header-inner{padding-inline:13px}
+  .header-btn{padding:8px 10px;font-size:12px}
+  main{padding:13px 12px 28px}
+  .promo-strip{font-size:10px;padding:9px 10px}
+  .hero{grid-template-columns:1fr;padding:22px 17px;border-radius:22px}
+  .hero h1{font-size:30px}
+  .hero-visual{min-height:145px;margin-top:7px}
+  .benefit{padding:11px}
+  .section-head h2{font-size:19px}
+  .catalog-product{padding:11px}
+  .catalog-product h3{font-size:13px}
+  .catalog-product p{min-height:0}
+  .site-footer{border-radius:19px 19px 0 0}
+  #admin .admin-tabs{top:64px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
