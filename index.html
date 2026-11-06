@@ -274,7 +274,7 @@ window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=do
 function resetCastleCaptcha(){window.castleCaptchaToken=null;if(window.turnstile&&document.getElementById("castleTurnstile")){try{window.turnstile.reset("#castleTurnstile")}catch(e){}}}
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null;
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1264,10 +1264,16 @@ async function testCentralOneConnection(){
 
 function stopAdminPaymentPolling(){
  if(adminOrderPoll){clearInterval(adminOrderPoll);adminOrderPoll=null;}
+ if(adminOrderChannel&&db){try{db.removeChannel(adminOrderChannel);}catch(e){}adminOrderChannel=null;}
 }
 function startAdminPaymentPolling(){
  stopAdminPaymentPolling();
  if(currentProfile?.role!=="admin")return;
+ if(db&&currentUser){
+  adminOrderChannel=db.channel("castle-admin-orders-"+currentUser.id)
+   .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>{if(currentProfile?.role==="admin")loadAllOrders({silent:true});})
+   .subscribe();
+ }
  adminOrderPoll=setInterval(()=>{
   if(currentProfile?.role==="admin"&&document.visibilityState!=="hidden")loadAllOrders({silent:true});
  },30000);
@@ -1302,7 +1308,8 @@ function notifyNewPaymentReviews(rows){
  try{localStorage.setItem("castle_payment_reviews_seen",JSON.stringify([...seen,...fresh.map(o=>o.id)].slice(-500)));}catch(e){}
  fresh.forEach(o=>{
   const label="Nuevo pago recibido · Pedido "+String(o.order_code||"");
-  const detail=String(o.game||"")+" · "+String(o.package_name||"")+" · "+money(o.price)+" "+String(o.payment_method||"");
+  const proofDetail=o.payment_reference?" · Tx "+String(o.payment_reference):o.payment_reported_amount?" · Saldo declarado "+money(o.payment_reported_amount)+" CUP":"";
+  const detail=String(o.game||"")+" · "+String(o.package_name||"")+" · "+money(o.price)+" "+String(o.payment_method||"")+" · Remitente "+String(o.payment_sender_phone||"sin número")+proofDetail;
   showPaymentAlertToast(label+" — "+detail+". Entra a Pedidos y verifica el dinero.");
   if("Notification" in window&&Notification.permission==="granted"){
    try{new Notification("Tienda El Castillo: pago por revisar",{body:label+" · "+detail,icon:"./assets/castle-logo.webp",tag:"castle-payment-"+o.id});}catch(e){}
