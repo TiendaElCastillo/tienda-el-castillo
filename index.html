@@ -237,7 +237,13 @@ window.addEventListener("DOMContentLoaded",function(){
 <section id="auth" class="auth-layout">
  <div class="auth-visual"><span class="eyebrow">♛ TIENDA EL CASTILLO</span><h1>Recarga tu juego. Disfruta más.</h1><p>Diamantes de Free Fire y recargas digitales desde Cuba. Haz tu pedido por ID y consulta su estado desde tu cuenta.</p><div class="auth-benefits"><span>✓ Transferencia CUP</span><span>✓ Saldo móvil</span><span>✓ Seguimiento de pedidos</span></div><div class="orb"><img src="./assets/castle-logo.webp" alt="Emblema de Tienda El Castillo" width="78" height="78"></div></div>
  <div class="auth-panel"><h2 id="authTitle">Inicia sesión</h2><p class="subtle" id="authSubtitle">Accede a tu cuenta para consultar los paquetes de Free Fire, realizar pedidos y seguir cada solicitud.</p><div class="auth-tabs"><button id="registerTab" type="button" onclick="setAuthMode('register')">Crear cuenta</button><button id="loginTab" type="button" class="active" onclick="setAuthMode('login')">Iniciar sesión</button></div>
-  <div class="field" id="fullnameWrap"><label for="fullname">Tu nombre</label><input id="fullname" autocomplete="name" placeholder="Cómo te llamas"></div><div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="nombre@correo.com"></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña"></div><div class="field"><div id="castleTurnstile" aria-label="Verificación de seguridad"></div></div><button class="primary-btn block-btn" id="authSubmit" type="button" onclick="register()">Crear cuenta</button><p id="authmsg" class="msg" role="status" aria-live="polite"></p><p class="subtle">No necesitas compartir la contraseña de tu juego. Para una recarga solo te pediremos los datos necesarios del pedido, como tu ID de jugador.</p><p class="auth-legal">Antes de continuar, revisa nuestra <a href="#privacidad" onclick="openPublicInfo('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="openPublicInfo('terms');return false">Términos de compra</a>.</p>
+  <div class="field" id="fullnameWrap"><label for="fullname">Tu nombre</label><input id="fullname" autocomplete="name" placeholder="Cómo te llamas"></div><div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="nombre@correo.com"></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña"></div><div class="field"><div id="castleTurnstile" aria-label="Verificación de seguridad"></div></div><button class="primary-btn block-btn" id="authSubmit" type="button" onclick="register()">Crear cuenta</button><p id="authmsg" class="msg" role="status" aria-live="polite"></p>
+  <div id="resendConfirmationWrap" class="auth-resend-box hidden">
+   <strong>¿No recibiste el correo?</strong>
+   <p>Revisa también Spam o Correo no deseado. Para reenviar la confirmación, completa primero la verificación de seguridad.</p>
+   <button id="resendConfirmationBtn" class="secondary-btn block-btn" type="button" onclick="resendSignupConfirmation()">Reenviar correo de confirmación</button>
+   <p id="resendConfirmationMsg" class="msg" role="status" aria-live="polite"></p>
+  </div><p class="subtle">No necesitas compartir la contraseña de tu juego. Para una recarga solo te pediremos los datos necesarios del pedido, como tu ID de jugador.</p><p class="auth-legal">Antes de continuar, revisa nuestra <a href="#privacidad" onclick="openPublicInfo('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="openPublicInfo('terms');return false">Términos de compra</a>.</p>
   <p class="auth-help">¿Necesitas ayuda? <a href="#ayuda" onclick="openPublicInfo('faq');return false">Preguntas frecuentes</a> · <a href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">WhatsApp +53 51884050</a></p>
  </div>
 </section>
@@ -497,31 +503,99 @@ async function register(){
   const {data,error}=await db.auth.signUp({email,password,options:{captchaToken,data:{full_name:name},emailRedirectTo:location.origin+location.pathname}});
   if(error){$("authmsg").textContent=error.message;return}
   if(data.session){await openStore(data.user)}
-  else{$("authmsg").textContent="¡Cuenta creada! Revisa tu correo y confirma la dirección antes de iniciar sesión.";}
+  else{
+   $("authmsg").textContent="¡Cuenta creada! Te enviamos un correo para confirmar tu dirección. Abre ese mensaje y pulsa «Confirmar correo» antes de iniciar sesión. Revisa también Spam.";
+   $("resendConfirmationWrap")?.classList.remove("hidden");
+  }
  }catch(e){$("authmsg").textContent="No pudimos crear la cuenta. Comprueba tu conexión e inténtalo otra vez."}
  finally{submit.disabled=false;submit.textContent="Crear cuenta";resetCastleCaptcha()}
 }
 
+async function getCastleAuthCaptchaToken(){
+ if(window.castleCaptchaToken)return window.castleCaptchaToken;
+ const loaded=await loadCastleTurnstile();
+ if(!loaded)throw new Error("No se pudo cargar la verificación de Cloudflare. Comprueba tu conexión e inténtalo de nuevo.");
+ if(!window.castleCaptchaToken)throw new Error("Completa la verificación de seguridad que aparece debajo de la contraseña y vuelve a pulsar el botón.");
+ return window.castleCaptchaToken;
+}
+function showEmailConfirmationHelp(message){
+ $("authmsg").textContent=message;
+ $("resendConfirmationWrap")?.classList.remove("hidden");
+}
+async function resendSignupConfirmation(){
+ const email=$("email").value.trim().toLowerCase();
+ const button=$("resendConfirmationBtn"),message=$("resendConfirmationMsg");
+ const emailLooksValid=email.includes("@")&&email.lastIndexOf(".")>email.indexOf("@")+1;
+ if(!emailLooksValid){
+  if(message)message.textContent="Escribe primero el mismo correo con el que creaste la cuenta.";
+  return;
+ }
+ let captchaToken;
+ try{
+  captchaToken=await getCastleAuthCaptchaToken();
+ }catch(error){
+  if(message)message.textContent=error.message||"Completa la verificación de seguridad y vuelve a intentarlo.";
+  return;
+ }
+ if(button){button.disabled=true;button.textContent="Enviando correo…";}
+ if(message)message.textContent="Solicitando un nuevo correo de confirmación…";
+ try{
+  const {error}=await db.auth.resend({
+   type:"signup",
+   email,
+   options:{captchaToken,emailRedirectTo:location.origin+location.pathname}
+  });
+  if(error){
+   const detail=String(error.message||"");
+   if(/captcha|challenge|verification/i.test(detail))throw new Error("Cloudflare no pudo validar la solicitud. Completa de nuevo la verificación e inténtalo otra vez.");
+   if(/rate|too many|once/i.test(detail))throw new Error("Se ha solicitado un correo hace poco. Espera un momento y revisa la bandeja de entrada y Spam.");
+   throw new Error("No se pudo reenviar el correo. "+detail);
+  }
+  if(message)message.textContent="Solicitud enviada. Revisa la bandeja de entrada y Spam. Usa el enlace más reciente que recibas.";
+ }catch(error){
+  if(message)message.textContent=error.message||"No se pudo reenviar el correo. Comprueba tu conexión.";
+ }finally{
+  if(button){button.disabled=false;button.textContent="Reenviar correo de confirmación";}
+  resetCastleCaptcha();
+ }
+}
 async function login(){
  const email=$("email").value.trim().toLowerCase(),password=$("password").value;
  if(!email||!password){$("authmsg").textContent="Escribe tu correo y contraseña.";return}
- let captchaToken=window.castleCaptchaToken;
- if(!captchaToken){
-  $("authmsg").textContent="Cargando la verificación de seguridad…";
-  const loaded=await loadCastleTurnstile();
-  captchaToken=window.castleCaptchaToken;
-  if(!loaded||!captchaToken){
-   $("authmsg").textContent=loaded?"Completa la verificación de seguridad y vuelve a pulsar el botón.":"No se pudo cargar la verificación. Comprueba tu conexión e inténtalo de nuevo.";
-   return;
-  }
+ $("resendConfirmationWrap")?.classList.add("hidden");
+ let captchaToken;
+ try{
+  captchaToken=await getCastleAuthCaptchaToken();
+ }catch(error){
+  $("authmsg").textContent=error.message||"Completa la verificación de seguridad y vuelve a intentarlo.";
+  return;
  }
  const submit=$("authSubmit");submit.disabled=true;submit.textContent="Entrando…";
  try{
   const {data,error}=await db.auth.signInWithPassword({email,password,options:{captchaToken}});
-  if(error){$("authmsg").textContent=error.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":error.message;return}
+  if(error){
+   const code=String(error.code||"");
+   const detail=String(error.message||"");
+   if(code==="email_not_confirmed"||/email not confirmed/i.test(detail)){
+    showEmailConfirmationHelp("Tu cuenta ya está creada, pero falta confirmar el correo. Abre el mensaje de Supabase y pulsa el enlace de confirmación. Revisa también Spam. Puedes reenviarlo con el botón de abajo.");
+   }else if(code==="invalid_credentials"||detail==="Invalid login credentials"){
+    $("authmsg").textContent="Correo o contraseña incorrectos. Comprueba los datos e inténtalo de nuevo.";
+   }else if(code==="captcha_failed"||/captcha|challenge/i.test(detail)){
+    $("authmsg").textContent="La verificación de seguridad caducó o no se completó. Completa Cloudflare y vuelve a pulsar Iniciar sesión.";
+   }else{
+    $("authmsg").textContent="No se pudo iniciar sesión: "+detail;
+   }
+   return;
+  }
+  if(!data?.user){$("authmsg").textContent="Supabase no devolvió una sesión. Confirma tu correo e inténtalo otra vez.";return}
   await openStore(data.user);
- }catch(e){$("authmsg").textContent="No pudimos iniciar sesión. Comprueba tu conexión."}
- finally{submit.disabled=false;submit.textContent="Iniciar sesión";resetCastleCaptcha()}
+ }catch(error){
+  $("authmsg").textContent="No pudimos iniciar sesión por un problema de conexión. Tus datos siguen escritos; inténtalo de nuevo.";
+  console.error("Error de inicio de sesión:",error);
+ }finally{
+  if(submit){submit.disabled=false;submit.textContent="Iniciar sesión";}
+  resetCastleCaptcha();
+ }
 }
 
 async function openStore(user){
@@ -828,7 +902,20 @@ function showView(name){
  $("bottomNav").classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});
 }
 function openPublicInfo(name){$("auth").classList.add("hidden");$("siteHeader").classList.remove("hidden");$("store").classList.remove("hidden");showView(name||"faq");}
-function setAuthMode(mode){const registering=mode!=="login";$("authTitle").textContent=registering?"Crea tu cuenta":"Qué bueno verte de nuevo";$("authSubtitle").textContent=registering?"Regístrate para acceder a la tienda y guardar tus pedidos.":"Entra para consultar tus pedidos y continuar comprando.";$("fullnameWrap").classList.toggle("hidden",!registering);$("registerTab").classList.toggle("active",registering);$("loginTab").classList.toggle("active",!registering);$("authSubmit").textContent=registering?"Crear cuenta":"Iniciar sesión";$("authSubmit").onclick=registering?register:login;$("password").autocomplete=registering?"new-password":"current-password";$("authmsg").textContent=""}
+function setAuthMode(mode){
+ const registering=mode!=="login";
+ $("authTitle").textContent=registering?"Crea tu cuenta":"Qué bueno verte de nuevo";
+ $("authSubtitle").textContent=registering?"Regístrate para acceder a la tienda y guardar tus pedidos.":"Entra para consultar tus pedidos y continuar comprando.";
+ $("fullnameWrap").classList.toggle("hidden",!registering);
+ $("registerTab").classList.toggle("active",registering);
+ $("loginTab").classList.toggle("active",!registering);
+ $("authSubmit").textContent=registering?"Crear cuenta":"Iniciar sesión";
+ $("authSubmit").onclick=registering?register:login;
+ $("password").autocomplete=registering?"new-password":"current-password";
+ $("authmsg").textContent="";
+ $("resendConfirmationWrap")?.classList.add("hidden");
+ if($("resendConfirmationMsg"))$("resendConfirmationMsg").textContent="";
+}
 function openAccount(){$("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("auth").classList.remove("hidden");setAuthMode("login")}
 function setPlayerValidationDisplay(state,icon,message,placeholder){
  const wrap=$("playerNameWrap"),symbol=$("playerValidationIcon"),name=$("playername"),status=$("playerValidationMsg");
