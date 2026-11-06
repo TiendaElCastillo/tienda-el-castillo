@@ -328,7 +328,7 @@ function loadCastleSupabaseSdk(){
    if(!ok){script.remove();castleSupabaseSdkPromise=null;}
    resolve(Boolean(ok&&window.supabase&&window.supabase.createClient));
   };
-  const timeout=setTimeout(()=>finish(false),20000);
+  const timeout=setTimeout(()=>finish(false),45000);
   script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
   script.async=true;
   script.crossOrigin="anonymous";
