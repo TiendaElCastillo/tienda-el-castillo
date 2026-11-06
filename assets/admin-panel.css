@@ -121,3 +121,4 @@
 .privacy-consent input{width:18px!important;height:18px;min-height:18px;flex:0 0 18px;margin:1px 0 0;accent-color:#2868d7}
 .privacy-consent a{color:#205fc3;text-decoration:underline;text-underline-offset:2px}
 @media(max-width:520px){.policy-panel{padding:15px;border-radius:17px}.policy-panel p,.policy-panel li{font-size:12px}.faq-item{padding:12px 0}}
+.footer-whatsapp{display:inline-flex;align-items:center;gap:6px;width:max-content;max-width:100%;padding:7px 10px;border:1px solid #d4eadb;border-radius:999px;background:#f0faf3;color:#176b3a!important;font-weight:800!important}
