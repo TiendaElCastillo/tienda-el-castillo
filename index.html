@@ -209,7 +209,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
 @media(max-width:760px){.auth-layout{grid-template-columns:1fr;gap:12px;margin:12px auto}.auth-visual{min-height:0;padding:22px 21px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.auth-visual h1{max-width:none;font-size:clamp(27px,7vw,33px);line-height:1.08;margin:15px 0 10px}.auth-visual p{max-width:none;margin:0;font-size:14px;line-height:1.5;position:relative;z-index:2}.auth-visual .orb{display:none!important}.auth-benefits{position:static;left:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:15px;font-size:11px;line-height:1.4}.auth-panel{padding:20px}.auth-panel h2{font-size:22px}.auth-tabs{margin:17px 0}}
 @media(max-width:420px){.auth-visual{padding:20px 18px 18px;border-radius:22px}.auth-visual h1{font-size:29px}.auth-visual p{font-size:13px}.auth-benefits{gap:7px 10px;font-size:10px}.auth-panel{padding:18px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=12">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=13">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -606,7 +606,7 @@ function isPaymentMethodReady(name){
  if(!item)return false;
  if(name==="Transferencia CUP"){
   const raw=String(item.instructions||"").replace(/\s+/g," ");
-  const card=raw.match(/tarjeta\s*:?\s*([0-9][0-9-]{8,})/i)?.[1]||"";
+  const card=raw.match(/tarjeta\s*:?\s*([0-9][0-9\s-]{8,})/i)?.[1]||"";
   const confirm=raw.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]||"";
   return Boolean(card&&confirm.replace(/\D/g,"").length>=8);
  }
@@ -1004,7 +1004,7 @@ function updatePaymentInstructions(){
  const digits=raw.replace(/\s+/g," ");
  let rows="",warning="";
  if(name==="Transferencia CUP"){
-  const card=digits.match(/tarjeta\s*:?\s*([0-9][0-9-]{8,})/i)?.[1]||"";
+  const card=digits.match(/tarjeta\s*:?\s*([0-9][0-9\s-]{8,})/i)?.[1]||"";
   const confirm=digits.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Tarjeta para transferir",card,"payment-card-number");
   rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
@@ -1894,6 +1894,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=9" async></script>
+<script src="./assets/admin-panel.js?v=10" async></script>
 </body>
 </html>
