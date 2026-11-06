@@ -246,7 +246,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
   <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="field hidden"><button id="playerValidationBtn" class="secondary-btn block-btn" type="button" onclick="validatePlayerId()">Verificar ID y región con Central One</button><p id="playerValidationMsg" class="msg" role="status" aria-live="polite"></p></div><div class="field"><label for="playername">Nombre de la cuenta verificada</label><input id="playername" autocomplete="off" placeholder="Se completará tras verificar el ID" readonly></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
   <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">Móvil desde el que realizaste el pago (obligatorio)</label><input id="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej. +535XXXXXXXX" maxlength="20"></div>
-  <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Importe de saldo enviado (CUP)</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe recibido"></div>
+  <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Cantidad de saldo móvil enviada</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe recibido"></div>
   <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">Toca aquí para elegir una captura de tu teléfono</small><small class="proof-limits">JPG, PNG o WEBP · Máximo 5 MB</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
   <div class="notice checkout-safety-note"><strong>Antes de confirmar:</strong> realiza el pago con los datos indicados y adjunta una captura legible. El comprobante no confirma el pago automáticamente: revisaremos la operación antes de enviar la recarga.</div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()" disabled>Adjunta el comprobante para continuar</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
  </div></section>
@@ -748,7 +748,7 @@ async function uploadProofForOrder(orderId,method,file,reference,senderPhone,rep
  const {data:order,error:orderError}=await db.from("orders").select("id,price,payment_method,status,payment_source").eq("id",orderId).eq("user_id",currentUser.id).maybeSingle();
  if(orderError||!order)throw new Error("No se pudo comprobar el pedido de tu cuenta.");
  if(order.payment_source!=="direct"||!["pending","payment_review"].includes(order.status))throw new Error("Este pedido ya no admite comprobantes.");
- if(method==="Saldo móvil"&&(!Number.isFinite(Number(reportedAmount))||Number(reportedAmount)<=0||Math.abs(Number(reportedAmount)-Number(order.price))>0.01))throw new Error("El importe de saldo debe coincidir exactamente con el precio del paquete: "+money(order.price)+" CUP.");
+ if(method==="Saldo móvil"&&(!Number.isFinite(Number(reportedAmount))||Number(reportedAmount)<=0||Math.abs(Number(reportedAmount)-Number(order.price))>0.01))throw new Error("El importe de saldo debe coincidir exactamente con el precio del paquete: "+money(order.price)+" unidades de saldo.");
  if(method==="Transferencia CUP"&&reportedAmount!==null&&reportedAmount!==undefined&&reportedAmount!=="")throw new Error("No escribas importe manual para la transferencia bancaria.");
  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
  const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)});
@@ -809,7 +809,7 @@ async function placeOrder(){
  if(!/^\+?[0-9\s().-]+$/.test(senderPhone)||phoneDigits.length<8||phoneDigits.length>15){$("ordermsg").textContent="Escribe el móvil desde el que realizaste el pago.";return}
  const reportedAmount=method==="Saldo móvil"?Number($("reportedAmount").value):null;
  if(method==="Saldo móvil"&&(!Number.isFinite(reportedAmount)||reportedAmount<=0||Math.abs(reportedAmount-Number(price))>0.01)){
-  $("ordermsg").textContent="El importe de saldo que enviaste debe ser exactamente "+money(price)+" CUP, como el paquete elegido.";return
+  $("ordermsg").textContent="El importe de saldo que enviaste debe ser exactamente "+money(price)+" unidades de saldo, como el paquete elegido.";return
  }
  const button=$("placeOrderBtn");
  if(button){button.disabled=true;button.textContent="Creando pedido…";}
@@ -839,7 +839,7 @@ async function loadMyOrders(){
   const canUpload=o.payment_source==="direct"&&!o.proof_path&&["pending","payment_review"].includes(o.status);
   const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
    '<div class="field"><label for="retry-sender-phone-'+clean(o.id)+'">Móvil desde el que realizaste el pago</label><input id="retry-sender-phone-'+clean(o.id)+'" type="tel" inputmode="tel" placeholder="+535XXXXXXXX"></div>'+
-   (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Número de transferencia</label><input id="retry-reference-'+clean(o.id)+'" inputmode="numeric" placeholder="Número de transferencia"></div>':'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">Importe de saldo enviado (CUP)</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="1" step="0.01" inputmode="decimal" placeholder="Importe exacto"></div>')+
+   (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Número de transferencia</label><input id="retry-reference-'+clean(o.id)+'" inputmode="numeric" placeholder="Número de transferencia"></div>':'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">Cantidad de saldo móvil enviada</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="1" step="0.01" inputmode="decimal" placeholder="Importe exacto"></div>')+
    '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
   const providerInfo=o.central_one_reference_code
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
@@ -949,7 +949,7 @@ async function loadAdminProducts(){
  const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});
  const list=$("adminProducts");if(!list)return;
  if(result.error){list.textContent="No se pudo cargar el catálogo de administración: "+result.error.message;return}
- const rows=result.data||[];
+ const rows=result.data||[];productsForAdmin=rows;
  list.innerHTML=rows.length?rows.map(p=>"<article class=\"order-card\"><div class=\"order-code\">"+(p.active?"Activo":"Desactivado")+"</div><strong>"+clean(p.game)+" · "+clean(p.name)+"</strong><p class=\"order-detail\">Transferencia: "+money(p.price_transfer)+" CUP · Saldo: "+money(p.price_mobile)+" · USDT: "+money(p.price_usdt)+"</p><button class=\"secondary-btn\" type=\"button\" onclick=\"editProduct(\u0027"+clean(p.id)+"\u0027)\">Editar</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductActive(\u0027"+clean(p.id)+"\u0027,"+(!p.active)+")\">"+(p.active?"Desactivar":"Activar")+"</button></article>").join(""):"<p class=\"empty-note\">Todavía no hay productos cargados.</p>";
 }
 function editProduct(id){
@@ -1368,7 +1368,7 @@ function notifyNewPaymentReviews(rows){
  try{localStorage.setItem("castle_payment_reviews_seen",JSON.stringify([...seen,...fresh.map(o=>o.id)].slice(-500)));}catch(e){}
  fresh.forEach(o=>{
   const label="Nuevo pago recibido · Pedido "+String(o.order_code||"");
-  const proofDetail=o.payment_reference?" · Tx "+String(o.payment_reference):o.payment_reported_amount?" · Saldo declarado "+money(o.payment_reported_amount)+" CUP":"";
+  const proofDetail=o.payment_reference?" · Tx "+String(o.payment_reference):o.payment_reported_amount?" · Saldo declarado "+money(o.payment_reported_amount)+" unidades" :"";
   const detail=String(o.game||"")+" · "+String(o.package_name||"")+" · "+money(o.price)+" "+String(o.payment_method||"")+" · Remitente "+String(o.payment_sender_phone||"sin número")+proofDetail;
   showPaymentAlertToast(label+" — "+detail+". Entra a Pedidos y verifica el dinero.");
   if("Notification" in window&&Notification.permission==="granted"){
@@ -1423,7 +1423,7 @@ async function loadAllOrders(options={}){
    'Jugador: '+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'<br>'+
    'Precio cliente: '+money(o.price)+' '+clean(o.payment_method)+'<br>'+
    'Móvil del remitente: '+clean(o.payment_sender_phone||"No indicado")+'<br>'+
-   (o.payment_method==="Saldo móvil"?'Importe de saldo declarado: '+money(o.payment_reported_amount)+' CUP<br>':'')+
+   (o.payment_method==="Saldo móvil"?'Importe de saldo declarado: '+money(o.payment_reported_amount)+' unidades de saldo<br>':'')+
    'Número de transferencia: '+clean(o.payment_reference||"No indicado")+'<br>'+
    'Comprobante: '+proofLink+'<br>'+
    'Estado actual: <span class="status">'+statusText(o.status)+'</span></div>'+
