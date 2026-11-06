@@ -357,8 +357,20 @@ async function openStore(user){
  $("welcome").textContent="Hola, "+(currentProfile.full_name||user.email);
  $("profileEmail").textContent=user.email||"";
  if(currentProfile.role==="admin") $("adminNav").classList.remove("hidden");
- await loadProducts();
- await loadPaymentMethods();
+ // Load payment methods first: the catalogue renderer depends on this data.
+ try{await loadPaymentMethods({render:false});}
+ catch(paymentError){
+  const box=$("gamePaymentChoices");
+  if(box)box.innerHTML='<p class="empty-note">No se pudieron consultar los métodos de pago: '+clean(paymentError.message||paymentError)+'</p>';
+ }
+ try{await loadProducts();}
+ catch(productError){
+  const box=$("gamesProducts");
+  if(box)box.innerHTML='<p class="empty-note">No se pudo cargar el catálogo: '+clean(productError.message||productError)+'</p>';
+ }
+ // One final render after both datasets have been attempted.
+ try{renderProductCatalogs();updateCheckoutSummary();}
+ catch(renderError){console.error("Error al mostrar el catálogo:",renderError);const box=$("gamePaymentChoices");if(box)box.innerHTML='<p class="empty-note">Error al mostrar el catálogo: '+clean(renderError.message||renderError)+'</p>';}
  await loadMyOrders();
  if(currentProfile.role==="admin"){await loadAllOrders();await loadPricingSettings();await loadLatestCentralOneCatalog();startAdminPaymentPolling();}else stopAdminPaymentPolling();
  if(pendingCheckoutAfterLogin){pendingCheckoutAfterLogin=false;showView("checkout");}else showView("home");
@@ -565,14 +577,38 @@ function updateCheckoutSummary(){
  updatePaymentInstructions();
  updatePaymentFields();
 }
-async function loadPaymentMethods(){
- const result=await db.from("payment_methods").select("id,name,instructions,active").order("name");
- if(result.error){paymentMethods=[];const box=$("paymentInstructions");if(box)box.textContent="No se pudieron cargar las instrucciones de pago. No envíes dinero hasta confirmarlas.";renderProductCatalogs();window.updateCheckoutSubmitState?.();return}
- paymentMethods=result.data||[];
- renderPaymentMethodAdmin();
- updateCheckoutSummary();
- renderProductCatalogs();
+async function loadPaymentMethods(options={}){
+ let result;
+ try{
+  result=await db.from("payment_methods").select("id,name,instructions,active").order("name");
+ }catch(error){
+  paymentMethods=[];
+  const message="No se pudieron consultar los métodos de pago: "+(error?.message||String(error));
+  const choices=$("gamePaymentChoices");
+  if(choices)choices.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
+  const subtitle=$("gamePlansSubtitle");if(subtitle)subtitle.textContent=message;
+  const box=$("paymentInstructions");if(box)box.textContent=message;
+  window.updateCheckoutSubmitState?.();
+  throw error;
+ }
+ if(result.error){
+  paymentMethods=[];
+  const message="Error al cargar los métodos de pago: "+result.error.message;
+  const choices=$("gamePaymentChoices");
+  if(choices)choices.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
+  const subtitle=$("gamePlansSubtitle");if(subtitle)subtitle.textContent=message;
+  const box=$("paymentInstructions");if(box)box.textContent=message;
+  window.updateCheckoutSubmitState?.();
+  throw new Error(message);
+ }
+ paymentMethods=(result.data||[]).filter(item=>item.active===true&&String(item.instructions||"").trim().length>0 || currentProfile?.role==="admin");
+ if(currentProfile?.role==="admin")renderPaymentMethodAdmin();
+ if(options.render!==false){
+  try{updateCheckoutSummary();renderProductCatalogs();}
+  catch(renderError){console.error("Error al renderizar los métodos de pago:",renderError);}
+ }
  window.updateCheckoutSubmitState?.();
+ return paymentMethods;
 }
 function paymentCopyCard(label,value,extraClass=""){
  if(!value)return "";
@@ -669,9 +705,33 @@ async function togglePaymentMethod(id,active){
  if(!result.error)await loadPaymentMethods();
 }
 async function loadProducts(){
- const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
- if(error){$("gamesProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo. '+clean(error.message)+'</p>';$("giftProducts").innerHTML='<p class="empty-note">No se pudo cargar el catálogo.</p>';return;}
- products=data||[];$("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");renderProductCatalogs();updateCheckoutSummary();if(currentProfile?.role==="admin"){const all=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});productsForAdmin=all.data||[];await loadAdminProducts()}
+ try{
+  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
+  if(error){
+   products=[];
+   const message="No se pudo cargar el catálogo: "+error.message;
+   $("gamesProducts").innerHTML='<p class="empty-note">'+clean(message)+'</p>';
+   $("gamePaymentChoices").innerHTML='<p class="empty-note">'+clean(message)+'</p>';
+   $("gamePlansSubtitle").textContent=message;
+   return;
+  }
+  products=data||[];
+  $("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");
+  try{renderProductCatalogs();updateCheckoutSummary();}
+  catch(renderError){
+   console.error("Error al representar productos:",renderError);
+   $("gamesProducts").innerHTML='<p class="empty-note">Los productos llegaron desde Supabase, pero ocurrió un error al mostrarlos: '+clean(renderError.message||renderError)+'</p>';
+  }
+  if(currentProfile?.role==="admin"){
+   try{await loadAdminProducts();}
+   catch(adminError){const list=$("adminProducts");if(list)list.textContent="No se pudo cargar el catálogo administrativo: "+(adminError.message||adminError);}
+  }
+ }catch(error){
+  console.error("Error de catálogo:",error);
+  const message="Error de conexión al cargar productos: "+(error?.message||String(error));
+  const box=$("gamesProducts");if(box)box.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
+  const choices=$("gamePaymentChoices");if(choices)choices.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
+ }
 }
 function validateProofFile(file){
  if(!file)return "Selecciona la captura del comprobante.";
