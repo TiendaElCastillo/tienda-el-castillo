@@ -264,14 +264,40 @@ window.addEventListener("DOMContentLoaded",function(){
  </section>
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
- <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="player-validation-wrap hidden"><p id="playerValidationMsg" class="player-validation-message" role="status" aria-live="polite">La comprobación comenzará automáticamente al salir del campo del ID.</p></div><div class="field"><label for="playername">Nombre del jugador</label><div class="player-name-wrap" id="playerNameWrap"><span class="player-validation-icon" id="playerValidationIcon" aria-hidden="true">•</span><input id="playername" autocomplete="off" placeholder="Se mostrará al verificar el ID" readonly></div></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Nro. Transacción (obligatorio)</label><input id="reference" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="100" placeholder="Ej. AY600UJ716R999"><small id="referenceHelp" class="field-hint">Copia el código que aparece como «Nro. Transacción» en el comprobante de tu banco. Ejemplo: AY600UJ716R999. Cada pago tiene un código distinto.</small></div>
-  <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">Móvil desde el que realizaste el pago (obligatorio)</label><input id="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej. +535XXXXXXXX" maxlength="20"></div>
-  <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Cantidad de saldo móvil enviada</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe recibido"></div>
-  <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">Toca aquí para elegir una captura de tu teléfono</small><small class="proof-limits">JPG, PNG o WEBP · Máximo 5 MB</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
-  <div class="privacy-consent"><label for="privacyConsent"><input id="privacyConsent" type="checkbox" value="yes"><span>He leído y acepto la <a href="#privacidad" onclick="showView('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="showView('terms');return false">Términos de compra</a>.</span></label></div><div class="notice checkout-safety-note"><strong>Antes de confirmar:</strong> realiza el pago con los datos indicados y adjunta una captura legible. El comprobante no confirma el pago automáticamente: revisaremos la operación antes de enviar la recarga.</div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()" disabled>Adjunta el comprobante para continuar</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
- </div></section>
- <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
+ <section id="checkoutView" class="store-view hidden"><div class="panel">
+ <div class="section-head"><div><h2>Completa tu pedido</h2><p>Comprueba tu cuenta y luego realiza el pago</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div>
+ <ol class="checkout-stepper" id="checkoutStepper" aria-label="Pasos de compra">
+  <li class="active" data-checkout-step="player"><b>1</b><span>Cuenta</span></li>
+  <li data-checkout-step="payment"><b>2</b><span>Pago</span></li>
+  <li data-checkout-step="review"><b>3</b><span>Enviar</span></li>
+ </ol>
+ <div id="checkoutStagePlayer" class="checkout-stage-panel">
+  <p id="selectedProductText" class="status"></p>
+  <div class="field"><label for="product">Paquete seleccionado</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div>
+  <div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div>
+  <div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div>
+  <div id="playerValidationWrap" class="player-validation-wrap hidden"><p id="playerValidationMsg" class="player-validation-message" role="status" aria-live="polite">La comprobación comenzará automáticamente al salir del campo del ID.</p></div>
+  <div class="field"><label for="playername">Nombre de la cuenta</label><div class="player-name-wrap" id="playerNameWrap"><span class="player-validation-icon" id="playerValidationIcon" aria-hidden="true">•</span><input id="playername" autocomplete="off" placeholder="Se mostrará al verificar el ID" readonly></div></div>
+  <p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido. Comprueba que el nombre mostrado corresponde a tu cuenta.</p>
+  <button id="continueToPaymentBtn" class="primary-btn block-btn" type="button" onclick="continueToPayment()">Continuar al pago →</button>
+  <p id="checkoutPlayerMsg" class="msg" role="status" aria-live="polite"></p>
+ </div>
+ <div id="checkoutStagePayment" class="checkout-stage-panel hidden">
+  <div class="checkout-stage-title"><strong>Completa los datos de pago</strong><small>Envía la cantidad exacta y conserva el comprobante original.</small></div>
+  <div class="field"><label>Selecciona el método de pago</label><div id="checkoutPaymentMethods" class="checkout-payment-methods" role="group" aria-label="Método de pago"></div><select id="payment" class="hidden" aria-hidden="true" tabindex="-1" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option></select></div>
+  <div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div>
+  <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">¿Desde qué número haces el pago? (obligatorio)</label><input id="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+53 5XXXXXXX" maxlength="20"><small class="field-hint" id="senderPhoneHelp">Escribe el número de la línea desde la que realizaste el pago.</small></div>
+  <div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div>
+  <div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Nro. Transacción (obligatorio)</label><input id="reference" inputmode="text" autocapitalize="characters" autocomplete="off" minlength="3" maxlength="100" placeholder="Ej. AY600UJ716R999" oninput="this.value=this.value.toUpperCase().replace(/\\s/g,'')"><small id="referenceHelp" class="field-hint">Copia el código que aparece junto a «Nro. Transacción» en el comprobante del banco. Es único para cada pago.</small></div>
+  <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Cantidad exacta de saldo móvil enviada</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe exacto"></div>
+  <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Captura del comprobante (obligatoria)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">La captura debe mostrar el importe, la fecha, el destinatario y el Nro. de transacción. JPG, PNG o WEBP; máximo 5 MB.</small><small class="proof-limits">No recortes ni tapes los datos de la operación.</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
+  <div class="privacy-consent"><label for="privacyConsent"><input id="privacyConsent" type="checkbox" value="yes"><span>He leído y acepto la <a href="#privacidad" onclick="showView('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="showView('terms');return false">Términos de compra</a>.</span></label></div>
+  <div class="notice checkout-safety-note"><strong>Importante:</strong> no tenemos conexión automática con los SMS de tu banco. La captura y los datos son obligatorios; revisaremos el pago manualmente antes de autorizar la recarga. Adjuntar una imagen no confirma que el dinero haya llegado.</div>
+  <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="updateCheckoutStage('player')">← Volver a datos</button><button id="placeOrderBtn" class="primary-btn" type="button" onclick="placeOrder()" disabled>Completa los datos de pago</button></div>
+  <p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
+ </div>
+</div></section>
+<section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
  <section id="profileView" class="store-view hidden">
  <div class="panel"><div class="profile-card"><div class="profile-avatar">EC</div><div><h2 id="welcome">Mi cuenta</h2><p id="profileEmail" class="profile-email"></p></div></div><div class="section"><h3>Tu cuenta</h3><p class="subtle">Aquí puedes consultar tus pedidos y gestionar tu sesión.</p></div><button class="secondary-btn block-btn" type="button" onclick="logout()">Cerrar sesión</button></div>
 
@@ -372,7 +398,7 @@ function loadCastleTurnstile(){
 }
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="";
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds";
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -574,22 +600,44 @@ function gameProductsFor(name){const item=gameFor(name);if(!item)return [];retur
 function priceForMethod(p,method){return method==="Transferencia CUP"?p.price_transfer:method==="Saldo móvil"?p.price_mobile:method==="USDT"?p.price_usdt:0}
 function gameCurrency(item){const n=fold(item?.name||"");if(n.includes("free fire"))return {icon:"💎",unit:"diamantes"};if(n.includes("mobile legends"))return {icon:"💎",unit:"diamantes"};if(n.includes("blood strike"))return {icon:"🪙",unit:"gold"};if(n.includes("arena breakout"))return {icon:"🪙",unit:"bonos"};if(n.includes("honor of kings"))return {icon:"💎",unit:"tokens"};if(n.includes("genshin"))return {icon:"💠",unit:"cristales génesis"};if(n.includes("wuthering"))return {icon:"💠",unit:"lunites"};if(n.includes("roblox"))return {icon:"R$",unit:"Robux"};return {icon:"✦",unit:"créditos"}}
 function packageQuantity(p,item){const meta=gameCurrency(item);const amount=Number(p.amount||0);return amount>0?money(amount)+" "+meta.unit:p.name}
-function isPaymentMethodReady(name){return typeof paymentMethods!=="undefined"&&paymentMethods.some(item=>item.name===name&&item.active===true&&String(item.instructions||"").trim().length>0)}
+function isPaymentMethodReady(name){
+ if(typeof paymentMethods==="undefined")return false;
+ const item=paymentMethods.find(row=>row.name===name&&row.active===true&&String(row.instructions||"").trim().length>0);
+ if(!item)return false;
+ if(name==="Transferencia CUP"){
+  const raw=String(item.instructions||"").replace(/\s+/g," ");
+  const card=raw.match(/tarjeta\s*:?\s*([0-9][0-9-]{8,})/i)?.[1]||"";
+  const confirm=raw.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]||"";
+  return Boolean(card&&confirm.replace(/\D/g,"").length>=8);
+ }
+ return true;
+}
 function gameMethodsFor(rows){return gamePaymentCatalog.filter(method=>isPaymentMethodReady(method.name)&&rows.some(p=>Number(priceForMethod(p,method.name))>0))}
 function gamePaymentButton(method,rows){const enabled=isPaymentMethodReady(method.name)&&rows.some(p=>Number(priceForMethod(p,method.name))>0);return '<button type="button" class="game-method '+(gamePaymentMethod===method.name?'active':'')+'" '+(enabled?'':'disabled')+' aria-pressed="'+(gamePaymentMethod===method.name)+'" onclick="selectGamePaymentMethod(&quot;'+clean(method.name)+'&quot;)"><span class="method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>';}
 
+function freeFirePlanIcon(p,item){
+ const group=freeFirePackageGroup(p);
+ if(fold(item?.name||"")==="free fire"&&group==="diamonds"){
+  const premium=Number(p.amount||0)>=1000;
+  const src=premium?"diamond-chest.svg":"diamond-pile.svg";
+  const label=premium?"Paquete grande de diamantes":"Paquete de diamantes";
+  return '<img class="plan-icon-image" src="./assets/'+src+'" alt="'+label+'" loading="lazy" decoding="async" width="48" height="48">';
+ }
+ const icon=group==="booyah"?"⭐":group==="passes"?"🎟️":group==="levels"?"🏆":gameCurrency(item).icon;
+ return '<span class="plan-icon-emoji" aria-hidden="true">'+icon+'</span>';
+}
 function gamePlanCard(p,item,method){
- const meta=gameCurrency(item),price=Number(priceForMethod(p,method)),id=clean(p.id),pay=clean(method);
+ const price=Number(priceForMethod(p,method)),id=clean(p.id),pay=clean(method);
  return '<article class="game-plan-card game-plan-clickable" data-product-id="'+id+'" data-payment-method="'+pay+'">'+
- '<div class="plan-currency">'+meta.icon+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+'</small></div>'+
+ '<div class="plan-currency">'+freeFirePlanIcon(p,item)+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+'</small></div>'+
  '<div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||"")+'</small></div>'+
- '<button class="primary-btn plan-buy" type="button" onclick="return openGamePlanCheckout(this)" data-buy-product="'+id+'" data-payment-method="'+pay+'">Comprar ahora <span aria-hidden="true">→</span></button></article>';
+ '<button class="primary-btn plan-buy" type="button" onclick="return openGamePlanCheckout(this)" data-buy-product="'+id+'" data-payment-method="'+pay+'">Comprar <span aria-hidden="true">→</span></button></article>';
 }
 function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
- const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'./assets/free-fire-hero.svg\'">':'<span>'+item.icon+'</span>';
+ const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\\'./assets/free-fire-hero.svg\\'">':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
@@ -602,17 +650,31 @@ function renderGameDetail(){
   const subgroup=(title,list)=>list.length?'<section class="ff-subgroup"><h4>'+title+'</h4><div class="ff-package-list">'+cards(sortPackages(list))+'</div></section>':"";
   const compartment=(id,title,description,icon,list,content)=>'<section class="ff-compartment ff-compartment-'+id+'"><header class="ff-compartment-head"><span class="ff-compartment-icon" aria-hidden="true">'+icon+'</span><div class="ff-compartment-copy"><span class="ff-compartment-kicker">FREE FIRE</span><h3>'+title+'</h3><p>'+description+'</p></div><span class="ff-compartment-count">'+list.length+'</span></header><div class="ff-compartment-body">'+content+'</div></section>';
   const passContent=subgroup("Pases semanales y mensuales",passes.filter(p=>freeFirePackageGroup(p)==="passes"))+subgroup("Pase Booyah",passes.filter(p=>freeFirePackageGroup(p)==="booyah"));
-  const levelContent=levels.length?'<div class="ff-package-list">'+cards(levels)+'</div>':"";
+  const extraContent=(passes.length?compartment("passes","Pases y tarjetas","Pases semanales, mensuales y Booyah","🎟️",passes,passContent):"")+
+   (levels.length?compartment("levels","Mejoras de nivel","Paquetes para subir de nivel","🏆",levels,'<div class="ff-package-list">'+cards(levels)+'</div>'):"");
+  const activeCategory=activeFreeFireCategory==="extra"?"extra":"diamonds";
+  const totalExtra=passes.length+levels.length;
   $("gameDetailPlans").innerHTML=
    '<div class="ff-browser-head"><div><span class="ff-eyebrow">CATÁLOGO FREE FIRE</span><h2>Elige tu paquete</h2><p>Precios según el método de pago seleccionado</p></div><span class="ff-total">'+plans.length+' opciones</span></div>'+
-   '<div class="ff-compartment-grid">'+
-    compartment("diamonds","Diamantes","Recargas de diamantes para tu cuenta","💎",diamonds,diamonds.length?'<div class="ff-package-list">'+cards(diamonds)+'</div>':empty("No hay paquetes de diamantes para este pago"))+
-    compartment("passes","Pases","Pases semanales, mensuales y Booyah","🎟️",passes,passContent||empty("No hay pases disponibles para este pago"))+
-    (levels.length?compartment("levels","Mejoras de nivel","Paquetes para subir de nivel","🏆",levels,levelContent):"")+
-   '</div>';
- }else $("gameDetailPlans").innerHTML='<div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
+   '<div class="free-fire-category-tabs" role="tablist" aria-label="Categorías de Free Fire">'+
+    '<button type="button" class="free-fire-category-tab '+(activeCategory==="diamonds"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="diamonds")+'" aria-controls="freeFireDiamondsPanel" onclick="selectFreeFireCategory(\\'diamonds\\')"><span>💎 Diamantes</span><b>'+diamonds.length+'</b></button>'+
+    '<button type="button" class="free-fire-category-tab '+(activeCategory==="extra"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="extra")+'" aria-controls="freeFireExtraPanel" onclick="selectFreeFireCategory(\\'extra\\')"><span>🎁 Ofertas extra</span><b>'+totalExtra+'</b></button>'+
+   '</div>'+
+   '<section id="freeFireDiamondsPanel" class="free-fire-category-panel '+(activeCategory==="diamonds"?"active":"")+'" role="tabpanel">'+
+    compartment("diamonds","Diamantes","Paquetes de diamantes para tu cuenta","💎",diamonds,diamonds.length?'<div class="ff-package-list">'+cards(diamonds)+'</div>':empty("No hay paquetes de diamantes para este pago"))+
+   '</section>'+
+   '<section id="freeFireExtraPanel" class="free-fire-category-panel '+(activeCategory==="extra"?"active":"")+'" role="tabpanel">'+
+    (extraContent||empty("No hay ofertas extra para este método de pago"))+
+   '</section>';
+ }else{
+  $("gameDetailPlans").innerHTML='<div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
+ }
  $("gamePlansTitle").textContent=fold(item.name)==="free fire"?"Paquetes de Free Fire":"Planes disponibles";
  $("gamePlansSubtitle").textContent=methods.length?"Precios en "+gamePaymentMethod:"Sin métodos de pago disponibles";
+}
+function selectFreeFireCategory(category){
+ activeFreeFireCategory=category==="extra"?"extra":"diamonds";
+ renderGameDetail();
 }
 function selectGamePaymentMethod(method){const rows=gameProductsFor(activeGameFilter);if(!rows.some(p=>Number(priceForMethod(p,method))>0))return;gamePaymentMethod=method;renderGameDetail();}
 function fold(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
@@ -641,7 +703,7 @@ function renderProductCatalogs(){
  const gifts=products.filter(isGiftCard);const visibleGifts=activeGiftFilter?gifts.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGiftFilter))):gifts;
  $("giftProductsTitle").textContent=activeGiftFilter?"Tarjetas de "+activeGiftFilter:"Tarjetas disponibles";$("giftProducts").innerHTML=visibleGifts.length?visibleGifts.map(productCard).join(""):'<p class="empty-note">Todavía no hay tarjetas publicadas. Consulta nuevamente más adelante.</p>';renderSearchProducts();
 }
-function chooseGame(name){activeGameFilter=name;gamePaymentMethod="Transferencia CUP";renderProductCatalogs();showView("games")}function chooseGift(name){activeGiftFilter=name;renderProductCatalogs();showView("giftcards")}function clearGameFilter(){activeGameFilter="";renderProductCatalogs();$("gamesCatalogPanel")?.scrollIntoView({behavior:"smooth",block:"start"})}
+function chooseGame(name){activeGameFilter=name;gamePaymentMethod="Transferencia CUP";activeFreeFireCategory="diamonds";renderProductCatalogs();showView("games")}function chooseGift(name){activeGiftFilter=name;renderProductCatalogs();showView("giftcards")}function clearGameFilter(){activeGameFilter="";renderProductCatalogs();$("gamesCatalogPanel")?.scrollIntoView({behavior:"smooth",block:"start"})}
 function scrollToHowItWorks(){document.getElementById("howItWorks")?.scrollIntoView({behavior:"smooth",block:"start"})}
 async function shareStore(){
  const url="https://tiendaelcastillo.github.io/tienda-el-castillo/";
@@ -668,6 +730,57 @@ async function shareStore(){
  }
 }
  function renderSearchProducts(){const term=fold($("productSearch")?.value||"");const matches=sortPackages(products.filter(p=>!isLevelUpPackage(p)&&fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).includes(term)));$("searchProducts").innerHTML=matches.length?matches.map(productCard).join():'<p class="empty-note">'+(term?"No encontramos productos con ese nombre.":"Escribe para buscar en el catálogo.")+'</p>'}
+function updateCheckoutStage(stage){
+ const current=["player","payment","review"].includes(stage)?stage:"player";
+ $("checkoutStagePlayer")?.classList.toggle("hidden",current!=="player");
+ $("checkoutStagePayment")?.classList.toggle("hidden",current!=="payment");
+ document.querySelectorAll("[data-checkout-step]").forEach(item=>{
+  const key=item.dataset.checkoutStep;
+  const order={player:0,payment:1,review:2};
+  const position=order[key]??0,active=position===(order[current]??0),done=position<(order[current]??0);
+  item.classList.toggle("active",active);item.classList.toggle("done",done);
+  if(active)item.setAttribute("aria-current","step");else item.removeAttribute("aria-current");
+ });
+ if(current==="payment"){updateCheckoutSummary();window.updateCheckoutSubmitState?.();}
+}
+async function continueToPayment(){
+ const message=$("checkoutPlayerMsg"),button=$("continueToPaymentBtn");
+ const p=products.find(item=>String(item.id)===$("product").value);
+ const player=$("player").value.trim();
+ if(!p){if(message)message.textContent="Selecciona un paquete disponible.";return}
+ if(player.length<3||player.length>64){if(message)message.textContent="Escribe un ID válido de entre 3 y 64 caracteres.";return}
+ if(p.provider_product_id){
+  if(p.provider_validation_supported!==true){if(message)message.textContent="Este paquete no tiene verificación de ID disponible y no puede continuar.";return}
+  if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
+   if(message)message.textContent="Estamos comprobando el ID. Espera el resultado y confirma que el nombre sea correcto.";
+   if(button){button.disabled=true;button.textContent="Comprobando ID…";}
+   try{await validatePlayerId();}catch(e){}
+   if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
+    if(message)message.textContent="No se pudo validar este ID. Comprueba los números y vuelve a intentarlo.";
+    if(button){button.disabled=false;button.textContent="Continuar al pago →";}
+    return;
+   }
+  }
+ }
+ if(message)message.textContent="";
+ if(button){button.disabled=false;button.textContent="Continuar al pago →";}
+ updateCheckoutSummary();
+ updateCheckoutStage("payment");
+}
+function renderCheckoutPaymentMethods(){
+ const box=$("checkoutPaymentMethods"),select=$("payment"),product=products.find(item=>String(item.id)===String($("product")?.value||""));
+ if(!box||!select)return;
+ const methods=[{name:"Transferencia CUP",icon:"▣",short:"Transferencia CUP"},{name:"Saldo móvil",icon:"▰",short:"Saldo móvil"}]
+  .filter(method=>product&&Number(priceForMethod(product,method.name))>0&&isPaymentMethodReady(method.name));
+ box.innerHTML=methods.length?methods.map(method=>'<button type="button" class="checkout-method-choice '+(select.value===method.name?"active":"")+'" aria-pressed="'+(select.value===method.name)+'" onclick="chooseCheckoutPaymentMethod(\\''+method.name+'\\')"><span class="checkout-method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>').join(""):'<p class="empty-note">No hay métodos de pago configurados para este paquete. No realices ninguna transferencia.</p>';
+}
+function chooseCheckoutPaymentMethod(name){
+ const select=$("payment");
+ if(!select||!isPaymentMethodReady(name))return;
+ select.value=name;
+ updateCheckoutSummary();
+ window.updateCheckoutSubmitState?.();
+}
 function showView(name){
  if(name==="giftcards")name="games";
  if(["orders","profile","admin"].includes(name)&&!currentUser){openAccount();$("authmsg").textContent="Inicia sesión para acceder a tu cuenta y consultar tus pedidos.";return}
@@ -789,6 +902,8 @@ function openCheckout(productId,preferredMethod){
  const productField=$("product");
  if(!productField){console.error("openCheckout: checkout form not found");return false;}
  resetPlayerValidation();
+ updateCheckoutStage("player");
+ if($("checkoutPlayerMsg"))$("checkoutPlayerMsg").textContent="";
  productField.value=String(p.id);
  $("player").value="";$("playername").value="";
  $("reference").value="";$("senderPhone").value="";$("reportedAmount").value="";
@@ -824,11 +939,12 @@ function updateCheckoutSummary(){
  const prices={"Transferencia CUP":p.price_transfer,"Saldo móvil":p.price_mobile,"USDT":p.price_usdt};
  const select=$("payment"),available=[];
  Array.from(select.options).forEach(option=>{
-  const configured=paymentMethods.some(item=>item.name===option.value&&item.active&&item.instructions);
+  const configured=isPaymentMethodReady(option.value);
   const enabled=option.value!=="Billetera CUP"&&Number(prices[option.value])>0&&configured;
   option.disabled=!enabled;option.hidden=!enabled;if(enabled)available.push(option.value)
  });
  if(available.length&&!available.includes(select.value))select.value=available[0];
+ renderCheckoutPaymentMethods();
  const method=select.value,raw=prices[method];
  const unit=method==="USDT"?"USDT":"CUP";
  const amount=Number(raw)>0?money(raw):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
@@ -886,21 +1002,23 @@ function updatePaymentInstructions(){
  const amount=name==="USDT"?product?.price_usdt:name==="Saldo móvil"?product?.price_mobile:product?.price_transfer;
  const moneyText=Number(amount)>0?money(amount)+(name==="USDT"?" USDT":" CUP"):"";
  const digits=raw.replace(/\s+/g," ");
- let rows="";
+ let rows="",warning="";
  if(name==="Transferencia CUP"){
   const card=digits.match(/tarjeta\s*:?\s*([0-9][0-9-]{8,})/i)?.[1]||"";
   const confirm=digits.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Tarjeta para transferir",card,"payment-card-number");
   rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
   rows+=paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en el campo «Móvil a confirmar» al hacer la transferencia. Así el SMS de confirmación llegará a la tienda.");
+  if(!card||confirm.replace(/\D/g,"").length<8)warning='<div class="payment-unavailable"><strong>Datos bancarios incompletos</strong><span>No hagas la transferencia todavía. La tienda debe completar la tarjeta y el móvil de confirmación.</span></div>';
  }else if(name==="Saldo móvil"){
   const phone=digits.match(/n[uú]mero\s*:?\s*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Número al que debes enviar el saldo",phone,"payment-card-number");
   rows+=paymentCopyCard("Importe exacto a enviar",moneyText,"payment-card-amount");
+  if(phone.replace(/\D/g,"").length<8)warning='<div class="payment-unavailable"><strong>Número receptor incompleto</strong><span>No envíes el saldo hasta que la tienda configure el número receptor.</span></div>';
  }else rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
  const fallback=rows.includes("payment-copy-card")?"":'<p class="payment-instructions-fallback">'+clean(raw)+'</p>';
  box.classList.remove("hidden");
- box.innerHTML='<div class="payment-panel-head"><span class="payment-panel-icon">↗</span><div><strong>Realiza tu pago</strong><small>Copia los datos y después adjunta el comprobante</small></div></div><div class="payment-copy-grid">'+rows+'</div>'+fallback;
+ box.innerHTML='<div class="payment-panel-head"><span class="payment-panel-icon">↗</span><div><strong>'+(name==="Transferencia CUP"?"Datos para Transfermóvil":"Datos para enviar saldo")+'</strong><small>Copia cada dato y paga exactamente el importe indicado</small></div></div>'+warning+'<div class="payment-copy-grid">'+rows+'</div>'+fallback;
 }
 async function copyPaymentText(value){
  try{
@@ -932,15 +1050,17 @@ function updatePaymentFields(){
  $("reportedAmountWrap")?.classList.toggle("hidden",!isMobile);
  $("proofWrap")?.classList.toggle("hidden",isWallet);
  $("reference").required=isTransfer;
+ $("reference").minLength=isTransfer?3:0;
  $("senderPhone").required=isTransfer||isMobile;
  $("reportedAmount").required=isMobile;
  $("paymentProof").required=!isWallet;
- $("referenceLabel").textContent="Nro. Transacción del comprobante (obligatorio)";
- $("senderPhoneLabel").textContent=isMobile?"Tu teléfono de origen (desde el que enviaste el saldo) (obligatorio)":"Tu teléfono de origen (desde el que hiciste la transferencia) (obligatorio)";
- $("senderPhone").placeholder="Tu móvil, por ejemplo +535XXXXXXXX";
- $("proofLabel").textContent=isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura de la transferencia (obligatoria)";
- $("proofHelp").textContent=isMobile?"Adjunta una captura clara del SMS de ETECSA que confirma el envío del saldo. JPG, PNG o WEBP; máximo 5 MB.":"Adjunta una captura clara del comprobante de transferencia. JPG, PNG o WEBP; máximo 5 MB.";
- if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Ya pagué · Enviar comprobantes";
+ $("referenceLabel").textContent="N.º de transacción del banco (obligatorio)";
+ $("senderPhoneLabel").textContent=isMobile?"¿Desde qué número enviaste el saldo? (obligatorio)":"¿Desde qué número haces la transferencia? (obligatorio)";
+ $("senderPhoneHelp").textContent=isTransfer?"Tiene que ser la misma línea con la que entras a Transfermóvil. No escribas el número receptor de la tienda.":"Escribe la línea desde la que enviaste el saldo móvil.";
+ $("senderPhone").placeholder="+53 5XXXXXXX";
+ $("proofLabel").textContent=isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura completa de Transfermóvil (obligatoria)";
+ $("proofHelp").textContent=isMobile?"La captura debe mostrar el envío, el número receptor, la fecha y el importe. JPG, PNG o WEBP; máximo 5 MB.":"La captura debe mostrar el importe, la fecha, la tarjeta destinataria y el N.º de transacción. JPG, PNG o WEBP; máximo 5 MB. La imagen se optimiza antes de subirla si pesa mucho.";
+ if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Ya transferí · Enviar a revisión";
 }
 function renderPaymentMethodAdmin(){
  const list=$("paymentAdminList");if(!list)return;
@@ -995,6 +1115,22 @@ async function loadProducts(){
   const choices=$("gamePaymentChoices");if(choices)choices.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
  }
 }
+async function optimizeProofForUpload(file){
+ if(!file||file.size<=900*1024||typeof createImageBitmap!=="function"||typeof File==="undefined")return file;
+ let bitmap;
+ try{bitmap=await createImageBitmap(file)}catch(e){return file}
+ try{
+  const maxSide=1800,scale=Math.min(1,maxSide/bitmap.width,maxSide/bitmap.height);
+  const width=Math.max(1,Math.round(bitmap.width*scale)),height=Math.max(1,Math.round(bitmap.height*scale));
+  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext("2d",{alpha:false});if(!ctx)return file;
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",0.9));
+  if(!blob||blob.size>=file.size)return file;
+  return new File([blob],file.name.replace(/\.[^.]+$/,"")+".webp",{type:"image/webp",lastModified:Date.now()});
+ }catch(e){return file}
+ finally{try{bitmap.close()}catch(e){}}
+}
 function validateProofFile(file){
  if(!file)return "Selecciona la captura del comprobante.";
  const allowed=["image/jpeg","image/png","image/webp"];
@@ -1012,10 +1148,11 @@ async function uploadProofForOrder(orderId,method,file,reference,senderPhone,rep
  if(order.payment_source!=="direct"||!["pending","payment_review"].includes(order.status))throw new Error("Este pedido ya no admite comprobantes.");
  if(method==="Saldo móvil"&&(!Number.isFinite(Number(reportedAmount))||Number(reportedAmount)<=0||Math.abs(Number(reportedAmount)-Number(order.price))>0.01))throw new Error("El importe de saldo debe coincidir exactamente con el precio del paquete: "+money(order.price)+" unidades de saldo.");
  if(method==="Transferencia CUP"&&reportedAmount!==null&&reportedAmount!==undefined&&reportedAmount!=="")throw new Error("No escribas importe manual para la transferencia bancaria.");
- const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
+ const uploadFile=await optimizeProofForUpload(file);
+ const ext=uploadFile.type==="image/jpeg"?"jpg":uploadFile.type==="image/png"?"png":"webp";
  const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)});
  const path=currentUser.id+"/"+orderId+"/"+token+"."+ext;
- const upload=await db.storage.from("payment-proofs").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
+ const upload=await db.storage.from("payment-proofs").upload(path,uploadFile,{contentType:uploadFile.type,cacheControl:"3600",upsert:false});
  if(upload.error)throw new Error("No se pudo subir la captura: "+upload.error.message);
  const result=await db.rpc("submit_payment_proof",{
   p_order_id:orderId,
@@ -1066,8 +1203,8 @@ async function placeOrder(){
  if(!paymentMethods.some(item=>item.name===method&&item.active&&item.instructions)){$("ordermsg").textContent="Este método de pago todavía no está configurado. Elige otro método o espera la confirmación de la tienda.";return}
  const file=$("paymentProof")?.files?.[0];
  const invalid=validateProofFile(file);if(invalid){$("ordermsg").textContent=invalid;return}
- const reference=$("reference").value.trim();
- if(method==="Transferencia CUP"&&!reference){$("ordermsg").textContent="Escribe el código «Nro. Transacción» que aparece en el comprobante bancario.";return}
+ const reference=$("reference").value.trim().toUpperCase().replace(/\s+/g,"");
+ if(method==="Transferencia CUP"&&(reference.length<3||reference.length>100)){$("ordermsg").textContent="Escribe el N.º de transacción del banco (entre 3 y 100 caracteres).";return}
  const senderPhone=$("senderPhone").value.trim(),phoneDigits=senderPhone.replace(/\D/g,"");
  if(!/^\+?[0-9\s().-]+$/.test(senderPhone)||phoneDigits.length<8||phoneDigits.length>15){$("ordermsg").textContent="Escribe el móvil desde el que realizaste el pago.";return}
  const reportedAmount=method==="Saldo móvil"?Number($("reportedAmount").value):null;
@@ -1086,7 +1223,8 @@ async function placeOrder(){
    await uploadProofForOrder(data.id,method,file,reference,senderPhone,reportedAmount);
   }catch(uploadError){
    $("ordermsg").textContent="El pedido "+data.order_code+" quedó creado, pero no se pudieron asociar todas las pruebas: "+(uploadError.message||"error de carga")+". No crees otro pedido. Entra en «Mis pedidos» y completa los datos y la captura pendientes.";
-   await loadMyOrders();showView("orders");return;
+   updateCheckoutStage("review");
+  await loadMyOrders();showView("orders");return;
   }
   $("ordermsg").textContent="Comprobante y datos recibidos. Pedido "+data.order_code+" enviado a revisión. La recarga se realizará únicamente después de verificar el pago.";
   $("player").value="";$("playername").value="";resetPlayerValidation();$("reference").value="";$("senderPhone").value="";$("reportedAmount").value="";$("paymentProof").value="";previewPaymentProof();
