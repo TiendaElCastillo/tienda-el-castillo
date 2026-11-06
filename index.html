@@ -244,7 +244,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="player-validation-wrap hidden"><p id="playerValidationMsg" class="player-validation-message" role="status" aria-live="polite">La comprobación comenzará automáticamente al salir del campo del ID.</p></div><div class="field"><label for="playername">Nombre de la cuenta verificada</label><div class="player-name-wrap" id="playerNameWrap"><span class="player-validation-icon" id="playerValidationIcon" aria-hidden="true">•</span><input id="playername" autocomplete="off" placeholder="Se mostrará al verificar el ID" readonly></div></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
+  <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="player-validation-wrap hidden"><p id="playerValidationMsg" class="player-validation-message" role="status" aria-live="polite">La comprobación comenzará automáticamente al salir del campo del ID.</p></div><div class="field"><label for="playername">Nombre del jugador</label><div class="player-name-wrap" id="playerNameWrap"><span class="player-validation-icon" id="playerValidationIcon" aria-hidden="true">•</span><input id="playername" autocomplete="off" placeholder="Se mostrará al verificar el ID" readonly></div></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Nro. Transacción (obligatorio)</label><input id="reference" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="100" placeholder="Ej. AY600UJ716R999"><small id="referenceHelp" class="field-hint">Copia el código que aparece como «Nro. Transacción» en el comprobante de tu banco. Ejemplo: AY600UJ716R999. Cada pago tiene un código distinto.</small></div>
   <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">Móvil desde el que realizaste el pago (obligatorio)</label><input id="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej. +535XXXXXXXX" maxlength="20"></div>
   <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Cantidad de saldo móvil enviada</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe recibido"></div>
   <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">Toca aquí para elegir una captura de tu teléfono</small><small class="proof-limits">JPG, PNG o WEBP · Máximo 5 MB</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
@@ -553,8 +553,8 @@ function syncPlayerRegionUI(){
   if(providerProduct){
    const supported=p.provider_validation_supported===true;
    $("playerRegionNote").textContent=supported
-    ?"Servidor "+String(p.provider_region||"").toUpperCase()+". Al salir del campo del ID, Central One lo comprobará automáticamente. Esta consulta no crea una recarga ni consume saldo."
-    :"Región "+String(p.provider_region||"").toUpperCase()+": la validación del proveedor no está habilitada. No se pueden crear pedidos de este paquete.";
+    ?"Servidor "+String(p.provider_region||"").toUpperCase()+". Al salir del campo, se comprobará automáticamente el ID. Esta consulta no realiza recargas ni descuenta saldo."
+    :"La verificación automática no está disponible para esta región. No se pueden crear pedidos de este paquete.";
    if(!supported)setPlayerValidationDisplay("is-error","!","La verificación automática no está disponible para esta región.","Validación no disponible");
   }else{
    $("playerRegionNote").textContent="Revisa cuidadosamente el ID del jugador y confirma que corresponde a la región de este paquete.";
@@ -573,13 +573,13 @@ async function validatePlayerId(){
   return;
  }
  if(playerId.length<3||playerId.length>64){
-  setPlayerValidationDisplay(playerId.length?"is-invalid":"",playerId.length?"×":"•",playerId.length?"ID incompleto. Escribe un ID válido y sal del campo para comprobarlo.":"Escribe tu ID y sal del campo para comprobarlo automáticamente.",playerId.length?"ID incompleto":"Esperando ID…");
+  setPlayerValidationDisplay(playerId.length?"is-invalid":"",playerId.length?"×":"•",playerId.length?"Usuario incorrecto. El ID está incompleto; revísalo.":"Escribe tu ID y sal del campo para comprobarlo automáticamente.",playerId.length?"ID incompleto":"Esperando ID…");
   validatedPlayerCheckout=null;
   return;
  }
  if(validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(p.id)&&validatedPlayerCheckout.playerId===playerId)return;
  if(!currentUser||!db){
-  setPlayerValidationDisplay("is-error","!","Inicia sesión para comprobar el ID automáticamente.","Inicia sesión para verificar");
+  setPlayerValidationDisplay("is-error","!","Inicia sesión para comprobar el usuario automáticamente.","Inicia sesión para verificar");
   return;
  }
  const requestKey=String(p.id)+"::"+playerId;
@@ -588,7 +588,7 @@ async function validatePlayerId(){
  playerValidationInFlightKey=requestKey;
  validatedPlayerCheckout=null;
  nameField.value="";
- setPlayerValidationDisplay("is-loading","…","Comprobando el ID con Central One…","Comprobando ID…");
+ setPlayerValidationDisplay("is-loading","…","Comprobando usuario…","Comprobando ID…");
  const isCurrent=()=>requestId===playerValidationRequest&&playerField.value.trim()===playerId&&String($("product")?.value||"")===String(p.id);
  let response=null,result={};
  try{
@@ -605,18 +605,18 @@ async function validatePlayerId(){
   if(!isCurrent())return;
   if(!response.ok||result?.valid!==true){
    if(response.status===422||result?.error==="player_id_not_confirmed"||result?.error==="invalid_player_id"){
-    setPlayerValidationDisplay("is-invalid","×","ID no encontrado. Revisa el número e inténtalo de nuevo.","ID no encontrado");
+    setPlayerValidationDisplay("is-invalid","×","Usuario incorrecto. ID no encontrado. Revisa el número e inténtalo de nuevo.","ID no encontrado");
     return;
    }
-   throw new Error(result?.message||"Central One no pudo comprobar el ID en este momento.");
+   throw new Error("No se pudo comprobar el usuario en este momento.");
   }
-  if(typeof result.validation_token!=="string"||!result.validation_token)throw new Error("Central One respondió, pero no se pudo asegurar la verificación. Vuelve a intentarlo.");
+  if(typeof result.validation_token!=="string"||!result.validation_token)throw new Error("No se pudo guardar la verificación. Vuelve a comprobar el ID.");
   validatedPlayerCheckout={productId:String(p.id),playerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,token:result.validation_token,validatedAt:new Date().toISOString()};
   nameField.value=result.player_name||"";
-  setPlayerValidationDisplay("is-valid","✓",result.player_name?"ID verificado por Central One. El nombre corresponde a la cuenta consultada.":"ID verificado por Central One. El proveedor no devolvió el nombre de la cuenta.","ID verificado");
+  setPlayerValidationDisplay("is-valid","✓",result.player_name?"Usuario válido. El ID corresponde a esta cuenta.":"Usuario válido. No se recibió el nombre del jugador.","ID verificado");
  }catch(e){
   if(!isCurrent())return;
-  setPlayerValidationDisplay("is-error","!","No se pudo comprobar el ID. "+(e?.message||"Comprueba la conexión e inténtalo de nuevo."),"No se pudo comprobar");
+  setPlayerValidationDisplay("is-error","!","No se pudo comprobar ahora. "+(e?.message||"Revisa tu conexión e inténtalo de nuevo."),"No se pudo comprobar");
  }finally{
   if(requestId===playerValidationRequest&&playerValidationInFlightKey===requestKey)playerValidationInFlightKey="";
  }
@@ -715,9 +715,9 @@ async function loadPaymentMethods(options={}){
  window.updateCheckoutSubmitState?.();
  return paymentMethods;
 }
-function paymentCopyCard(label,value,extraClass=""){
+function paymentCopyCard(label,value,extraClass="",note=""){
  if(!value)return "";
- return '<div class="payment-copy-card '+extraClass+'"><div class="payment-copy-meta">'+label+'</div><div class="payment-copy-value">'+clean(value)+'</div><button type="button" class="copy-payment-btn" data-copy="'+clean(value)+'">Copiar</button></div>';
+ return '<div class="payment-copy-card '+extraClass+'"><div class="payment-copy-meta">'+label+'</div><div class="payment-copy-value">'+clean(value)+'</div><button type="button" class="copy-payment-btn" data-copy="'+clean(value)+'">Copiar</button>'+(note?'<p class="payment-copy-note">'+clean(note)+'</p>':"")+'</div>';
 }
 function updatePaymentInstructions(){
  const box=$("paymentInstructions");if(!box)return;
@@ -735,7 +735,7 @@ function updatePaymentInstructions(){
   const confirm=digits.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Tarjeta para transferir",card,"payment-card-number");
   rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
-  rows+=paymentCopyCard("Número a confirmar en la transferencia",confirm,"payment-card-confirm");
+  rows+=paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en el campo «Móvil a confirmar» al hacer la transferencia. Así el SMS de confirmación llegará a la tienda.");
  }else if(name==="Saldo móvil"){
   const phone=digits.match(/n[uú]mero\s*:?\s*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Número al que debes enviar el saldo",phone,"payment-card-number");
@@ -778,9 +778,9 @@ function updatePaymentFields(){
  $("senderPhone").required=isTransfer||isMobile;
  $("reportedAmount").required=isMobile;
  $("paymentProof").required=!isWallet;
- $("referenceLabel").textContent="Número de transferencia bancaria (obligatorio)";
- $("senderPhoneLabel").textContent=isMobile?"Tu móvil, desde el que enviaste el saldo (obligatorio)":"Tu móvil, desde el que realizaste la transferencia (obligatorio)";
- $("senderPhone").placeholder="Ej. +535XXXXXXXX";
+ $("referenceLabel").textContent="Nro. Transacción del comprobante (obligatorio)";
+ $("senderPhoneLabel").textContent=isMobile?"Tu teléfono de origen (desde el que enviaste el saldo) (obligatorio)":"Tu teléfono de origen (desde el que hiciste la transferencia) (obligatorio)";
+ $("senderPhone").placeholder="Tu móvil, por ejemplo +535XXXXXXXX";
  $("proofLabel").textContent=isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura de la transferencia (obligatoria)";
  $("proofHelp").textContent=isMobile?"Adjunta una captura clara del SMS de ETECSA que confirma el envío del saldo. JPG, PNG o WEBP; máximo 5 MB.":"Adjunta una captura clara del comprobante de transferencia. JPG, PNG o WEBP; máximo 5 MB.";
  if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Ya pagué · Enviar comprobantes";
@@ -909,7 +909,7 @@ async function placeOrder(){
  const file=$("paymentProof")?.files?.[0];
  const invalid=validateProofFile(file);if(invalid){$("ordermsg").textContent=invalid;return}
  const reference=$("reference").value.trim();
- if(method==="Transferencia CUP"&&!reference){$("ordermsg").textContent="Escribe el número de transferencia para poder verificar el pago.";return}
+ if(method==="Transferencia CUP"&&!reference){$("ordermsg").textContent="Escribe el código «Nro. Transacción» que aparece en el comprobante bancario.";return}
  const senderPhone=$("senderPhone").value.trim(),phoneDigits=senderPhone.replace(/\D/g,"");
  if(!/^\+?[0-9\s().-]+$/.test(senderPhone)||phoneDigits.length<8||phoneDigits.length>15){$("ordermsg").textContent="Escribe el móvil desde el que realizaste el pago.";return}
  const reportedAmount=method==="Saldo móvil"?Number($("reportedAmount").value):null;
@@ -1546,7 +1546,7 @@ async function loadAllOrders(options={}){
    'Precio cliente: '+money(o.price)+' '+clean(o.payment_method)+'<br>'+
    'Móvil del remitente: '+clean(o.payment_sender_phone||"No indicado")+'<br>'+
    (o.payment_method==="Saldo móvil"?'Importe de saldo declarado: '+money(o.payment_reported_amount)+' unidades de saldo<br>':'')+
-   'Número de transferencia: '+clean(o.payment_reference||"No indicado")+'<br>'+
+   'Nro. Transacción: '+clean(o.payment_reference||"No indicado")+'<br>'+
    'Comprobante: '+proofLink+'<br>'+
    'Estado actual: <span class="status">'+statusText(o.status)+'</span></div>'+
    providerInfo+
