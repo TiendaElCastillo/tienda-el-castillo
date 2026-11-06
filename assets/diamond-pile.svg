@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Montón de diamantes azules">
+<defs>
+ <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eafaff"/><stop offset=".42" stop-color="#78d5ff"/><stop offset="1" stop-color="#1760d1"/></linearGradient>
+ <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".5" stop-color="#9be2ff"/><stop offset="1" stop-color="#2576e5"/></linearGradient>
+</defs>
+<path d="m7 41 8-17 12-5 12 5 9 17-21 16Z" fill="url(#a)" stroke="#2a79d7" stroke-width="1.5"/>
+<path d="m15 24 12 33 12-33-12-5Z" fill="#d8f5ff" opacity=".72"/>
+<path d="m7 41 8-17h24l9 17" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/>
+<path d="m28 9 7 9-4 10-10-1-4-9 5-8Z" fill="url(#b)" stroke="#317ed9" stroke-width="1.3"/>
+<path d="m28 9-7 9 10 10M35 18l-4 10" fill="none" stroke="#fff" stroke-width="1.3"/>
+<path d="m43 7 6 7-3 8-8-1-3-7 4-7Z" fill="url(#a)" stroke="#317ed9" stroke-width="1.2"/>
+<path d="m43 7-5 7 8 8M49 14l-3 8" fill="none" stroke="#fff" stroke-width="1.2"/>
+<path d="m9 14 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#ffd56e"/>
+<circle cx="52" cy="39" r="2" fill="#fff"/><circle cx="55" cy="30" r="1.4" fill="#9bdfff"/>
+</svg>
