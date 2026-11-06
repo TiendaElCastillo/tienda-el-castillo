@@ -780,7 +780,7 @@ async function loadMyOrders(){
   const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
    '<div class="field"><label for="retry-sender-phone-'+clean(o.id)+'">Móvil desde el que realizaste el pago</label><input id="retry-sender-phone-'+clean(o.id)+'" type="tel" inputmode="tel" placeholder="+535XXXXXXXX"></div>'+
    (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Número de transferencia</label><input id="retry-reference-'+clean(o.id)+'" inputmode="numeric" placeholder="Número de transferencia"></div>':'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">Importe de saldo enviado (CUP)</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="1" step="0.01" inputmode="decimal" placeholder="Importe exacto"></div>')+
-   '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>'
+   '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
   const providerInfo=o.central_one_reference_code
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
@@ -1299,7 +1299,7 @@ function notifyNewPaymentReviews(rows){
  try{seen=JSON.parse(localStorage.getItem("castle_payment_reviews_seen")||"[]");if(!Array.isArray(seen))seen=[];}catch(e){seen=[];}
  const fresh=(rows||[]).filter(o=>o.status==="payment_review"&&o.proof_path&&!seen.includes(o.id));
  if(!fresh.length)return;
- try{localStorage.setItem("castle_payment_reviews_seen",JSON.stringify([...seen,...fresh.map(o=>o.id)].slice(-500));}catch(e){}
+ try{localStorage.setItem("castle_payment_reviews_seen",JSON.stringify([...seen,...fresh.map(o=>o.id)].slice(-500)));}catch(e){}
  fresh.forEach(o=>{
   const label="Nuevo pago recibido · Pedido "+String(o.order_code||"");
   const detail=String(o.game||"")+" · "+String(o.package_name||"")+" · "+money(o.price)+" "+String(o.payment_method||"");
