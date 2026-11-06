@@ -209,7 +209,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
 @media(max-width:760px){.auth-layout{grid-template-columns:1fr;gap:12px;margin:12px auto}.auth-visual{min-height:0;padding:22px 21px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.auth-visual h1{max-width:none;font-size:clamp(27px,7vw,33px);line-height:1.08;margin:15px 0 10px}.auth-visual p{max-width:none;margin:0;font-size:14px;line-height:1.5;position:relative;z-index:2}.auth-visual .orb{display:none!important}.auth-benefits{position:static;left:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:15px;font-size:11px;line-height:1.4}.auth-panel{padding:20px}.auth-panel h2{font-size:22px}.auth-tabs{margin:17px 0}}
 @media(max-width:420px){.auth-visual{padding:20px 18px 18px;border-radius:22px}.auth-visual h1{font-size:29px}.auth-visual p{font-size:13px}.auth-benefits{gap:7px 10px;font-size:10px}.auth-panel{padding:18px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=15">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=16">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -1920,6 +1920,73 @@ function notifyNewPaymentReviews(rows){
   }
  });
 }
+function showOrderProofPreview(url,details={}){
+ const previous=document.getElementById("orderProofViewer");
+ if(previous)previous.remove();
+ const overlay=document.createElement("div");
+ overlay.id="orderProofViewer";
+ overlay.className="proof-viewer-overlay";
+ overlay.setAttribute("role","presentation");
+ const panel=document.createElement("section");
+ panel.className="proof-viewer-panel";
+ panel.setAttribute("role","dialog");
+ panel.setAttribute("aria-modal","true");
+ panel.setAttribute("aria-labelledby","proofViewerTitle");
+ const header=document.createElement("div");
+ header.className="proof-viewer-header";
+ const title=document.createElement("h2");
+ title.id="proofViewerTitle";
+ title.textContent="Comprobante de pago";
+ const close=document.createElement("button");
+ close.type="button";
+ close.className="proof-viewer-close";
+ close.textContent="Cerrar ✕";
+ header.append(title,close);
+ const info=document.createElement("div");
+ info.className="proof-viewer-info";
+ const addInfo=(label,value,extraClass="")=>{
+  const field=document.createElement("div");
+  field.className="proof-viewer-field"+(extraClass?" "+extraClass:"");
+  const caption=document.createElement("span");
+  caption.textContent=label;
+  const strong=document.createElement("strong");
+  strong.textContent=value||"No indicado";
+  field.append(caption,strong);
+  info.append(field);
+ };
+ addInfo("N.º DE TRANSACCIÓN",details.reference||"No indicado","proof-viewer-reference");
+ addInfo("PEDIDO",details.orderCode||"");
+ addInfo("MÓVIL DEL REMITENTE",details.senderPhone||"");
+ addInfo("MÉTODO DE PAGO",details.paymentMethod||"");
+ if(details.amount)addInfo("IMPORTE DEL PEDIDO",money(details.amount)+" CUP");
+ const stage=document.createElement("div");
+ stage.className="proof-viewer-image-stage";
+ const image=document.createElement("img");
+ image.className="proof-viewer-image";
+ image.alt="Captura del comprobante del pedido "+(details.orderCode||"");
+ image.src=url;
+ const error=document.createElement("p");
+ error.className="proof-viewer-image-error";
+ error.textContent="No se pudo cargar la imagen. Cierra esta ventana y vuelve a pulsar «Ver comprobante» para generar un enlace nuevo.";
+ error.hidden=true;
+ image.addEventListener("error",()=>{error.hidden=false;});
+ stage.append(image,error);
+ panel.append(header,info,stage);
+ overlay.append(panel);
+ const previousOverflow=document.body.style.overflow;
+ const closeViewer=()=>{
+  overlay.remove();
+  document.body.style.overflow=previousOverflow;
+  document.removeEventListener("keydown",onKeyDown);
+ };
+ const onKeyDown=event=>{if(event.key==="Escape")closeViewer();};
+ close.addEventListener("click",closeViewer);
+ overlay.addEventListener("click",event=>{if(event.target===overlay)closeViewer();});
+ document.addEventListener("keydown",onKeyDown);
+ document.body.style.overflow="hidden";
+ document.body.append(overlay);
+ close.focus();
+}
 async function loadAllOrders(options={}){
  if(currentProfile?.role!=="admin"||!currentUser)return;
  const container=$("allorders");
@@ -1935,8 +2002,7 @@ async function loadAllOrders(options={}){
   const actionLabel=o.status==="payment_review"?"Confirmar pago y enviar recarga":"Rechazar pedido";
   let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
-   const signed=await db.storage.from("payment-proofs").createSignedUrl(o.proof_path,600);
-   proofLink=signed.error?'<span class="subtle">No se pudo abrir el comprobante</span>':'<a href="'+clean(signed.data.signedUrl)+'" target="_blank" rel="noopener">Ver comprobante (10 min)</a>';
+   proofLink='<a href="#" data-proof-preview data-proof-path="'+clean(o.proof_path)+'" data-order-code="'+clean(o.order_code||"")+'" data-payment-reference="'+clean(o.payment_reference||"No indicado")+'" data-payment-sender-phone="'+clean(o.payment_sender_phone||"No indicado")+'" data-payment-method="'+clean(o.payment_method||"")+'" data-payment-amount="'+clean(o.price||"")+'">Ver comprobante (10 min)</a>';
   }
   const providerStatus=String(o.central_one_status||"not_submitted");
   const providerDate=o.central_one_submitted_at?new Date(o.central_one_submitted_at).getTime():0;
@@ -1978,6 +2044,29 @@ async function loadAllOrders(options={}){
   '</div>';
  }))).join("");
  container.innerHTML=cards;
+ container.querySelectorAll("[data-proof-preview]").forEach(link=>{
+  link.addEventListener("click",async event=>{
+   event.preventDefault();
+   link.textContent="Preparando captura...";
+   link.setAttribute("aria-busy","true");
+   try{
+    const {data,error}=await db.storage.from("payment-proofs").createSignedUrl(link.dataset.proofPath,600);
+    if(error||!data?.signedUrl)throw error||new Error("No se pudo generar el enlace seguro.");
+    showOrderProofPreview(data.signedUrl,{
+     orderCode:link.dataset.orderCode,
+     reference:link.dataset.paymentReference,
+     senderPhone:link.dataset.paymentSenderPhone,
+     paymentMethod:link.dataset.paymentMethod,
+     amount:link.dataset.paymentAmount
+    });
+   }catch(error){
+    window.alert("No se pudo abrir la captura. Comprueba la conexión y vuelve a intentarlo."+(error?.message?" "+error.message:""));
+   }finally{
+    link.textContent="Ver comprobante (10 min)";
+    link.removeAttribute("aria-busy");
+   }
+  });
+ });
  container.querySelectorAll("[data-update-order]").forEach(button=>{
   button.addEventListener("click",()=>updateOrderStatus(button.dataset.orderId,button.dataset.selectId));
  });
