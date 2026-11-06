@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v61";
+const CACHE_NAME = "el-castillo-shell-v62";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,7 +16,9 @@ const APP_SHELL = [
   "./assets/admin-panel.css?v=16",
   "./assets/admin-panel.js?v=10",
   "./assets/diamond-pile.svg",
-  "./assets/diamond-chest.svg"
+  "./assets/diamond-chest.svg",
+  "./assets/diamond-few.svg",
+  "./assets/diamond-overflow.svg"
 ];
 
 const APP_ROOT = self.registration.scope;
