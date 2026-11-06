@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v47";
+const CACHE_NAME = "el-castillo-shell-v48";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -26,7 +26,7 @@ async function cacheSuccessfulResponse(cache, request, response, cacheKey = requ
     try {
       await cache.put(cacheKey, response.clone());
     } catch (_) {
-      // Cache quota or storage errors should never break the page.
+      // Storage or quota errors must never break the page.
     }
   }
   return response;
@@ -60,47 +60,41 @@ self.addEventListener("fetch", event => {
     url.hostname === "cdn.jsdelivr.net" &&
     url.pathname.includes("/npm/@supabase/supabase-js");
 
-  // Only cache the store shell, its static files and the Supabase browser library.
-  // Auth, orders, payment proofs and provider calls stay network-only.
+  // Auth, orders, payment proofs and provider calls are never cached.
   if (!isLocal && !isSupabaseLibrary) return;
 
+  const cachePromise = caches.open(CACHE_NAME);
+
   if (request.mode === "navigate" && isLocal) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
+    const networkUpdate = cachePromise.then(cache =>
+      fetch(request).then(response =>
+        cacheSuccessfulResponse(cache, request, response, INDEX_URL)
+      )
+    );
+    event.waitUntil(networkUpdate.catch(() => {}));
+    event.respondWith(cachePromise.then(async cache => {
       const cachedPage =
         await cache.match(INDEX_URL) ||
         await cache.match(ROOT_URL);
-
-      const networkUpdate = fetch(request)
-        .then(response => cacheSuccessfulResponse(cache, request, response, INDEX_URL));
-
-      if (cachedPage) {
-        event.waitUntil(networkUpdate.catch(() => {}));
-        return cachedPage;
-      }
-
-      return networkUpdate.catch(async () => {
-        const fallback = await cache.match(INDEX_URL) || await cache.match(ROOT_URL);
-        return fallback || Response.error();
-      });
-    })());
+      if (cachedPage) return cachedPage;
+      return networkUpdate.catch(async () =>
+        await cache.match(INDEX_URL) ||
+        await cache.match(ROOT_URL) ||
+        Response.error()
+      );
+    }));
     return;
   }
 
-  event.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
+  const networkUpdate = cachePromise.then(cache =>
+    fetch(request).then(response =>
+      cacheSuccessfulResponse(cache, request, response)
+    )
+  );
+  event.waitUntil(networkUpdate.catch(() => {}));
+  event.respondWith(cachePromise.then(async cache => {
     const cached = await cache.match(request);
-
-    const networkUpdate = fetch(request)
-      .then(response => cacheSuccessfulResponse(cache, request, response));
-
-    // Fast path: serve already-downloaded static files immediately, then refresh
-    // the cache quietly for the next visit.
-    if (cached) {
-      event.waitUntil(networkUpdate.catch(() => {}));
-      return cached;
-    }
-
+    if (cached) return cached;
     return networkUpdate.catch(() => Response.error());
-  })());
+  }));
 });
