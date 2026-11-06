@@ -1361,7 +1361,7 @@ async function loadMyOrders(){
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
  $("myorders").innerHTML=error?"Error: "+clean(error.message):
  (data||[]).length?(data||[]).map(o=>{
-  const canUpload=o.payment_source==="direct"&&!o.proof_path&&["pending","payment_review"].includes(o.status);
+  const canUpload=o.payment_source==="direct"&&!o.proof_path&&o.status==="pending";
   const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
    '<div class="field"><label for="retry-sender-phone-'+clean(o.id)+'">Móvil desde el que realizaste el pago</label><input id="retry-sender-phone-'+clean(o.id)+'" type="tel" inputmode="tel" placeholder="+535XXXXXXXX"></div>'+
    (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Nro. Transacción</label><input id="retry-reference-'+clean(o.id)+'" inputmode="text" autocapitalize="characters" maxlength="100" placeholder="Ej. AY600UJ716R999"><small class="field-hint">Copia el código «Nro. Transacción» del comprobante.</small></div>':'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">Cantidad de saldo móvil enviada</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="1" step="0.01" inputmode="decimal" placeholder="Importe exacto"></div>')+
@@ -1928,7 +1928,7 @@ async function loadAllOrders(options={}){
  if(error){if(!options.silent)container.textContent="Error: "+error.message;return;}
  notifyNewPaymentReviews(data||[]);
  if(!(data||[]).length){container.textContent="No hay pedidos todavía.";return;}
- const cards=await Promise.all((data||[]).map(async(o,i)=>{
+ const cards=(await Promise.all((data||[]).map(async(o,i)=>{
   const selectId="order-status-"+i;
   const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
   const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return '<option value="'+value+'">'+(item?.label||value)+'</option>';}).join("");
@@ -1976,7 +1976,7 @@ async function loadAllOrders(options={}){
    providerAction+
    (o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':"")+
   '</div>';
- })).join("");
+ }))).join("");
  container.innerHTML=cards;
  container.querySelectorAll("[data-update-order]").forEach(button=>{
   button.addEventListener("click",()=>updateOrderStatus(button.dataset.orderId,button.dataset.selectId));
