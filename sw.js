@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v48";
+const CACHE_NAME = "el-castillo-shell-v49";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -60,24 +60,21 @@ self.addEventListener("fetch", event => {
     url.hostname === "cdn.jsdelivr.net" &&
     url.pathname.includes("/npm/@supabase/supabase-js");
 
-  // Auth, orders, payment proofs and provider calls are never cached.
+  // Auth, catalog API, orders, payment proofs and provider calls stay network-only.
   if (!isLocal && !isSupabaseLibrary) return;
 
   const cachePromise = caches.open(CACHE_NAME);
 
   if (request.mode === "navigate" && isLocal) {
-    const networkUpdate = cachePromise.then(cache =>
-      fetch(request).then(response =>
-        cacheSuccessfulResponse(cache, request, response, INDEX_URL)
-      )
-    );
-    event.waitUntil(networkUpdate.catch(() => {}));
     event.respondWith(cachePromise.then(async cache => {
       const cachedPage =
         await cache.match(INDEX_URL) ||
         await cache.match(ROOT_URL);
       if (cachedPage) return cachedPage;
-      return networkUpdate.catch(async () =>
+
+      return fetch(request).then(response =>
+        cacheSuccessfulResponse(cache, request, response, INDEX_URL)
+      ).catch(async () =>
         await cache.match(INDEX_URL) ||
         await cache.match(ROOT_URL) ||
         Response.error()
@@ -86,15 +83,12 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  const networkUpdate = cachePromise.then(cache =>
-    fetch(request).then(response =>
-      cacheSuccessfulResponse(cache, request, response)
-    )
-  );
-  event.waitUntil(networkUpdate.catch(() => {}));
   event.respondWith(cachePromise.then(async cache => {
     const cached = await cache.match(request);
     if (cached) return cached;
-    return networkUpdate.catch(() => Response.error());
+
+    return fetch(request).then(response =>
+      cacheSuccessfulResponse(cache, request, response)
+    ).catch(() => Response.error());
   }));
 });
