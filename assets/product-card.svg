@@ -1,5 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180" role="img" aria-label="Ilustración de tarjetas semanales y mensuales">
-<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#145276"/><stop offset="1" stop-color="#3298b2"/></linearGradient></defs>
-<rect width="560" height="180" rx="18" fill="url(#bg)"/><circle cx="467" cy="92" r="92" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2"/>
-<g transform="translate(366 36)"><rect x="5" y="13" width="105" height="92" rx="12" fill="#dceeff" stroke="#fff" stroke-width="3"/><path d="M5 37h105" stroke="#3983c7" stroke-width="9"/><path d="M31 4v22M85 4v22" stroke="#ffe28f" stroke-width="7" stroke-linecap="round"/><path d="M28 57h18M64 57h18M28 78h18M64 78h18" stroke="#4285c8" stroke-width="7" stroke-linecap="round"/></g>
-<text x="34" y="75" fill="#fff" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="3">FREE FIRE</text><text x="32" y="115" fill="#fff" font-family="Arial,sans-serif" font-size="31" font-weight="900">TARJETAS</text><text x="34" y="143" fill="#e2f8ff" font-family="Arial,sans-serif" font-size="13" letter-spacing="2">SEMANAL Y MENSUAL</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180" role="img" aria-label="Pase semanal de Free Fire: tarjeta morada con W, cofre y diamantes azules">
+<defs>
+ <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#10102d"/><stop offset=".55" stop-color="#30205d"/><stop offset="1" stop-color="#171a42"/></linearGradient>
+ <linearGradient id="card" x2="0" y2="1"><stop stop-color="#f27aff"/><stop offset=".5" stop-color="#a83fd9"/><stop offset="1" stop-color="#6126a0"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff2ad"/><stop offset=".45" stop-color="#f2bd55"/><stop offset="1" stop-color="#a75a21"/></linearGradient>
+ <linearGradient id="chest" x2="0" y2="1"><stop stop-color="#1b395c"/><stop offset=".5" stop-color="#0e2144"/><stop offset="1" stop-color="#09142d"/></linearGradient>
+ <linearGradient id="gem" x2="1" y2="1"><stop stop-color="#f1ffff"/><stop offset=".28" stop-color="#70e0ff"/><stop offset=".68" stop-color="#2586e5"/><stop offset="1" stop-color="#173e9b"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+ <filter id="shadow"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<rect width="560" height="180" rx="18" fill="url(#bg)"/>
+<circle cx="395" cy="85" r="105" fill="#9b49e8" opacity=".13" filter="url(#glow)"/>
+<g transform="translate(105 22) rotate(-4 105 62)">
+ <rect x="0" y="0" width="210" height="126" rx="13" fill="url(#card)" stroke="#ffc3ff" stroke-width="2"/>
+ <path d="M14 13h182v100H14Z" fill="none" stroke="#ffd5ff" stroke-opacity=".28"/>
+ <path d="M27 25h25l-8 8h-25Z" fill="#ffe8ff" opacity=".65"/>
+ <path d="M42 39 52 49 42 59 32 49Z" fill="none" stroke="#fff" stroke-width="2.5"/>
+ <text x="43" y="91" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="62" font-weight="900">W</text>
+ <text x="43" y="109" text-anchor="middle" fill="#ffe9ff" font-family="Arial,sans-serif" font-size="8" font-weight="700" letter-spacing="1">WEEKLY</text>
+</g>
+<ellipse cx="385" cy="149" rx="142" ry="15" fill="#05091c" opacity=".65" filter="url(#shadow)"/>
+<g transform="translate(300 57)">
+ <path d="M20 47 51 18h143l29 29-11 25H31Z" fill="url(#gold)" stroke="#fff0b2" stroke-width="2"/>
+ <path d="M37 47 62 29h118l23 18-16 19H51Z" fill="#254b78" stroke="#d7eaff" stroke-width="2"/>
+ <path d="M24 72h203l-13 67H42Z" fill="url(#chest)" stroke="#e7b75c" stroke-width="4"/>
+ <path d="M35 82h182v10H35Z" fill="url(#gold)"/>
+ <path d="M115 77h26v63h-26Z" fill="url(#gold)"/>
+ <rect x="108" y="100" width="40" height="29" rx="8" fill="#f7d16d" stroke="#fff2b6" stroke-width="2"/>
+ <path d="M128 105v18m-8-9h16" stroke="#78502a" stroke-width="4" stroke-linecap="round"/>
+ <path d="m65 35 12-17 18 17-12 18Z M129 30l14-21 19 21-16 19Z M170 46l12-16 17 16-14 17Z" fill="url(#gem)" stroke="#dffbff" stroke-width="1.5"/>
+</g>
+<g fill="url(#gem)" stroke="#dcfaff" stroke-width="1.4">
+ <path d="m270 130 11-15 17 4-3 18-15 8Z"/><path d="m295 151 8-12 14 3-2 13-12 6Z"/>
+ <path d="m492 134 11-16 18 5-4 18-15 7Z"/><path d="m454 157 7-10 12 2-2 12-10 5Z"/>
+ <path d="m330 38 8-12 13 3-2 13-10 5Z"/><path d="m518 82 7-10 11 2-2 11-9 4Z"/>
+</g>
+<text x="28" y="157" fill="#e9d8ff" font-family="Arial,sans-serif" font-size="10" font-weight="800" letter-spacing="2">FREE FIRE · PASE SEMANAL</text>
+</svg>
