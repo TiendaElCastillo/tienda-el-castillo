@@ -224,7 +224,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <div class="promo-strip"><span><span class="promo-crown" aria-hidden="true">♛</span> <strong>TIENDA EL CASTILLO</strong> · Tu tienda de recargas</span><span class="promo-live"><i></i> Catálogo Free Fire</span></div>
  <div class="top-search"><div class="search-wrap"><input class="search-input" id="productSearch" type="search" placeholder="Buscar un juego o una tarjeta..." onfocus="showView('search')" oninput="renderSearchProducts()"></div></div>
  <section id="homeView" class="store-view">
-  <div class="hero"><div class="hero-copy"><span class="hero-eyebrow"><span aria-hidden="true">✦</span> RECARGAS DIGITALES · CUBA</span><h1>Tu próxima partida empieza aquí.</h1><p>Elige tus diamantes, pases o tarjetas de Free Fire. Prepara tu pedido por ID y consulta su progreso desde tu cuenta.</p><div class="hero-buttons"><button class="primary-btn" type="button" onclick="showView('games')">Ver paquetes <span aria-hidden="true">→</span></button><button class="secondary-btn" type="button" onclick="scrollToHowItWorks()">Cómo funciona</button></div><div class="payment-pills"><span class="payment-pill"><span aria-hidden="true">▣</span> Transferencia CUP</span><span class="payment-pill"><span aria-hidden="true">▰</span> Saldo móvil</span></div></div><div class="hero-visual" role="img" aria-label="Ilustración original de una escena de acción de Free Fire"><div class="hero-visual-copy"><span>TIENDA EL CASTILLO</span><strong>Recargas para tu próxima partida</strong></div></div></div>
+  <div class="hero"><div class="hero-copy"><span class="hero-eyebrow"><span aria-hidden="true">✦</span> RECARGAS DIGITALES · CUBA</span><h1>Tu próxima partida empieza aquí.</h1><p>Elige tus diamantes, pases o tarjetas de Free Fire. Prepara tu pedido por ID y consulta su progreso desde tu cuenta.</p><div class="hero-buttons"><button class="primary-btn" type="button" onclick="showView('games')">Ver paquetes <span aria-hidden="true">→</span></button><button class="secondary-btn" type="button" onclick="scrollToHowItWorks()">Cómo funciona</button><button class="secondary-btn" type="button" onclick="shareStore()">Compartir tienda ↗</button></div><p id="shareStoreMsg" class="msg" role="status" aria-live="polite"></p><div class="payment-pills"><span class="payment-pill"><span aria-hidden="true">▣</span> Transferencia CUP</span><span class="payment-pill"><span aria-hidden="true">▰</span> Saldo móvil</span></div></div><div class="hero-visual" role="img" aria-label="Ilustración original de una escena de acción de Free Fire"><div class="hero-visual-copy"><span>TIENDA EL CASTILLO</span><strong>Recargas para tu próxima partida</strong></div></div></div>
   <div class="benefit-row"><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3 7.8 7.5 9.5 4.5-1.7 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><div><strong>Sin contraseña del juego</strong><span>Solo solicitamos los datos del pedido</span></div></div><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4.5 7.8 7.5 4.4 7.5-4.4M12 12.2V21"/></svg></span><div><strong>Revisión del pago</strong><span>Comprobamos el comprobante recibido</span></div></div><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><div><strong>Seguimiento del pedido</strong><span>Consulta su estado desde tu cuenta</span></div></div></div>
   <div class="section"><div class="section-head"><div><h2>Free Fire</h2><p>Selecciona el juego para ver todos los paquetes</p></div><button class="text-link" onclick="showView('games')">Ver catálogo →</button></div><div id="homeGames" class="catalog-grid"></div></div><div class="section featured-section" id="homeFeaturedSection"><div class="section-head"><div><h2>Paquetes disponibles</h2><p>Precios y opciones para elegir tu recarga</p></div><button class="text-link" onclick="showView('games')">Ver todos →</button></div><div id="homeFeaturedProducts" class="product-grid"><p class="empty-note">Cargando paquetes...</p></div></div>
   <div class="section"><div class="section-head"><div><h2>Gift Cards</h2><p>Tarjetas digitales de tus plataformas favoritas</p></div><button class="text-link" onclick="showView('giftcards')">Ver todas →</button></div><div id="homeGifts" class="gift-grid"></div></div>
@@ -489,6 +489,30 @@ function renderProductCatalogs(){
 }
 function chooseGame(name){activeGameFilter=name;gamePaymentMethod="Transferencia CUP";renderProductCatalogs();showView("games")}function chooseGift(name){activeGiftFilter=name;renderProductCatalogs();showView("giftcards")}function clearGameFilter(){activeGameFilter="";renderProductCatalogs();$("gamesCatalogPanel")?.scrollIntoView({behavior:"smooth",block:"start"})}
 function scrollToHowItWorks(){document.getElementById("howItWorks")?.scrollIntoView({behavior:"smooth",block:"start"})}
+async function shareStore(){
+ const url="https://tiendaelcastillo.github.io/tienda-el-castillo/";
+ const title="Tienda El Castillo 🏰 · Recargas Free Fire en Cuba";
+ const text="Recarga Free Fire desde Cuba. Elige tu paquete, paga por transferencia CUP o saldo móvil y sigue tu pedido desde tu cuenta.";
+ const msg=$("shareStoreMsg");
+ try{
+  if(navigator.share){
+   await navigator.share({title,text,url});
+   if(msg)msg.textContent="Puedes compartir la tienda por WhatsApp, Facebook u otra aplicación.";
+   return;
+  }
+  if(navigator.clipboard&&window.isSecureContext){
+   await navigator.clipboard.writeText(url);
+   if(msg)msg.textContent="Enlace de la tienda copiado. Ya puedes pegarlo en WhatsApp o Facebook.";
+   return;
+  }
+  const field=document.createElement("textarea");field.value=url;field.style.position="fixed";field.style.opacity="0";document.body.appendChild(field);field.select();
+  const copied=document.execCommand("copy");field.remove();
+  if(msg)msg.textContent=copied?"Enlace copiado. Ya puedes pegarlo en WhatsApp o Facebook.":"Copia este enlace: "+url;
+ }catch(error){
+  if(error?.name==="AbortError")return;
+  if(msg)msg.textContent="No se pudo abrir el menú de compartir. Puedes copiar este enlace: "+url;
+ }
+}
  function renderSearchProducts(){const term=fold($("productSearch")?.value||"");const matches=sortPackages(products.filter(p=>!isLevelUpPackage(p)&&fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).includes(term)));$("searchProducts").innerHTML=matches.length?matches.map(productCard).join():'<p class="empty-note">'+(term?"No encontramos productos con ese nombre.":"Escribe para buscar en el catálogo.")+'</p>'}
 function showView(name){
  if(name==="giftcards")name="games";
