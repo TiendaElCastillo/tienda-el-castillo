@@ -99,15 +99,7 @@ function refreshCheckoutButton(){
  button.textContent=ready?"Confirmar que pagué y enviar pedido":!verified?"Primero verifica tu ID de jugador":!validFile?"Adjunta el comprobante para continuar":needsReference&&!reference?"Escribe el número de transferencia":"Completa los datos del pedido";
 }
 function installCheckoutFlow(){
- // Delegación en captura: abre el checkout tanto al tocar la tarjeta como su botón.
- document.addEventListener("click",event=>{
-  const target=event.target;
-  const card=target&&target.closest?target.closest(".game-plan-card[data-product-id],.catalog-product-clickable[data-product-id]"):null;
-  if(!card||typeof window.openCheckout!=="function")return;
-  event.preventDefault();
-  event.stopPropagation();
-  window.openCheckout(card.dataset.productId,card.dataset.paymentMethod||undefined);
- },true);
+ // La compra se dispara directamente desde cada tarjeta y su botón; no interceptamos el toque global.
  ["player","paymentProof","reference","payment"].forEach(id=>{
   const node=document.getElementById(id);if(!node||node.dataset.checkoutGate==="1")return;
   node.dataset.checkoutGate="1";
