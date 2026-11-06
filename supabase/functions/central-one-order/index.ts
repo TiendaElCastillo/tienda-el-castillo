@@ -1,0 +1,427 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const CENTRAL_ONE_API_KEY = Deno.env.get("CENTRAL_ONE_API_KEY") || "";
+const CENTRAL_ONE_BASE = "https://portal.centraloneglobal.com/api/v1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json; charset=utf-8",
+};
+function reply(status: number, payload: unknown) {
+  return new Response(JSON.stringify(payload), { status, headers: corsHeaders });
+}
+function safeProviderSnapshot(order: any) {
+  const items = Array.isArray(order?.items) ? order.items.map((item: any) => ({
+    status: typeof item?.status === "string" ? item.status : null,
+    delivered_count: Number.isInteger(item?.delivered_count) ? item.delivered_count : null,
+    failure: item?.failure && typeof item.failure === "object" ? {
+      code: typeof item.failure.code === "string" ? item.failure.code : null,
+      message_es: typeof item.failure.message_es === "string" ? item.failure.message_es.slice(0, 400) : null,
+      action: typeof item.failure.action === "string" ? item.failure.action : null,
+    } : null,
+    refund: item?.refund && typeof item.refund === "object" ? {
+      refunded: item.refund.refunded === true,
+      refunded_at: typeof item.refund.refunded_at === "string" ? item.refund.refunded_at : null,
+    } : null,
+  })) : [];
+  return {
+    status: typeof order?.status === "string" ? order.status : "unknown",
+    reference_code: typeof order?.reference_code === "string" ? order.reference_code : null,
+    updated_at: typeof order?.updated_at === "string" ? order.updated_at : null,
+    refund: order?.refund && typeof order.refund === "object" ? {
+      refunded: order.refund.refunded === true,
+      refunded_at: typeof order.refund.refunded_at === "string" ? order.refund.refunded_at : null,
+    } : null,
+    failure: order?.failure && typeof order.failure === "object" ? {
+      code: typeof order.failure.code === "string" ? order.failure.code : null,
+      message_es: typeof order.failure.message_es === "string" ? order.failure.message_es.slice(0, 400) : null,
+      action: typeof order.failure.action === "string" ? order.failure.action : null,
+    } : null,
+    items,
+  };
+}
+function providerError(data: any) {
+  const e = data?.error && typeof data.error === "object" ? data.error : data;
+  return {
+    code: typeof e?.code === "string" ? e.code.slice(0, 100) : "provider_error",
+    message: typeof e?.message_es === "string" ? e.message_es.slice(0, 500)
+      : typeof e?.message === "string" ? e.message.slice(0, 500)
+      : "Central One no pudo aceptar la solicitud.",
+    request_id: typeof e?.request_id === "string" ? e.request_id.slice(0, 150) : null,
+  };
+}
+async function adminContext(req: Request) {
+  const match = (req.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i);
+  if (!match) throw Object.assign(new Error("Debes iniciar sesión como administrador."), { status: 401 });
+  const accessToken = match[1];
+  const userResponse = await fetch(SUPABASE_URL + "/auth/v1/user", {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + accessToken },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!userResponse.ok) throw Object.assign(new Error("La sesión no es válida. Vuelve a entrar."), { status: 401 });
+  const user = await userResponse.json();
+  if (!user?.id) throw Object.assign(new Error("La sesión no es válida."), { status: 401 });
+  const profileResponse = await fetch(
+    SUPABASE_URL + "/rest/v1/profiles?id=eq." + encodeURIComponent(user.id) + "&select=role&limit=1",
+    { headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + accessToken },
+      signal: AbortSignal.timeout(10000) },
+  );
+  if (!profileResponse.ok) throw Object.assign(new Error("No se pudo comprobar el rol de administrador."), { status: 503 });
+  const profiles = await profileResponse.json();
+  if (profiles?.[0]?.role !== "admin") throw Object.assign(new Error("Solo el administrador puede autorizar recargas."), { status: 403 });
+  return { userId: user.id };
+}
+async function serviceRpc(name: string, body: Record<string, unknown>) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("La conexión interna de Supabase no está configurada.");
+  const response = await fetch(SUPABASE_URL + "/rest/v1/rpc/" + name, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: "Bearer " + SUPABASE_SERVICE_ROLE_KEY,
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15000),
+  });
+  const raw = await response.text();
+  let data: any = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+  if (!response.ok) {
+    const message = typeof data?.message === "string" ? data.message
+      : typeof data?.details === "string" ? data.details : "Error interno HTTP " + response.status;
+    throw new Error(message);
+  }
+  return data;
+}
+async function finishOrder(args: {
+  orderId: string; status: string; providerOrderId?: string | null;
+  referenceCode?: string | null; requestId?: string | null;
+  response?: unknown; errorCode?: string | null; errorMessage?: string | null;
+}) {
+  return await serviceRpc("finish_central_one_order", {
+    p_order_id: args.orderId,
+    p_provider_status: args.status,
+    p_provider_order_id: args.providerOrderId ?? null,
+    p_reference_code: args.referenceCode ?? null,
+    p_request_id: args.requestId ?? null,
+    p_response: args.response ?? null,
+    p_error_code: args.errorCode ?? null,
+    p_error_message: args.errorMessage ?? null,
+  });
+}
+async function preflightPriceAndStock(claim: any) {
+  const orderUrl = new URL(SUPABASE_URL + "/rest/v1/orders");
+  orderUrl.searchParams.set("id", "eq." + claim.order_id);
+  orderUrl.searchParams.set("select", "price,payment_method");
+  orderUrl.searchParams.set("limit", "1");
+  const orderResponse = await fetch(orderUrl, {
+    headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: "Bearer " + SUPABASE_SERVICE_ROLE_KEY },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!orderResponse.ok) return { ok:false, code:"local_order_read_failed", message:"No pudimos comprobar el precio cobrado al cliente." };
+  const orderRows = await orderResponse.json();
+  const localOrder = Array.isArray(orderRows) ? orderRows[0] : null;
+  if (!localOrder) return { ok:false, code:"local_order_missing", message:"No encontramos el precio del pedido local." };
+
+  const settingsUrl = new URL(SUPABASE_URL + "/rest/v1/pricing_settings");
+  settingsUrl.searchParams.set("id", "eq.1");
+  settingsUrl.searchParams.set("select", "usdt_cup_rate,mobile_credit_units,mobile_cost_cup,markup_percent");
+  settingsUrl.searchParams.set("limit", "1");
+  const settingsResponse = await fetch(settingsUrl, {
+    headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: "Bearer " + SUPABASE_SERVICE_ROLE_KEY },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!settingsResponse.ok) return { ok:false, code:"pricing_settings_unavailable", message:"No pudimos leer las reglas de precios guardadas." };
+  const settingsRows = await settingsResponse.json();
+  const settings = Array.isArray(settingsRows) ? settingsRows[0] : null;
+  if (!settings) return { ok:false, code:"pricing_settings_missing", message:"No existen reglas de precios para comprobar el margen." };
+
+  const catalogResponse = await fetch(CENTRAL_ONE_BASE + "/catalog", {
+    headers: { Authorization: "Bearer " + CENTRAL_ONE_API_KEY },
+    signal: AbortSignal.timeout(20000),
+  });
+  const catalogRaw = await catalogResponse.text();
+  let catalogData: any = null;
+  try { catalogData = catalogRaw ? JSON.parse(catalogRaw) : null; } catch { catalogData = null; }
+  if (!catalogResponse.ok) {
+    const err = providerError(catalogData);
+    return { ok:false, code:err.code, message:"No pudimos actualizar el catálogo de Central One: " + err.message };
+  }
+  const catalogItems = Array.isArray(catalogData?.items) ? catalogData.items : [];
+  const item = catalogItems.find((x: any) => x?.product_id === claim.provider_product_id);
+  if (!item || item.status !== "active" || item.in_stock !== true) {
+    return { ok:false, code:"provider_product_unavailable", message:"Central One no tiene este paquete disponible ahora. No se ha enviado ni cobrado la recarga." };
+  }
+  if (String(item.region || "").toUpperCase() !== String(claim.provider_region || "").toUpperCase()) {
+    return { ok:false, code:"provider_region_changed", message:"La región del paquete cambió en Central One. La recarga quedó bloqueada." };
+  }
+  const liveFields = item.target_fields;
+  const liveSchema = item.target_schema;
+  const liveSchemaAllowed = Array.isArray(liveSchema) &&
+    (liveSchema.length === 0 || (liveSchema.length === 1 && liveSchema[0]?.key === "player_id" && liveSchema[0]?.type === "text"));
+  if (item.requires_target !== true || !Array.isArray(liveFields) || liveFields.length !== 1 ||
+      liveFields[0] !== "player_id" || !liveSchemaAllowed) {
+    return { ok:false, code:"provider_target_schema_changed", message:"Los datos obligatorios del paquete cambiaron en Central One. La compra quedó bloqueada para evitar una recarga equivocada." };
+  }
+
+  const wholesale = Number(item.reseller_price);
+  const rate = Number(settings.usdt_cup_rate);
+  const mobileUnits = Number(settings.mobile_credit_units);
+  const mobileCost = Number(settings.mobile_cost_cup);
+  const markup = Number(settings.markup_percent);
+  const salePrice = Number(localOrder.price);
+  if (!Number.isFinite(wholesale) || wholesale <= 0 || !Number.isFinite(rate) || rate <= 0 ||
+      !Number.isFinite(mobileUnits) || mobileUnits <= 0 || !Number.isFinite(mobileCost) || mobileCost <= 0 ||
+      !Number.isFinite(markup) || markup < 0 || !Number.isFinite(salePrice) || salePrice <= 0) {
+    return { ok:false, code:"invalid_price_data", message:"Faltan datos válidos para comprobar el margen. No se enviará la recarga." };
+  }
+  if (String(item.currency || "").toUpperCase() !== "USD") {
+    return { ok:false, code:"unsupported_provider_currency", message:"La moneda del coste mayorista cambió. Se bloqueó la recarga para evitar un cálculo incorrecto." };
+  }
+
+  let retailCup: number;
+  const method = String(localOrder.payment_method || "");
+  if (method === "Transferencia CUP" || method === "Billetera CUP") retailCup = salePrice;
+  else if (method === "Saldo móvil") retailCup = salePrice * mobileCost / mobileUnits;
+  else if (method === "USDT") retailCup = salePrice * rate;
+  else return { ok:false, code:"unsupported_payment_method", message:"No reconocemos la moneda de cobro del pedido. No se enviará la recarga." };
+
+  const wholesaleCup = wholesale * rate;
+  const actualMarkup = (retailCup / wholesaleCup - 1) * 100;
+  // Allow 0.10 percentage points for two-decimal customer prices (not a price-loss exception).
+  if (actualMarkup + 0.10 < markup) {
+    return {
+      ok:false,
+      code:"provider_price_above_retail",
+      message:"El precio de Central One cambió y este pedido ya no alcanza el recargo mínimo configurado (" +
+        markup.toFixed(2) + " %). No se ha creado la orden ni se ha descontado saldo. Revisa el precio y decide cómo atender al cliente.",
+      wholesale_price: String(item.reseller_price),
+      required_retail_cup: Number((wholesaleCup * (1 + markup / 100)).toFixed(2)),
+      actual_retail_cup: Number(retailCup.toFixed(2)),
+    };
+  }
+  return {
+    ok:true,
+    wholesale_price: String(item.reseller_price),
+    currency: String(item.currency),
+    retail_cup: Number(retailCup.toFixed(2)),
+    margin_percent: Number(actualMarkup.toFixed(2)),
+  };
+}
+
+async function submitOrder(orderId: string, adminId: string) {
+  const claim = await serviceRpc("claim_central_one_order", { p_order_id: orderId, p_admin_id: adminId });
+  if (claim?.claim_status === "already_submitted") {
+    return reply(200, {
+      ok: true, already_submitted: true,
+      provider_order_id: claim.provider_order_id,
+      reference_code: claim.reference_code,
+      provider_status: claim.provider_status,
+      message: "Este pedido ya fue enviado a Central One. No se creó una segunda recarga.",
+    });
+  }
+  if (claim?.claim_status === "in_progress") {
+    return reply(409, { error: "submission_in_progress", message: "La solicitud anterior todavía se está procesando. No vuelvas a autorizarla ahora." });
+  }
+  if (claim?.claim_status !== "claimed") {
+    return reply(409, { error: "order_not_claimed", message: "No se pudo reservar la autorización de este pedido." });
+  }
+  if (!CENTRAL_ONE_API_KEY) {
+    await finishOrder({orderId,status:"rejected",errorCode:"api_key_missing",errorMessage:"Falta CENTRAL_ONE_API_KEY en los secretos de Supabase."});
+    return reply(503, {error:"central_one_not_configured",message:"No se encontró la clave de Central One. No se envió la compra."});
+  }
+  const fields = claim.provider_target_fields;
+  const schema = claim.provider_target_schema;
+  const schemaAllowed = Array.isArray(schema) &&
+    (schema.length === 0 || (schema.length === 1 && schema[0]?.key === "player_id" && schema[0]?.type === "text"));
+  if (!Array.isArray(fields) || fields.length !== 1 || fields[0] !== "player_id" || !schemaAllowed) {
+    await finishOrder({orderId,status:"rejected",errorCode:"unsupported_target_schema",errorMessage:"El proveedor cambió los datos obligatorios del producto. La compra fue bloqueada."});
+    return reply(409, {error:"unsupported_target_schema",message:"Los datos requeridos del paquete cambiaron. La recarga fue bloqueada para evitar un envío incorrecto."});
+  }
+  const targetId = String(claim.player_id || "").trim();
+  if (targetId.length < 3 || targetId.length > 64) {
+    await finishOrder({orderId,status:"rejected",errorCode:"invalid_player_id",errorMessage:"El ID de jugador no cumple el formato esperado."});
+    return reply(400, {error:"invalid_player_id",message:"El ID del jugador no es válido."});
+  }
+  let preflight: any;
+  try {
+    preflight = await preflightPriceAndStock(claim);
+  } catch {
+    preflight = {ok:false,code:"preflight_unavailable",message:"No pudimos actualizar el catálogo ni comprobar el margen. No se ha enviado la recarga; puedes intentarlo de nuevo."};
+  }
+  if (!preflight.ok) {
+    await finishOrder({
+      orderId, status:"retryable",
+      errorCode:preflight.code,
+      errorMessage:preflight.message,
+      response:{ preflight:"blocked", required_retail_cup:preflight.required_retail_cup??null,
+        actual_retail_cup:preflight.actual_retail_cup??null },
+    });
+    return reply(409, {
+      error:preflight.code, message:preflight.message,
+      retryable:true, no_provider_order_created:true,
+    });
+  }
+  const requestBody = {
+    items: [{
+      catalog_item_id: claim.provider_product_id,
+      quantity: 1,
+      target_payload: { player_id: targetId },
+    }],
+    note: "Tienda El Castillo " + String(claim.order_code || orderId),
+  };
+  try {
+    const upstream = await fetch(CENTRAL_ONE_BASE + "/orders", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + CENTRAL_ONE_API_KEY,
+        "Content-Type": "application/json",
+        "Idempotency-Key": claim.idempotency_key,
+      },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(25000),
+    });
+    const raw = await upstream.text();
+    let data: any = null;
+    try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+    const requestId = upstream.headers.get("X-Request-Id") ||
+      data?.request_id || data?.order?.request_id || data?.error?.request_id || null;
+    if (!upstream.ok) {
+      const err = providerError(data);
+      const retryState = upstream.status === 409 || upstream.status === 429 ||
+        upstream.status === 500 || upstream.status === 502 || upstream.status === 503 ||
+        upstream.status === 504;
+      await finishOrder({
+        orderId, status: retryState ? "retryable" : "rejected",
+        requestId, errorCode: err.code, errorMessage: err.message,
+        response: { http_status: upstream.status, error: err },
+      });
+      return reply(upstream.status >= 500 ? 502 : upstream.status, {
+        error: err.code, message: err.message, request_id: requestId,
+        retryable: retryState,
+      });
+    }
+    const providerOrder = data?.order;
+    const providerOrderId = typeof providerOrder?.id === "string" &&
+      /^[0-9a-f-]{36}$/i.test(providerOrder.id) ? providerOrder.id : null;
+    const providerStatus = typeof providerOrder?.status === "string" &&
+      ["created","confirmed","processing","partially_completed","completed","failed","cancelled"].includes(providerOrder.status)
+        ? providerOrder.status : "unknown";
+    if (!providerOrderId) {
+      await finishOrder({
+        orderId, status:"unknown", requestId,
+        errorCode:"missing_provider_order_id",
+        errorMessage:"Central One respondió sin un ID de orden reconocible. Reintentar es seguro porque se conserva la misma clave de idempotencia.",
+        response:{http_status:upstream.status, provider_status:providerStatus},
+      });
+      return reply(502, {error:"provider_response_incomplete",message:"Central One respondió, pero no pudimos leer el ID de su pedido. No crees otro pedido; reintenta el mismo más tarde.",request_id:requestId});
+    }
+    const saved = await finishOrder({
+      orderId, status:providerStatus, providerOrderId,
+      referenceCode:typeof providerOrder.reference_code==="string"?providerOrder.reference_code:null,
+      requestId, response:{
+        status:providerStatus,
+        reference_code:typeof providerOrder.reference_code==="string"?providerOrder.reference_code:null,
+        currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,
+      },
+      errorCode:null,errorMessage:null,
+    });
+    return reply(200, {ok:true,provider_order_id:providerOrderId,reference_code:providerOrder.reference_code||null,provider_status:providerStatus,provider_total_sale_amount:typeof providerOrder.total_sale_amount==="string"?providerOrder.total_sale_amount:null,provider_currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,preflight_margin_percent:preflight.margin_percent,local:saved});
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Fallo de comunicación con Central One.";
+    try {
+      await finishOrder({orderId,status:"unknown",errorCode:"network_or_timeout",errorMessage:message.slice(0,500)});
+    } catch { /* the stable idempotency key remains stored by the claim operation */ }
+    return reply(504, {
+      error:"provider_result_unknown",
+      message:"No pudimos confirmar la respuesta de Central One. No crees un segundo pedido; la misma clave de idempotencia protege el reintento.",
+    });
+  }
+}
+async function refreshOrder(orderId: string) {
+  if (!CENTRAL_ONE_API_KEY) return reply(503,{error:"central_one_not_configured",message:"Falta la clave de Central One."});
+  const lookup = new URL(SUPABASE_URL + "/rest/v1/orders");
+  lookup.searchParams.set("id","eq." + orderId);
+  lookup.searchParams.set("select","id,central_one_order_id,central_one_reference_code,central_one_status,status");
+  lookup.searchParams.set("limit","1");
+  const localResponse = await fetch(lookup, {
+    headers:{apikey:SUPABASE_SERVICE_ROLE_KEY,Authorization:"Bearer " + SUPABASE_SERVICE_ROLE_KEY},
+    signal:AbortSignal.timeout(10000),
+  });
+  if (!localResponse.ok) return reply(503,{error:"local_order_lookup_failed",message:"No se pudo consultar el pedido en la base de datos."});
+  const localRows = await localResponse.json();
+  const local = Array.isArray(localRows)?localRows[0]:null;
+  if (!local?.central_one_order_id) return reply(409,{error:"provider_order_missing",message:"Este pedido todavía no tiene una orden de Central One."});
+  const upstream = await fetch(CENTRAL_ONE_BASE + "/orders/" + local.central_one_order_id,{
+    headers:{Authorization:"Bearer " + CENTRAL_ONE_API_KEY},
+    signal:AbortSignal.timeout(20000),
+  });
+  const raw = await upstream.text();
+  let data: any = null;
+  try{data=raw?JSON.parse(raw):null;}catch{data=null;}
+  const requestId=upstream.headers.get("X-Request-Id")||data?.request_id||data?.order?.request_id||null;
+  if(!upstream.ok){
+    const err=providerError(data);
+    await finishOrder({orderId,status:local.central_one_status||"unknown",requestId,errorCode:err.code,errorMessage:err.message});
+    return reply(upstream.status>=500?502:upstream.status,{error:err.code,message:err.message,request_id:requestId});
+  }
+  const order=data?.order;
+  if(!order || order.id!==local.central_one_order_id || typeof order.status!=="string"){
+    return reply(502,{error:"invalid_provider_order_response",message:"Central One devolvió un pedido que no pudimos verificar."});
+  }
+  const providerStatus=["created","confirmed","processing","partially_completed","completed","failed","cancelled"].includes(order.status)?order.status:"unknown";
+  const safe = {
+    status:providerStatus,
+    reference_code:typeof order.reference_code==="string"?order.reference_code:null,
+    updated_at:typeof order.updated_at==="string"?order.updated_at:null,
+    failure:order?.failure&&typeof order.failure==="object"?{
+      code:typeof order.failure.code==="string"?order.failure.code:null,
+      message_es:typeof order.failure.message_es==="string"?order.failure.message_es.slice(0,400):null,
+      action:typeof order.failure.action==="string"?order.failure.action:null,
+    }:null,
+    items:Array.isArray(order.items)?order.items.map((item:any)=>({
+      status:typeof item?.status==="string"?item.status:null,
+      delivered_count:Number.isInteger(item?.delivered_count)?item.delivered_count:null,
+      failure:item?.failure&&typeof item.failure==="object"?{
+        code:typeof item.failure.code==="string"?item.failure.code:null,
+        message_es:typeof item.failure.message_es==="string"?item.failure.message_es.slice(0,400):null,
+        action:typeof item.failure.action==="string"?item.failure.action:null,
+      }:null,
+      refund:item?.refund&&typeof item.refund==="object"?{
+        refunded:item.refund.refunded===true,
+        refunded_at:typeof item.refund.refunded_at==="string"?item.refund.refunded_at:null,
+      }:null,
+    })):[],
+  };
+  const saved=await finishOrder({
+    orderId,status:providerStatus,providerOrderId:local.central_one_order_id,
+    referenceCode:typeof order.reference_code==="string"?order.reference_code:null,
+    requestId,response:safe,
+    errorCode:order?.failure?.code||null,
+    errorMessage:order?.failure?.message_es||null,
+  });
+  return reply(200,{ok:true,provider_status:providerStatus,reference_code:order.reference_code||null,local:saved,details:safe});
+}
+Deno.serve(async (req: Request) => {
+  if(req.method==="OPTIONS") return new Response("ok",{headers:corsHeaders});
+  if(req.method!=="POST") return reply(405,{error:"method_not_allowed"});
+  if(!SUPABASE_URL||!SUPABASE_ANON_KEY||!SUPABASE_SERVICE_ROLE_KEY) return reply(503,{error:"backend_not_configured"});
+  try{
+    const context=await adminContext(req);
+    const body=await req.json().catch(()=>({}));
+    const action=body?.action;
+    const orderId=typeof body?.order_id==="string"?body.order_id:"";
+    if(!/^[0-9a-f-]{36}$/i.test(orderId)) return reply(400,{error:"invalid_order_id",message:"El identificador del pedido no es válido."});
+    if(action==="submit") return await submitOrder(orderId,context.userId);
+    if(action==="refresh") return await refreshOrder(orderId);
+    return reply(400,{error:"unsupported_action",allowed_actions:["submit","refresh"]});
+  }catch(error){
+    const status=Number((error as any)?.status)||400;
+    return reply(status,{error:"central_one_order_failed",message:error instanceof Error?error.message:"No se pudo procesar la solicitud."});
+  }
+});
