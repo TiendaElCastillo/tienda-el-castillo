@@ -176,3 +176,12 @@
 .checkout-done-panel p{margin:7px 0;color:#456452;font-size:13px;line-height:1.55;overflow-wrap:anywhere;}
 .checkout-done-panel .checkout-done-note{padding:11px;border:1px solid #dbece1;border-radius:12px;background:#fff;color:#637768;font-size:11px;}
 .checkout-done-panel .block-btn{margin-top:10px;}
+
+
+/* Confirmación de correo: mantener el login visible y ofrecer reenvío */
+.auth-resend-box{margin:13px 0 16px;padding:14px;border:1px solid #d9e5f7;border-radius:15px;background:#f5f8ff;}
+.auth-resend-box>strong{display:block;color:#254a83;font-size:13px;}
+.auth-resend-box>p:not(.msg){margin:5px 0 10px;color:#667b9a;font-size:11px;line-height:1.5;}
+.auth-resend-box button{margin:0;}
+.auth-resend-box .msg{margin:8px 0 0;font-size:11px;line-height:1.5;overflow-wrap:anywhere;}
+.auth-resend-box button:disabled{opacity:.6;cursor:wait;}
