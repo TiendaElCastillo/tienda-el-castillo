@@ -1,5 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180" role="img" aria-label="Ilustración de pase premium">
-<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#203b78"/><stop offset="1" stop-color="#7663b9"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff3b2"/><stop offset="1" stop-color="#dc9e38"/></linearGradient></defs>
-<rect width="560" height="180" rx="18" fill="url(#bg)"/><circle cx="470" cy="100" r="94" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2"/>
-<g transform="translate(372 17)"><path d="m80 0 19 39 43 6-31 30 8 44-39-21-39 21 8-44-31-30 43-6Z" fill="url(#gold)" stroke="#fff1bd" stroke-width="3"/><path d="M80 22v75M52 47l56 35M108 47 52 82" stroke="#fff5d0" stroke-width="2" opacity=".65"/></g>
-<text x="34" y="75" fill="#fff" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="3">FREE FIRE</text><text x="32" y="115" fill="#fff" font-family="Arial,sans-serif" font-size="31" font-weight="900">PASE BOOYAH</text><text x="34" y="143" fill="#eeeaff" font-family="Arial,sans-serif" font-size="13" letter-spacing="2">CONTENIDO PREMIUM</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180" role="img" aria-label="Pase Booyah de Free Fire: tarjeta dorada con símbolo B">
+<defs>
+ <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#20140b"/><stop offset=".55" stop-color="#6c3a12"/><stop offset="1" stop-color="#28180d"/></linearGradient>
+ <linearGradient id="card" x2="0" y2="1"><stop stop-color="#f6c66d"/><stop offset=".35" stop-color="#a65b1d"/><stop offset="1" stop-color="#4a260f"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff8bf"/><stop offset=".45" stop-color="#ffd64d"/><stop offset="1" stop-color="#d17a17"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="7"/></filter>
+</defs>
+<rect width="560" height="180" rx="18" fill="url(#bg)"/>
+<circle cx="442" cy="84" r="115" fill="#e99d35" opacity=".12"/>
+<g opacity=".22" fill="#ffe3a0"><circle cx="38" cy="30" r="2"/><circle cx="85" cy="145" r="3"/><circle cx="513" cy="30" r="3"/><circle cx="480" cy="147" r="2"/><circle cx="250" cy="24" r="2"/></g>
+<ellipse cx="383" cy="151" rx="132" ry="12" fill="#080704" opacity=".65" filter="url(#shadow)"/>
+<g transform="translate(56 26) rotate(-3 210 62)">
+ <rect x="0" y="0" width="442" height="126" rx="14" fill="url(#card)" stroke="#ffe1a0" stroke-width="2.5"/>
+ <rect x="8" y="8" width="426" height="110" rx="10" fill="none" stroke="#ffd77b" stroke-opacity=".45"/>
+ <path d="M20 18h402" stroke="#fff0bc" stroke-opacity=".3" stroke-width="2"/>
+ <path d="m50 32 15-18 16 18-16 17Z" fill="url(#gold)" stroke="#fff2ba" stroke-width="1.5"/>
+ <text x="94" y="37" fill="#fff5d9" font-family="Arial,sans-serif" font-size="17" font-weight="900" letter-spacing="1.8">FREE FIRE</text>
+ <text x="35" y="86" fill="#fff3cf" font-family="Arial,sans-serif" font-size="31" font-weight="900" letter-spacing="1">BOOYAH PASS</text>
+ <text x="38" y="105" fill="#f6dba7" font-family="Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="2.3">PREMIUM MEMBERSHIP</text>
+ <g transform="translate(318 13)">
+  <path d="m46 0 17 19 28 2-16 21 8 27-27-11-23 15 1-28-20-18 27-8Z" fill="url(#gold)" stroke="#fff1b5" stroke-width="2"/>
+  <text x="48" y="57" text-anchor="middle" fill="#63320e" font-family="Arial,sans-serif" font-size="47" font-weight="900">B</text>
+  <path d="M48-7v-7M101 44l8 3M-3 44l-8 3" stroke="#ffe7a4" stroke-width="3" stroke-linecap="round"/>
+ </g>
+</g>
+<text x="28" y="161" fill="#f5d69c" font-family="Arial,sans-serif" font-size="10" font-weight="800" letter-spacing="2">FREE FIRE · BOOYAH</text>
+</svg>
