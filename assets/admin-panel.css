@@ -168,3 +168,11 @@
  .checkout-step-actions{grid-template-columns:1fr;}
  .checkout-stage-actions{grid-template-columns:1fr;}
 }
+
+
+.checkout-done-panel{max-width:520px;margin:8px auto 4px;padding:22px 16px;text-align:center;border:1px solid #d8eadf;border-radius:20px;background:linear-gradient(145deg,#f8fdf9,#eef9f2);}
+.checkout-done-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 12px;border-radius:50%;background:#dff5e7;color:#17834d;font-size:30px;font-weight:900;box-shadow:0 5px 16px rgba(26,130,76,.12);}
+.checkout-done-panel h2{margin:4px 0 7px;color:#194e34;font-size:23px;letter-spacing:-.03em;}
+.checkout-done-panel p{margin:7px 0;color:#456452;font-size:13px;line-height:1.55;overflow-wrap:anywhere;}
+.checkout-done-panel .checkout-done-note{padding:11px;border:1px solid #dbece1;border-radius:12px;background:#fff;color:#637768;font-size:11px;}
+.checkout-done-panel .block-btn{margin-top:10px;}
