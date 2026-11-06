@@ -504,7 +504,7 @@ async function register(){
   if(error){$("authmsg").textContent=error.message;return}
   if(data.session){await openStore(data.user)}
   else{
-   $("authmsg").textContent="¡Cuenta creada! Te enviamos un correo para confirmar tu dirección. Abre ese mensaje y pulsa «Confirmar correo» antes de iniciar sesión. Revisa también Spam.";
+   $("authmsg").textContent="¡Bienvenido a Tienda El Castillo! Tu cuenta se creó correctamente. Revisa tu Gmail (o el correo que registraste): debe haberte llegado un mensaje de confirmación para activar tu cuenta. Abre el correo y pulsa «Confirmar mi cuenta». Después vuelve a esta página e inicia sesión. Si no lo ves, revisa Spam, Promociones o Correo no deseado.";
    $("resendConfirmationWrap")?.classList.remove("hidden");
   }
  }catch(e){$("authmsg").textContent="No pudimos crear la cuenta. Comprueba tu conexión e inténtalo otra vez."}
@@ -551,7 +551,7 @@ async function resendSignupConfirmation(){
    if(/rate|too many|once/i.test(detail))throw new Error("Se ha solicitado un correo hace poco. Espera un momento y revisa la bandeja de entrada y Spam.");
    throw new Error("No se pudo reenviar el correo. "+detail);
   }
-  if(message)message.textContent="Solicitud enviada. Revisa la bandeja de entrada y Spam. Usa el enlace más reciente que recibas.";
+  if(message)message.textContent="¡Listo! Revisa tu Gmail o el correo registrado. Te enviamos un nuevo mensaje de Tienda El Castillo. Abre el más reciente y pulsa «Confirmar mi cuenta». Si no aparece, revisa Spam y Promociones.";
  }catch(error){
   if(message)message.textContent=error.message||"No se pudo reenviar el correo. Comprueba tu conexión.";
  }finally{
