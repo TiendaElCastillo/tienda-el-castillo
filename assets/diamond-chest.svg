@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cofre de diamantes azules">
+<defs>
+ <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffe9a7"/><stop offset=".55" stop-color="#dca64a"/><stop offset="1" stop-color="#8e5722"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9fcff"/><stop offset=".45" stop-color="#67c9ff"/><stop offset="1" stop-color="#1757c1"/></linearGradient>
+</defs>
+<path d="M8 27 14 17h36l6 10v25H8Z" fill="url(#gold)" stroke="#80501d" stroke-width="2"/>
+<path d="M8 27h48v9H8Z" fill="#f3c86d" stroke="#8a5b25" stroke-width="1.5"/>
+<path d="M13 17q19-13 38 0v10H13Z" fill="#213e77" stroke="#b77b2d" stroke-width="2"/>
+<path d="M17 24 23 12l9-4 10 4 6 12-16 8Z" fill="url(#blue)" stroke="#a9e7ff" stroke-width="1.3"/>
+<path d="m23 12 9 20 10-20M17 24l15 8 16-8" fill="none" stroke="#effcff" stroke-width="1.2" opacity=".9"/>
+<path d="M27 36h10v13H27z" fill="#75451d" stroke="#ffe29a" stroke-width="1.4"/>
+<path d="M32 36v13" stroke="#f5cc74" stroke-width="1.2"/>
+<path d="m5 11 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#ffd76d"/>
+<circle cx="54" cy="10" r="2" fill="#fff"/><circle cx="57" cy="43" r="1.5" fill="#b5eaff"/>
+</svg>
