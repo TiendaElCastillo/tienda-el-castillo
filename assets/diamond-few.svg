@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 72" role="img" aria-label="Unos pocos diamantes azules">
+<defs><linearGradient id="d" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4ffff"/><stop offset=".42" stop-color="#8be0ff"/><stop offset="1" stop-color="#1765d4"/></linearGradient><filter id="g"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<ellipse cx="48" cy="61" rx="31" ry="5" fill="#1677df" opacity=".18"/>
+<g filter="url(#g)" stroke="#b9efff" stroke-width="1.2"><path d="m18 43 8-15 13 0 8 15-14 14Z" fill="url(#d)"/><path d="m50 38 7-19 16 0 9 19-16 17Z" fill="url(#d)"/><path d="m26 28 13 29M58 19l8 36M50 38h32" fill="none" opacity=".8"/></g>
+<path d="m65 7 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#ffe29a"/></svg>
