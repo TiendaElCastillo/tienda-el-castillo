@@ -643,7 +643,7 @@ function updateCheckoutSummary(){
  const regionLine=p.provider_product_id?'<small>Servidor '+clean(p.provider_region||"")+' · ID verificado antes del pedido</small>':'<small>Precio final según el método de pago</small>';
  $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong>'+regionLine+'</div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
  syncPlayerRegionUI();
- $("walletCheckoutNote").textContent=method==="Billetera CUP"?"Tu saldo actual es "+money(walletBalanceCUP)+" CUP. "+(walletBalanceCUP>=Number(raw)?"Tienes saldo suficiente para este paquete.":"Te faltan "+money(Number(raw)-walletBalanceCUP)+" CUP."):"";
+ const walletNote=$("walletCheckoutNote");if(walletNote)walletNote.textContent=method==="Billetera CUP"?"Tu saldo actual es "+money(walletBalanceCUP)+" CUP. "+(walletBalanceCUP>=Number(raw)?"Tienes saldo suficiente para este paquete.":"Te faltan "+money(Number(raw)-walletBalanceCUP)+" CUP."):"";
  updatePaymentInstructions();
  updatePaymentFields();
 }
