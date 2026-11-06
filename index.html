@@ -637,7 +637,7 @@ function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
- const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\\'./assets/free-fire-hero.svg\\'">':'<span>'+item.icon+'</span>';
+ const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=&quot;./assets/free-fire-hero.svg&quot;">':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
@@ -657,8 +657,8 @@ function renderGameDetail(){
   $("gameDetailPlans").innerHTML=
    '<div class="ff-browser-head"><div><span class="ff-eyebrow">CATÁLOGO FREE FIRE</span><h2>Elige tu paquete</h2><p>Precios según el método de pago seleccionado</p></div><span class="ff-total">'+plans.length+' opciones</span></div>'+
    '<div class="free-fire-category-tabs" role="tablist" aria-label="Categorías de Free Fire">'+
-    '<button type="button" class="free-fire-category-tab '+(activeCategory==="diamonds"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="diamonds")+'" aria-controls="freeFireDiamondsPanel" onclick="selectFreeFireCategory(\\'diamonds\\')"><span>💎 Diamantes</span><b>'+diamonds.length+'</b></button>'+
-    '<button type="button" class="free-fire-category-tab '+(activeCategory==="extra"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="extra")+'" aria-controls="freeFireExtraPanel" onclick="selectFreeFireCategory(\\'extra\\')"><span>🎁 Ofertas extra</span><b>'+totalExtra+'</b></button>'+
+    '<button type="button" class="free-fire-category-tab '+(activeCategory==="diamonds"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="diamonds")+'" aria-controls="freeFireDiamondsPanel" onclick="selectFreeFireCategory(&quot;diamonds&quot;)"><span>💎 Diamantes</span><b>'+diamonds.length+'</b></button>'+
+    '<button type="button" class="free-fire-category-tab '+(activeCategory==="extra"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="extra")+'" aria-controls="freeFireExtraPanel" onclick="selectFreeFireCategory(&quot;extra&quot;)"><span>🎁 Ofertas extra</span><b>'+totalExtra+'</b></button>'+
    '</div>'+
    '<section id="freeFireDiamondsPanel" class="free-fire-category-panel '+(activeCategory==="diamonds"?"active":"")+'" role="tabpanel">'+
     compartment("diamonds","Diamantes","Paquetes de diamantes para tu cuenta","💎",diamonds,diamonds.length?'<div class="ff-package-list">'+cards(diamonds)+'</div>':empty("No hay paquetes de diamantes para este pago"))+
@@ -772,7 +772,7 @@ function renderCheckoutPaymentMethods(){
  if(!box||!select)return;
  const methods=[{name:"Transferencia CUP",icon:"▣",short:"Transferencia CUP"},{name:"Saldo móvil",icon:"▰",short:"Saldo móvil"}]
   .filter(method=>product&&Number(priceForMethod(product,method.name))>0&&isPaymentMethodReady(method.name));
- box.innerHTML=methods.length?methods.map(method=>'<button type="button" class="checkout-method-choice '+(select.value===method.name?"active":"")+'" aria-pressed="'+(select.value===method.name)+'" onclick="chooseCheckoutPaymentMethod(\\''+method.name+'\\')"><span class="checkout-method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>').join(""):'<p class="empty-note">No hay métodos de pago configurados para este paquete. No realices ninguna transferencia.</p>';
+ box.innerHTML=methods.length?methods.map(method=>'<button type="button" class="checkout-method-choice '+(select.value===method.name?"active":"")+'" aria-pressed="'+(select.value===method.name)+'" onclick="chooseCheckoutPaymentMethod(&quot;'+method.name+'&quot;)"><span class="checkout-method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>').join(""):'<p class="empty-note">No hay métodos de pago configurados para este paquete. No realices ninguna transferencia.</p>';
 }
 function chooseCheckoutPaymentMethod(name){
  const select=$("payment");
