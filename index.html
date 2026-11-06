@@ -201,7 +201,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 
 
 /* Ajustes de legibilidad y carga visual en móviles */
-.auth-layout{min-width:0}.auth-visual,.auth-panel{min-width:0}.auth-visual h1{overflow-wrap:anywhere}.auth-panel h2{line-height:1.2;overflow-wrap:anywhere}.auth-panel .subtle{line-height:1.55;overflow-wrap:anywhere}.auth-tabs{min-width:0}.auth-tabs button{min-width:0;white-space:normal;line-height:1.25}.cf-turnstile{min-height:65px;max-width:100%;overflow:hidden}.brand-name{min-width:0}.brand-name strong,.brand-name span{overflow-wrap:anywhere}.game-detail-art img{display:block;width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.game-detail-art:after{pointer-events:none}.package-group{margin:20px 0 25px}.package-group-heading{margin:0 0 10px}.package-group-heading h3{margin:0;font-size:18px;letter-spacing:-.02em}.package-group-heading p{margin:3px 0 0;color:var(--muted);font-size:11px}.package-group .game-plans-grid{margin:0}.product-art img{object-fit:cover}
+.auth-layout{min-width:0}.auth-visual,.auth-panel{min-width:0}.auth-visual h1{overflow-wrap:anywhere}.auth-panel h2{line-height:1.2;overflow-wrap:anywhere}.auth-panel .subtle{line-height:1.55;overflow-wrap:anywhere}.auth-tabs{min-width:0}.auth-tabs button{min-width:0;white-space:normal;line-height:1.25}#castleTurnstile{min-height:65px;max-width:100%;overflow:hidden}.brand-name{min-width:0}.brand-name strong,.brand-name span{overflow-wrap:anywhere}.game-detail-art img{display:block;width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.game-detail-art:after{pointer-events:none}.package-group{margin:20px 0 25px}.package-group-heading{margin:0 0 10px}.package-group-heading h3{margin:0;font-size:18px;letter-spacing:-.02em}.package-group-heading p{margin:3px 0 0;color:var(--muted);font-size:11px}.package-group .game-plans-grid{margin:0}.product-art img{object-fit:cover}
 @media(max-width:420px){.auth-visual{min-height:245px}.auth-panel{padding:18px}.auth-panel h2{font-size:21px}.auth-panel .subtle{font-size:12px}.auth-tabs button{font-size:12px;padding:9px 5px}.auth-visual .eyebrow{font-size:9px;letter-spacing:.06em}.auth-benefits{max-width:72%;gap:7px;font-size:10px}}
 
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
@@ -217,7 +217,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 <section id="auth" class="auth-layout">
  <div class="auth-visual"><span class="eyebrow">♛ TIENDA EL CASTILLO</span><h1>Recarga tu juego. Disfruta más.</h1><p>Diamantes de Free Fire y recargas digitales desde Cuba. Haz tu pedido por ID y consulta su estado desde tu cuenta.</p><div class="auth-benefits"><span>✓ Transferencia CUP</span><span>✓ Saldo móvil</span><span>✓ Seguimiento de pedidos</span></div><div class="orb"><img src="./assets/castle-logo.webp" alt="Emblema de Tienda El Castillo" width="78" height="78"></div></div>
  <div class="auth-panel"><h2 id="authTitle">Inicia sesión</h2><p class="subtle" id="authSubtitle">Accede a tu cuenta para consultar los paquetes de Free Fire, realizar pedidos y seguir cada solicitud.</p><div class="auth-tabs"><button id="registerTab" type="button" onclick="setAuthMode('register')">Crear cuenta</button><button id="loginTab" type="button" class="active" onclick="setAuthMode('login')">Iniciar sesión</button></div>
-  <div class="field" id="fullnameWrap"><label for="fullname">Tu nombre</label><input id="fullname" autocomplete="name" placeholder="Cómo te llamas"></div><div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="nombre@correo.com"></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña"></div><div class="field"><div id="castleTurnstile" class="cf-turnstile" data-sitekey="0x4AAAAAAFzpg8oL2eQCGBYr" data-callback="onCastleCaptchaSuccess" data-expired-callback="onCastleCaptchaExpired" data-error-callback="onCastleCaptchaError"></div></div><button class="primary-btn block-btn" id="authSubmit" type="button" onclick="register()">Crear cuenta</button><p id="authmsg" class="msg" role="status" aria-live="polite"></p><p class="subtle">No necesitas compartir la contraseña de tu juego. Para una recarga solo te pediremos los datos necesarios del pedido, como tu ID de jugador.</p><p class="auth-legal">Antes de continuar, revisa nuestra <a href="#privacidad" onclick="openPublicInfo('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="openPublicInfo('terms');return false">Términos de compra</a>.</p>
+  <div class="field" id="fullnameWrap"><label for="fullname">Tu nombre</label><input id="fullname" autocomplete="name" placeholder="Cómo te llamas"></div><div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="nombre@correo.com"></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña"></div><div class="field"><div id="castleTurnstile" aria-label="Verificación de seguridad"></div></div><button class="primary-btn block-btn" id="authSubmit" type="button" onclick="register()">Crear cuenta</button><p id="authmsg" class="msg" role="status" aria-live="polite"></p><p class="subtle">No necesitas compartir la contraseña de tu juego. Para una recarga solo te pediremos los datos necesarios del pedido, como tu ID de jugador.</p><p class="auth-legal">Antes de continuar, revisa nuestra <a href="#privacidad" onclick="openPublicInfo('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="openPublicInfo('terms');return false">Términos de compra</a>.</p>
   <p class="auth-help">¿Necesitas ayuda? <a href="#ayuda" onclick="openPublicInfo('faq');return false">Preguntas frecuentes</a> · <a href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">WhatsApp +53 51884050</a></p>
  </div>
 </section>
@@ -306,10 +306,29 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 window.onCastleCaptchaSuccess=function(token){window.castleCaptchaToken=token;const m=document.getElementById("authmsg");if(m&&m.textContent.includes("CAPTCHA"))m.textContent="";};
 window.onCastleCaptchaExpired=function(){window.castleCaptchaToken=null;};
 window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=document.getElementById("authmsg");if(m)m.textContent="No se pudo verificar el CAPTCHA. Comprueba tu conexión y vuelve a intentarlo."};
-function resetCastleCaptcha(){window.castleCaptchaToken=null;if(window.turnstile&&document.getElementById("castleTurnstile")){try{window.turnstile.reset("#castleTurnstile")}catch(e){}}}
+let castleTurnstileWidgetId=null;
+function renderCastleTurnstile(){
+ if(!window.turnstile||!window.turnstile.render)return false;
+ if(castleTurnstileWidgetId)return true;
+ castleTurnstileWidgetId=window.turnstile.render("#castleTurnstile",{
+  sitekey:"0x4AAAAAAFzpg8oL2eQCGBYr",
+  callback:token=>window.onCastleCaptchaSuccess(token),
+  "expired-callback":()=>window.onCastleCaptchaExpired(),
+  "error-callback":()=>window.onCastleCaptchaError()
+ });
+ return Boolean(castleTurnstileWidgetId);
+}
+function resetCastleCaptcha(){
+ window.castleCaptchaToken=null;
+ if(window.turnstile&&castleTurnstileWidgetId){
+  try{window.turnstile.reset(castleTurnstileWidgetId)}catch(e){}
+ }
+}
 let castleTurnstilePromise=null;
 function loadCastleTurnstile(){
- if(window.turnstile&&window.turnstile.render)return Promise.resolve(true);
+ if(window.turnstile&&window.turnstile.render){
+  try{return Promise.resolve(renderCastleTurnstile())}catch(e){return Promise.resolve(false)}
+ }
  if(castleTurnstilePromise)return castleTurnstilePromise;
  castleTurnstilePromise=new Promise(resolve=>{
   const script=document.createElement("script");
@@ -318,13 +337,14 @@ function loadCastleTurnstile(){
    if(finished)return;
    finished=true;clearTimeout(timeout);
    if(!ok){script.remove();castleTurnstilePromise=null;}
-   resolve(Boolean(ok&&window.turnstile&&window.turnstile.render));
+   resolve(Boolean(ok&&castleTurnstileWidgetId));
   };
   const timeout=setTimeout(()=>finish(false),45000);
-  script.src="https://challenges.cloudflare.com/turnstile/v0/api.js";
+  script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
   script.async=true;
-  script.defer=true;
-  script.onload=()=>finish(true);
+  script.onload=()=>{
+   try{finish(renderCastleTurnstile())}catch(e){finish(false)}
+  };
   script.onerror=()=>finish(false);
   document.head.appendChild(script);
  });
