@@ -274,7 +274,7 @@ window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=do
 function resetCastleCaptcha(){window.castleCaptchaToken=null;if(window.turnstile&&document.getElementById("castleTurnstile")){try{window.turnstile.reset("#castleTurnstile")}catch(e){}}}
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null;
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -371,8 +371,14 @@ async function openStore(user){
  // One final render after both datasets have been attempted.
  try{renderProductCatalogs();updateCheckoutSummary();}
  catch(renderError){console.error("Error al mostrar el catálogo:",renderError);const box=$("gamePaymentChoices");if(box)box.innerHTML='<p class="empty-note">Error al mostrar el catálogo: '+clean(renderError.message||renderError)+'</p>';}
- await loadMyOrders();
- if(currentProfile.role==="admin"){await loadAllOrders();await loadPricingSettings();await loadLatestCentralOneCatalog();startAdminPaymentPolling();}else stopAdminPaymentPolling();
+ try{await loadMyOrders();}catch(orderError){const list=$("myorders");if(list)list.textContent="No se pudieron cargar tus pedidos: "+clean(orderError.message||orderError);}
+ startCustomerOrderRealtime();
+ if(currentProfile.role==="admin"){
+  startAdminPaymentPolling();
+  try{await loadAllOrders();}catch(adminOrderError){const list=$("allorders");if(list)list.textContent="No se pudieron cargar los pedidos de administración: "+clean(adminOrderError.message||adminOrderError);}
+  try{await loadPricingSettings();}catch(pricingError){const msg=$("pricingSettingsMsg");if(msg)msg.textContent="No se pudieron cargar las reglas: "+clean(pricingError.message||pricingError);}
+  try{await loadLatestCentralOneCatalog();}catch(catalogError){const msg=$("centralOneCatalogMsg");if(msg)msg.textContent="No se pudo cargar el último catálogo: "+clean(catalogError.message||catalogError);}
+ }else stopAdminPaymentPolling();
  if(pendingCheckoutAfterLogin){pendingCheckoutAfterLogin=false;showView("checkout");}else showView("home");
 }
 
@@ -1346,6 +1352,23 @@ async function testCentralOneConnection(){
  finally{button.disabled=false;button.textContent="Probar conexión (ping)";}
 }
 
+function stopCustomerOrderRealtime(){
+ if(customerOrderPoll){clearInterval(customerOrderPoll);customerOrderPoll=null;}
+ if(customerOrderChannel&&db){try{db.removeChannel(customerOrderChannel);}catch(e){}customerOrderChannel=null;}
+}
+function startCustomerOrderRealtime(){
+ stopCustomerOrderRealtime();
+ if(!currentUser||!db)return;
+ const userId=currentUser.id;
+ customerOrderChannel=db.channel("castle-customer-orders-"+userId)
+  .on("postgres_changes",{event:"*",schema:"public",table:"orders",filter:"user_id=eq."+userId},payload=>{
+   if(currentUser?.id===userId)loadMyOrders();
+  })
+  .subscribe();
+ customerOrderPoll=setInterval(()=>{
+  if(currentUser?.id===userId&&document.visibilityState!=="hidden")loadMyOrders();
+ },60000);
+}
 function stopAdminPaymentPolling(){
  if(adminOrderPoll){clearInterval(adminOrderPoll);adminOrderPoll=null;}
  if(adminOrderChannel&&db){try{db.removeChannel(adminOrderChannel);}catch(e){}adminOrderChannel=null;}
@@ -1469,6 +1492,7 @@ async function loadAllOrders(options={}){
  });
 }
 async function logout(){
+ stopCustomerOrderRealtime();
  stopAdminPaymentPolling();
  await db.auth.signOut();pendingCheckoutAfterLogin=false;currentUser=null;currentProfile=null;
  $("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");
