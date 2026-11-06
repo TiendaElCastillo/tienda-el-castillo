@@ -307,6 +307,29 @@ window.onCastleCaptchaSuccess=function(token){window.castleCaptchaToken=token;co
 window.onCastleCaptchaExpired=function(){window.castleCaptchaToken=null;};
 window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=document.getElementById("authmsg");if(m)m.textContent="No se pudo verificar el CAPTCHA. Comprueba tu conexión y vuelve a intentarlo."};
 function resetCastleCaptcha(){window.castleCaptchaToken=null;if(window.turnstile&&document.getElementById("castleTurnstile")){try{window.turnstile.reset("#castleTurnstile")}catch(e){}}}
+let castleTurnstilePromise=null;
+function loadCastleTurnstile(){
+ if(window.turnstile&&window.turnstile.render)return Promise.resolve(true);
+ if(castleTurnstilePromise)return castleTurnstilePromise;
+ castleTurnstilePromise=new Promise(resolve=>{
+  const script=document.createElement("script");
+  let finished=false;
+  const finish=ok=>{
+   if(finished)return;
+   finished=true;clearTimeout(timeout);
+   if(!ok){script.remove();castleTurnstilePromise=null;}
+   resolve(Boolean(ok&&window.turnstile&&window.turnstile.render));
+  };
+  const timeout=setTimeout(()=>finish(false),45000);
+  script.src="https://challenges.cloudflare.com/turnstile/v0/api.js";
+  script.async=true;
+  script.defer=true;
+  script.onload=()=>finish(true);
+  script.onerror=()=>finish(false);
+  document.head.appendChild(script);
+ });
+ return castleTurnstilePromise;
+}
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
 let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="";
@@ -383,7 +406,16 @@ async function register(){
  if(!name){$("authmsg").textContent="Escribe tu nombre para identificar tu cuenta.";return}
  if(!email||!/^\\S+@\\S+\\.\\S+$/.test(email)){ $("authmsg").textContent="Escribe un correo electrónico válido.";return}
  if(password.length<8){$("authmsg").textContent="Usa una contraseña de al menos 8 caracteres.";return}
- const captchaToken=window.castleCaptchaToken;if(!captchaToken){$("authmsg").textContent="Completa la verificación CAPTCHA antes de crear tu cuenta.";return}
+ let captchaToken=window.castleCaptchaToken;
+ if(!captchaToken){
+  $("authmsg").textContent="Cargando la verificación de seguridad…";
+  const loaded=await loadCastleTurnstile();
+  captchaToken=window.castleCaptchaToken;
+  if(!loaded||!captchaToken){
+   $("authmsg").textContent=loaded?"Completa la verificación de seguridad y vuelve a pulsar el botón.":"No se pudo cargar la verificación. Comprueba tu conexión e inténtalo de nuevo.";
+   return;
+  }
+ }
  const submit=$("authSubmit");submit.disabled=true;submit.textContent="Creando cuenta…";
  try{
   const {data,error}=await db.auth.signUp({email,password,options:{captchaToken,data:{full_name:name},emailRedirectTo:location.origin+location.pathname}});
@@ -397,7 +429,16 @@ async function register(){
 async function login(){
  const email=$("email").value.trim().toLowerCase(),password=$("password").value;
  if(!email||!password){$("authmsg").textContent="Escribe tu correo y contraseña.";return}
- const captchaToken=window.castleCaptchaToken;if(!captchaToken){$("authmsg").textContent="Completa la verificación CAPTCHA antes de iniciar sesión.";return}
+ let captchaToken=window.castleCaptchaToken;
+ if(!captchaToken){
+  $("authmsg").textContent="Cargando la verificación de seguridad…";
+  const loaded=await loadCastleTurnstile();
+  captchaToken=window.castleCaptchaToken;
+  if(!loaded||!captchaToken){
+   $("authmsg").textContent=loaded?"Completa la verificación de seguridad y vuelve a pulsar el botón.":"No se pudo cargar la verificación. Comprueba tu conexión e inténtalo de nuevo.";
+   return;
+  }
+ }
  const submit=$("authSubmit");submit.disabled=true;submit.textContent="Entrando…";
  try{
   const {data,error}=await db.auth.signInWithPassword({email,password,options:{captchaToken}});
@@ -1657,6 +1698,10 @@ window.addEventListener("DOMContentLoaded",()=>{
  $("brandLoader")?.classList.add("done");
  $("auth").classList.remove("hidden");
  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+ // Descarga la verificación cuando el visitante empieza a escribir, no al abrir la página.
+ ["email","password"].forEach(id=>{
+  $(id)?.addEventListener("focus",()=>{loadCastleTurnstile();},{once:true});
+ });
  bootstrapCastleStore().catch(error=>{
   console.error("No se pudo iniciar Tienda El Castillo:",error);
   $("authmsg").textContent="La conexión está tardando. Comprueba Internet y pulsa «Reintentar conexión».";
@@ -1665,7 +1710,7 @@ window.addEventListener("DOMContentLoaded",()=>{
  });
 });
 </script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <script src="./assets/admin-panel.js?v=9"></script>
 </body>
 </html>
