@@ -535,7 +535,7 @@ function openAccount(){$("siteHeader").classList.add("hidden");$("store").classL
 function resetPlayerValidation(){
  validatedPlayerCheckout=null;
  if($("playerValidationMsg"))$("playerValidationMsg").textContent="";
- if($("playerValidationBtn")){$("playerValidationBtn").disabled=false;$("playerValidationBtn").textContent="Verificar ID y región con Central One";}
+ if($("playerValidationBtn")){$("playerValidationBtn").disabled=false;$("playerValidationBtn").textContent="Comprobar ID (sin realizar recarga)";}
  if($("playername"))$("playername").value="";
 }
 function syncPlayerRegionUI(){
@@ -546,7 +546,7 @@ function syncPlayerRegionUI(){
   if(providerProduct){
    const supported=p.provider_validation_supported===true;
    $("playerRegionNote").textContent=supported
-    ?"Región del paquete: servidor "+String(p.provider_region||"").toUpperCase()+". Central One verificará el ID antes de permitir el pedido."
+    ?"Servidor "+String(p.provider_region||"").toUpperCase()+". Esta consulta solo comprueba el ID: no crea una recarga ni consume saldo. La recarga se enviará únicamente después de que la tienda confirme tu pago."
     :"Región "+String(p.provider_region||"").toUpperCase()+": la validación del proveedor no está habilitada. No se pueden crear pedidos de este paquete.";
   }else{
    $("playerRegionNote").textContent="Revisa cuidadosamente el ID del jugador y confirma que corresponde a la región de este paquete.";
@@ -583,7 +583,7 @@ async function validatePlayerId(){
  }catch(e){
   validatedPlayerCheckout=null;msg.textContent=e.message||"No se pudo verificar el ID. No se ha creado ningún pedido.";
  }finally{
-  button.disabled=false;button.textContent="Verificar ID y región con Central One";
+  button.disabled=false;button.textContent="Comprobar ID (sin realizar recarga)";
  }
 }
 function openCheckout(productId,preferredMethod){
