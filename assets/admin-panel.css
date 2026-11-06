@@ -105,6 +105,7 @@
 /* Información pública de la tienda: ayuda, privacidad y condiciones */
 .auth-legal{margin:12px 0 0;font-size:11px;line-height:1.55;color:#71809a}
 .auth-help{margin:8px 0 0;font-size:11px;line-height:1.5;color:#71809a}.auth-help a{color:#16834c;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.order-support-link{display:inline-block;margin-top:10px;color:#16834c;font-size:12px;font-weight:800;text-decoration:underline;text-underline-offset:2px}
 .auth-legal a,.policy-panel a{color:#225fc4;font-weight:750;text-decoration:underline;text-underline-offset:2px}
 .policy-panel{max-width:900px;margin:0 auto;padding:clamp(18px,3vw,28px);line-height:1.65}
 .policy-panel h1{margin:8px 0 5px;color:#193253;font-size:clamp(25px,5vw,34px);letter-spacing:-.04em}
