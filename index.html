@@ -1612,9 +1612,24 @@ async function logout(){
  $("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");
  $("auth").classList.remove("hidden");setAuthMode("login");window.scrollTo({top:0,behavior:"smooth"});
 }
-window.addEventListener("load",()=>{
- if(window.supabase&&window.supabase.createClient) start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY);
- else{$("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo."; $("brandLoader")?.classList.add("done");}
+window.addEventListener("DOMContentLoaded",()=>{
+ // No dependas de window.load: recursos externos lentos (por ejemplo CAPTCHA o imágenes)
+ // no deben mantener bloqueada la pantalla inicial.
+ const startupFailsafe=setTimeout(()=>{
+  const loader=$("brandLoader");
+  if(loader&&!loader.classList.contains("done")){
+   $("authmsg").textContent="La conexión está tardando más de lo normal. Comprueba Internet e intenta iniciar sesión de nuevo.";
+   $("auth").classList.remove("hidden");
+   loader.classList.add("done");
+  }
+ },12000);
+ if(window.supabase&&window.supabase.createClient){
+  start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY).finally(()=>clearTimeout(startupFailsafe));
+ }else{
+  $("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo.";
+  $("brandLoader")?.classList.add("done");
+  clearTimeout(startupFailsafe);
+ }
  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 });
 </script>
