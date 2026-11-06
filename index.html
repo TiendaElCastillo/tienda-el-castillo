@@ -1242,7 +1242,9 @@ function freeFirePlanIcon(p,item){
   const label=amount>=3000?"Cofre desbordándose de diamantes":amount>=1000?"Cofre de diamantes":amount>=250?"Montón de diamantes":"Unos pocos diamantes";
   return '<img class="plan-icon-image" src="./assets/'+src+'" alt="'+label+'" loading="lazy" decoding="async" width="72" height="56">';
  }
- const icon=group==="booyah"?"⭐":group==="passes"?"🎟️":group==="levels"?"🏆":gameCurrency(item).icon;
+ if(group==="booyah")return '<img class="plan-icon-image plan-icon-booyah" src="./assets/product-pass.svg?v=2" alt="Tarjeta del Pase Booyah" loading="lazy" decoding="async" width="72" height="56">';
+ if(group==="passes")return '<img class="plan-icon-image plan-icon-weekly" src="./assets/product-card.svg?v=2" alt="Tarjeta del pase semanal" loading="lazy" decoding="async" width="72" height="56">';
+ const icon=group==="levels"?"🏆":gameCurrency(item).icon;
  return '<span class="plan-icon-emoji" aria-hidden="true">'+icon+'</span>';
 }
 function gamePlanCard(p,item,method){
@@ -1303,7 +1305,7 @@ function productArtwork(p){
  const fallback="this.onerror=null;this.src='./assets/free-fire-hero.svg'";
  if(!fold(p.game||"").includes("free fire")&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Free Fire")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
  const group=freeFirePackageGroup(p),file=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":"product-diamonds.svg";
- return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+file+'" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
+ return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+file+'?v=2" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
 }
 function productCard(p){
  const options=[["CUP",p.price_transfer,"CUP","Transferencia CUP"],["Saldo",p.price_mobile,"saldo","Saldo móvil"],["USDT",p.price_usdt,"USDT","USDT"]].filter(item=>Number(item[1])>0&&isPaymentMethodReady(item[3]));
