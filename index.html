@@ -237,7 +237,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
    <div id="gameDetailHero"></div>
    <div class="game-method-section"><div class="section-head"><div><h2>¿Cómo quieres pagar?</h2><p>Los paquetes y precios se actualizan según tu selección</p></div></div><div id="gamePaymentChoices" class="game-payment-choices"></div></div>
    <div class="section-head"><div><h2 id="gamePlansTitle">Planes disponibles</h2><p id="gamePlansSubtitle">Elige la cantidad que necesitas</p></div></div>
-   <div id="gameDetailPlans" class="game-plans-grid"></div>
+   <div id="gameDetailPlans" class="free-fire-package-browser"></div>
   </div>
   <div id="gamesProducts" class="hidden"></div><h2 id="gamesProductsTitle" class="hidden">Paquetes disponibles</h2>
  </section>
@@ -380,7 +380,7 @@ const gamePaymentCatalog=[
  {name:"USDT",short:"USDT",icon:"₮",unit:"USDT"}
 ];
 function gameFor(name){return gameCatalog.find(item=>fold(item.name)===fold(name))||gameCatalog.find(item=>(item.match||[]).some(word=>fold(name).includes(fold(word))||fold(word).includes(fold(name))))}
-function isLevelUpPackage(p){return /subida\s*de\s*nivel|nivel\s*\d*|level\s*up|level\s*\d*/i.test(fold(String(p.name||"")+" "+String(p.description||"")));}
+function isLevelUpPackage(p){return /paquete\s+de\s+(?:mejora|subida)\s+de\s+nivel|level\s*up/i.test(fold(String(p.name||"")));}
 function freeFirePackageGroup(p){const label=fold(String(p.name||"")+" "+String(p.description||""));if(/booyah/.test(label))return "booyah";if(/pase|semanal|mensual|weekly|monthly/.test(label))return "passes";return "diamonds";}
 function packageSortValue(p){
  const amount=Number(p.amount||0);if(Number.isFinite(amount)&&amount>0)return amount;
@@ -400,33 +400,39 @@ function gameCurrency(item){const n=fold(item?.name||"");if(n.includes("free fir
 function packageQuantity(p,item){const meta=gameCurrency(item);const amount=Number(p.amount||0);return amount>0?money(amount)+" "+meta.unit:p.name}
 function gameMethodsFor(rows){return gamePaymentCatalog.filter(method=>rows.some(p=>Number(priceForMethod(p,method.name))>0))}
 function gamePaymentButton(method,rows){const enabled=rows.some(p=>Number(priceForMethod(p,method.name))>0);return '<button type="button" class="game-method '+(gamePaymentMethod===method.name?'active':'')+'" '+(enabled?'':'disabled')+' aria-pressed="'+(gamePaymentMethod===method.name)+'" onclick="selectGamePaymentMethod(&quot;'+clean(method.name)+'&quot;)"><span class="method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>'}
-function gamePlanCard(p,item,method){const meta=gameCurrency(item),price=Number(priceForMethod(p,method));return '<article class="game-plan-card game-plan-clickable" data-product-id="'+clean(p.id)+'" data-payment-method="'+clean(method)+'"><div class="plan-currency">'+meta.icon+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+(Number(p.amount)>0?' · Paquete digital':'')+'</small></div><div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||'')+'</small></div><button class="primary-btn plan-buy" type="button" onclick="openCheckout(&quot;'+clean(p.id)+'&quot;,&quot;'+clean(method)+'&quot;)">Elegir</button></article>'}
+function gamePlanCard(p,item,method){
+ const meta=gameCurrency(item),price=Number(priceForMethod(p,method)),id=clean(p.id),pay=clean(method);
+ return '<article class="game-plan-card game-plan-clickable" role="button" tabindex="0" data-product-id="'+id+'" data-payment-method="'+pay+'" onclick="openCheckout(\''+id+'\',\''+pay+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openCheckout(\''+id+'\',\''+pay+'\')}">'+
+ '<div class="plan-currency">'+meta.icon+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+'</small></div>'+
+ '<div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||"")+'</small></div>'+
+ '<button class="primary-btn plan-buy" type="button" onclick="event.stopPropagation();openCheckout(\''+id+'\',\''+pay+'\')">Comprar ahora <span aria-hidden="true">→</span></button></article>';
+}
 let activeFreeFireCategory="diamonds";
 function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
  const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'./assets/free-fire-hero.svg\'">':'<span>'+item.icon+'</span>';
- $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Selecciona tu método de pago y encuentra el paquete que necesitas.</p><span class="detail-count">'+(rows.length?rows.length+' paquetes cargados':'Planes en preparación')+'</span></div></div>';
+ $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
  $("gamePaymentChoices").innerHTML=gamePaymentCatalog.map(method=>gamePaymentButton(method,rows)).join("");
  const plans=sortPackages(rows.filter(p=>Number(priceForMethod(p,gamePaymentMethod))>0));
  if(fold(item.name)==="free fire"){
   const diamonds=plans.filter(p=>freeFirePackageGroup(p)==="diamonds");
   const passes=plans.filter(p=>["passes","booyah"].includes(freeFirePackageGroup(p)));
   if(!diamonds.length&&passes.length)activeFreeFireCategory="passes";
-  else if(!passes.length&&diamonds.length)activeFreeFireCategory="diamonds";
-  const tabs='<div class="free-fire-category-tabs" role="tablist" aria-label="Categorías de Free Fire">'+
-   '<button type="button" role="tab" aria-selected="'+(activeFreeFireCategory==="diamonds")+'" class="free-fire-category-tab '+(activeFreeFireCategory==="diamonds"?"active":"")+'" data-free-fire-tab="diamonds" onclick="selectFreeFireCategory(\'diamonds\')">💎 Diamantes <small>'+diamonds.length+'</small></button>'+
-   '<button type="button" role="tab" aria-selected="'+(activeFreeFireCategory==="passes")+'" class="free-fire-category-tab '+(activeFreeFireCategory==="passes"?"active":"")+'" data-free-fire-tab="passes" onclick="selectFreeFireCategory(\'passes\')">🎟️ Pases y Booyah <small>'+passes.length+'</small></button></div>';
-  const diamondPane='<section class="free-fire-category-panel '+(activeFreeFireCategory==="diamonds"?"active":"")+'" role="tabpanel" data-free-fire-category="diamonds">'+
-   (diamonds.length?'<div class="package-group-heading"><h3>Diamantes</h3><p>Del paquete más pequeño al más grande</p></div><div class="game-plans-grid">'+diamonds.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join("")+'</div>':'<div class="game-empty-state"><span>💎</span><strong>No hay diamantes con este método de pago.</strong><p>Prueba otra forma de pago.</p></div>')+'</section>';
-  const passGroups=[{id:"passes",title:"Pases semanales y mensuales",subtitle:"Semanal básico, semanal y mensual"},{id:"booyah",title:"Pase Booyah",subtitle:"Pase premium"}];
-  const passContent=passGroups.map(group=>{const list=passes.filter(p=>freeFirePackageGroup(p)===group.id);return list.length?'<section class="package-group"><div class="package-group-heading"><h3>'+group.title+'</h3><p>'+group.subtitle+'</p></div><div class="game-plans-grid">'+sortPackages(list).map(p=>gamePlanCard(p,item,gamePaymentMethod)).join("")+'</div></section>':""}).join("");
-  const passPane='<section class="free-fire-category-panel '+(activeFreeFireCategory==="passes"?"active":"")+'" role="tabpanel" data-free-fire-category="passes">'+(passContent||'<div class="game-empty-state"><span>🎟️</span><strong>No hay pases con este método de pago.</strong><p>Prueba otra forma de pago.</p></div>')+'</section>';
-  $("gameDetailPlans").innerHTML=tabs+diamondPane+passPane;
- }else $("gameDetailPlans").innerHTML=plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state"><span>'+gameCurrency(item).icon+'</span><strong>Estamos preparando los planes de '+clean(item.name)+'</strong><p>Este juego todavía no tiene paquetes con precio para el método seleccionado.</p></div>';
- $("gamePlansTitle").textContent=fold(item.name)==="free fire"?"Paquetes de Free Fire":methods.length?"Planes disponibles":"Planes en preparación";
- $("gamePlansSubtitle").textContent=methods.length?"Precios en "+gamePaymentMethod:"Todavía no hay precios publicados para este juego.";
+  if(!passes.length&&diamonds.length)activeFreeFireCategory="diamonds";
+  const tab=(id,label,count)=>'<button type="button" role="tab" aria-selected="'+(activeFreeFireCategory===id)+'" class="free-fire-category-tab '+(activeFreeFireCategory===id?'active':'')+'" data-free-fire-tab="'+id+'" onclick="selectFreeFireCategory(\''+id+'\')"><span>'+label+'</span><b>'+count+'</b></button>';
+  const cards=(list)=>list.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join("");
+  const empty=(label)=>'<div class="ff-empty"><span>✦</span><strong>'+label+'</strong><small>Prueba otro método de pago si no aparecen paquetes.</small></div>';
+  const passGroups=[{id:"passes",title:"Pases semanales y mensuales",list:passes.filter(p=>freeFirePackageGroup(p)==="passes")},{id:"booyah",title:"Pase Booyah",list:passes.filter(p=>freeFirePackageGroup(p)==="booyah")}];
+  const passHtml=passGroups.map(g=>g.list.length?'<section class="ff-subgroup"><h3>'+g.title+'</h3><div class="ff-package-list">'+cards(sortPackages(g.list))+'</div></section>':"").join("");
+  $("gameDetailPlans").innerHTML='<div class="ff-browser-head"><div><span class="ff-eyebrow">CATÁLOGO FREE FIRE</span><h2>Elige tu paquete</h2><p>Selecciona una categoría para ver sus recargas</p></div><span class="ff-total">'+plans.length+' opciones</span></div>'+
+   '<div class="free-fire-category-tabs" role="tablist">'+tab("diamonds","💎 Diamantes",diamonds.length)+tab("passes","🎟️ Pases y Booyah",passes.length)+'</div>'+
+   '<section class="free-fire-category-panel '+(activeFreeFireCategory==="diamonds"?"active":"")+'" role="tabpanel" data-free-fire-category="diamonds"><div class="ff-package-list">'+(diamonds.length?cards(diamonds):empty("No hay paquetes de diamantes para este pago"))+'</div></section>'+
+   '<section class="free-fire-category-panel '+(activeFreeFireCategory==="passes"?"active":"")+'" role="tabpanel" data-free-fire-category="passes">'+(passHtml||empty("No hay pases disponibles para este pago"))+'</section>';
+ }else $("gameDetailPlans").innerHTML='<div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
+ $("gamePlansTitle").textContent=fold(item.name)==="free fire"?"Paquetes de Free Fire":"Planes disponibles";
+ $("gamePlansSubtitle").textContent="Precios en "+gamePaymentMethod;
 }
 function selectFreeFireCategory(category){
  if(!["diamonds","passes"].includes(category))return;
