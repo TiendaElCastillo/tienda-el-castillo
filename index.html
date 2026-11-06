@@ -427,7 +427,7 @@ function gamePlanCard(p,item,method){
  return '<article class="game-plan-card game-plan-clickable" data-product-id="'+id+'" data-payment-method="'+pay+'">'+
  '<div class="plan-currency">'+meta.icon+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+'</small></div>'+
  '<div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||"")+'</small></div>'+
- '<button class="primary-btn plan-buy" type="button" data-buy-product="'+id+'" data-payment-method="'+pay+'">Comprar ahora <span aria-hidden="true">→</span></button></article>';
+ '<button class="primary-btn plan-buy" type="button" onclick="return openGamePlanCheckout(this)" data-buy-product="'+id+'" data-payment-method="'+pay+'">Comprar ahora <span aria-hidden="true">→</span></button></article>';
 }
 let activeFreeFireCategory="diamonds";
 function renderGameDetail(){
@@ -457,23 +457,6 @@ function renderGameDetail(){
  }else $("gameDetailPlans").innerHTML='<div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
  $("gamePlansTitle").textContent=fold(item.name)==="free fire"?"Paquetes de Free Fire":"Planes disponibles";
  $("gamePlansSubtitle").textContent=methods.length?"Precios en "+gamePaymentMethod:"Sin métodos de pago disponibles";
- // Bind each freshly-rendered Buy button directly to the checkout, after its HTML exists.
- const buyRoot=$("gameDetailPlans");
- if(buyRoot){
-  buyRoot.querySelectorAll("[data-buy-product]").forEach(button=>{
-   if(button.dataset.checkoutBound==="1")return;
-   button.dataset.checkoutBound="1";
-   button.addEventListener("click",event=>{
-    event.preventDefault();
-    event.stopPropagation();
-    const opened=openCheckout(button.dataset.buyProduct,button.dataset.paymentMethod);
-    if(!opened){
-     const message="No se pudo abrir el formulario de este paquete. Comprueba que la conexión haya terminado de cargar el catálogo.";
-     const status=$("gamePlansSubtitle");if(status)status.textContent=message;
-    }
-   });
-  });
- }
 }
 
 function selectFreeFireCategory(category){
@@ -626,6 +609,23 @@ function openCheckout(productId,preferredMethod){
  showView("checkout");
  window.updateCheckoutSubmitState?.();
  return true;
+}
+function openGamePlanCheckout(button){
+ const productId=button?.getAttribute("data-buy-product")||"";
+ const preferredMethod=button?.getAttribute("data-payment-method")||"";
+ try{
+  const opened=openCheckout(productId,preferredMethod);
+  if(!opened){
+   const status=$("gamePlansSubtitle");
+   if(status)status.textContent="No se pudo abrir este paquete. Vuelve a cargar el catálogo y prueba otra vez.";
+  }
+ }catch(error){
+  console.error("Error al abrir el formulario de compra:",error);
+  try{showView("checkout")}catch(viewError){console.error("No se pudo mostrar el formulario:",viewError);}
+  const status=$("ordermsg")||$("gamePlansSubtitle");
+  if(status)status.textContent="El formulario tuvo un error al abrirse: "+String(error?.message||error)+". No se ha creado ningún pedido ni se ha enviado ninguna recarga.";
+ }
+ return false;
 }
 function updateCheckoutSummary(){
  const p=products.find(item=>String(item.id)===$("product").value);if(!p)return;
