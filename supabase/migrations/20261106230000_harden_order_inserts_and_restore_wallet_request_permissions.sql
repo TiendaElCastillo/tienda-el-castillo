@@ -107,6 +107,112 @@ grant insert on table public.wallet_deposits to authenticated;
 -- Wallet history is read through an existing own-or-admin SELECT RLS policy.
 grant select on table public.wallet_transactions to authenticated;
 
+
+-- Replace the wallet-proof function with the same owner/path checks plus a
+-- one-proof lock and duplicate-transfer-reference protection before exposing it.
+create or replace function public.submit_wallet_deposit_proof(
+ p_deposit_id uuid,
+ p_proof_path text,
+ p_reference text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+ v_uid uuid := auth.uid();
+ v_deposit public.wallet_deposits%rowtype;
+ v_reference text := nullif(trim(coalesce(p_reference, '')), '');
+begin
+ if v_uid is null then
+  raise exception 'Debes iniciar sesión.';
+ end if;
+
+ select * into v_deposit
+ from public.wallet_deposits
+ where id = p_deposit_id and user_id = v_uid
+ for update;
+
+ if not found then
+  raise exception 'No encontramos el depósito en tu cuenta.';
+ end if;
+
+ if v_deposit.status not in ('pending', 'payment_review')
+    or v_deposit.proof_path is not null then
+  raise exception 'Este depósito ya fue enviado a verificación y no admite más cambios.';
+ end if;
+
+ if not exists (
+  select 1 from public.payment_methods pm
+  where pm.name = v_deposit.payment_method and pm.active = true
+ ) then
+  raise exception 'El método de pago ya no está disponible.';
+ end if;
+
+ if v_deposit.payment_method = 'Transferencia CUP' then
+  if v_reference is null or length(v_reference) < 3 or length(v_reference) > 100 then
+   raise exception 'Escribe un número de transferencia válido.';
+  end if;
+  if exists (
+   select 1 from public.wallet_deposits d
+   where d.id <> p_deposit_id
+     and d.payment_method = 'Transferencia CUP'
+     and d.payment_reference = v_reference
+     and d.status in ('payment_review', 'approved')
+  ) or exists (
+   select 1 from public.orders o
+   where o.payment_method = 'Transferencia CUP'
+     and o.payment_reference = v_reference
+     and o.status in ('payment_review', 'processing', 'completed')
+  ) then
+   raise exception 'Ese número de transferencia ya fue utilizado en otra solicitud.';
+  end if;
+ elsif v_deposit.payment_method = 'Saldo móvil' then
+  if v_reference is not null then
+   raise exception 'El saldo móvil no utiliza número de transferencia bancaria.';
+  end if;
+ else
+  raise exception 'Este método de pago todavía no admite comprobantes.';
+ end if;
+
+ if p_proof_path !~ (
+  '^' || v_uid::text || '/' || p_deposit_id::text ||
+  '/[a-f0-9-]{36}[.](jpg|jpeg|png|webp)grant execute on function public.submit_wallet_deposit_proof(uuid, text, text)
+to authenticated;
+
+-- The review function calls private.is_admin() before approving/rejecting and
+-- creates wallet transactions internally. Non-admin authenticated users are denied.
+grant execute on function public.admin_review_wallet_deposit(uuid, boolean, text)
+to authenticated;
+
+ ) then
+  raise exception 'La ruta del comprobante no es válida.';
+ end if;
+
+ if not exists (
+  select 1 from storage.objects so
+  where so.bucket_id = 'payment-proofs' and so.name = p_proof_path
+ ) then
+  raise exception 'No encontramos la imagen subida.';
+ end if;
+
+ update public.wallet_deposits
+ set proof_path = p_proof_path,
+     payment_reference = v_reference,
+     status = 'payment_review'
+ where id = p_deposit_id and user_id = v_uid
+   and proof_path is null
+   and status in ('pending', 'payment_review');
+
+ if not found then
+  raise exception 'El depósito cambió de estado y ya no admite cambios.';
+ end if;
+
+ return jsonb_build_object('deposit_id', p_deposit_id, 'status', 'payment_review');
+end;
+$function$;
+
 -- The proof function checks auth.uid(), ownership, pending state, active method,
 -- path shape and uploaded object existence before updating a deposit.
 grant execute on function public.submit_wallet_deposit_proof(uuid, text, text)
