@@ -93,22 +93,24 @@ function refreshCheckoutButton(){
  const senderPhone=(document.getElementById("senderPhone")?.value||"").trim();
  const senderDigits=senderPhone.replace(/\D/g,"");
  const reportedAmount=Number(document.getElementById("reportedAmount")?.value||0);
+ const consent=document.getElementById("privacyConsent")?.checked===true;
  const verified=!product?.provider_product_id||(typeof validatedPlayerCheckout!=="undefined"&&validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(product.id)&&validatedPlayerCheckout.playerId===player);
  const validFile=Boolean(proof)&&typeof validateProofFile==="function"&&!validateProofFile(proof);
  const needsReference=method==="Transferencia CUP";
  const needsSender=needsReference||method==="Saldo móvil";
  const needsReported=method==="Saldo móvil";
+ const validReference=reference.length>=3&&reference.length<=100;
  const validSender=/^\+?[0-9\s().-]+$/.test(senderPhone)&&senderDigits.length>=8&&senderDigits.length<=15;
  const price=typeof priceForMethod==="function"&&product?Number(priceForMethod(product,method)):0;
  const validReported=Number.isFinite(reportedAmount)&&reportedAmount>0&&Math.abs(reportedAmount-price)<=0.01;
- const methodReady=typeof paymentMethods!=="undefined"&&paymentMethods.some(item=>item.name===method&&item.active===true&&String(item.instructions||"").trim().length>0);
- const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&methodReady&&validFile&&(!needsReference||reference)&&(!needsSender||validSender)&&(!needsReported||validReported)&&price>0);
+ const methodReady=typeof isPaymentMethodReady==="function"?isPaymentMethodReady(method):typeof paymentMethods!=="undefined"&&paymentMethods.some(item=>item.name===method&&item.active===true&&String(item.instructions||"").trim().length>0);
+ const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&methodReady&&validFile&&(!needsReference||validReference)&&(!needsSender||validSender)&&(!needsReported||validReported)&&consent&&price>0);
  button.disabled=!ready;
- button.textContent=ready?"Ya pagué · Enviar comprobantes":!verified?"Primero verifica tu ID de jugador":!methodReady?"Este método de pago no está disponible":!validFile?"Adjunta el comprobante para continuar":needsReference&&!reference?"Escribe el número de transferencia":needsSender&&!validSender?"Escribe el móvil desde el que pagaste":needsReported&&!validReported?"Confirma el importe exacto de saldo":"Completa los datos del pedido";
+ button.textContent=ready?"Ya transferí · Enviar a revisión":!verified?"Primero verifica tu ID de jugador":!methodReady?"Este método de pago no está disponible":!validFile?"Adjunta la captura del comprobante":needsReference&&!validReference?"Escribe el N.º de transacción completo":needsSender&&!validSender?"Escribe el móvil desde el que pagaste":needsReported&&!validReported?"Confirma el importe exacto de saldo":!consent?"Acepta la política y los términos":"Completa los datos del pedido";
 }
 function installCheckoutFlow(){
  // La compra se dispara directamente desde cada tarjeta y su botón; no interceptamos el toque global.
- ["player","paymentProof","reference","senderPhone","reportedAmount","payment"].forEach(id=>{
+ ["player","paymentProof","reference","senderPhone","reportedAmount","payment","privacyConsent"].forEach(id=>{
   const node=document.getElementById(id);if(!node||node.dataset.checkoutGate==="1")return;
   node.dataset.checkoutGate="1";
   node.addEventListener("input",refreshCheckoutButton);
