@@ -444,7 +444,7 @@ async function register(){
  const password=$("password").value;
  const name=$("fullname").value.trim();
  if(!name){$("authmsg").textContent="Escribe tu nombre para identificar tu cuenta.";return}
- if(!email||!/^\\S+@\\S+\\.\\S+$/.test(email)){ $("authmsg").textContent="Escribe un correo electrónico válido.";return}
+ if(!email||!/^\S+@\S+\.\S+$/.test(email)){ $("authmsg").textContent="Escribe un correo electrónico válido.";return}
  if(password.length<8){$("authmsg").textContent="Usa una contraseña de al menos 8 caracteres.";return}
  let captchaToken=window.castleCaptchaToken;
  if(!captchaToken){
