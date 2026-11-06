@@ -56,7 +56,7 @@
 .ff-browser-head p{margin:0;color:#74839a;font-size:12px}
 .ff-eyebrow{font-size:9px;font-weight:900;letter-spacing:.17em;color:#4777c8}
 .ff-total{flex:0 0 auto;border:1px solid #dce7f8;background:#f3f7ff;border-radius:99px;padding:7px 10px;color:#3866aa;font-size:10px;font-weight:850}
-#gameDetailPlans .free-fire-category-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:5px;background:#edf2fa;border:1px solid #e2e9f3;border-radius:17px;margin:0 0 17px}
+#gameDetailPlans .free-fire-category-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:5px;background:#edf2fa;border:1px solid #e2e9f3;border-radius:17px;margin:0 0 17px}
 #gameDetailPlans .free-fire-category-tab{display:flex;align-items:center;justify-content:center;gap:8px;min-height:49px;padding:10px 8px;border:1px solid transparent;border-radius:13px;background:transparent;color:#63748d;font-size:12px;font-weight:850;white-space:normal}
 #gameDetailPlans .free-fire-category-tab b{display:grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:rgba(48,83,140,.09);font-size:10px}
 #gameDetailPlans .free-fire-category-tab.active{background:#fff;border-color:#dce7f7;color:#1b58b7;box-shadow:0 5px 15px rgba(30,66,120,.09)}
@@ -84,3 +84,15 @@
 .ff-empty>span{font-size:27px;color:#3875d4}.ff-empty strong{font-size:13px;color:#314967}.ff-empty small{font-size:11px}
 @media(max-width:520px){.ff-package-list{grid-template-columns:1fr;gap:10px}#gameDetailPlans .game-plan-card{grid-template-columns:46px minmax(0,1fr) auto;grid-template-rows:auto auto;gap:8px 10px;padding:13px}#gameDetailPlans .plan-currency{grid-column:1;grid-row:1/3;width:44px;height:44px}#gameDetailPlans .plan-info{grid-column:2/4;grid-row:1}#gameDetailPlans .plan-price{grid-column:2;grid-row:2;border-top:0;padding:0;text-align:left}#gameDetailPlans .plan-price strong{font-size:17px}#gameDetailPlans .plan-buy{grid-column:3;grid-row:2;width:auto;min-width:112px;min-height:40px;padding:9px 12px}.ff-browser-head h2{font-size:22px}#gameDetailPlans .free-fire-category-tab{font-size:11px;gap:5px;min-height:47px}}
 @media(max-width:360px){#gameDetailPlans .free-fire-category-tab{font-size:10px;padding:8px 4px}.ff-total{font-size:9px}}
+
+/* Panel de gestión: mejor legibilidad y navegación en pantallas pequeñas */
+#admin .admin-heading{padding:22px 24px;border-radius:20px}
+#admin .admin-section-panel,#admin .admin-overview{box-shadow:0 4px 18px rgba(20,45,90,.045);border-color:#e8edf5}
+#admin .admin-shortcut{min-height:82px}
+#admin .admin-shortcut:focus-visible,#admin .admin-tab:focus-visible,#admin .admin-order-filter:focus-visible{outline:3px solid rgba(36,104,242,.28);outline-offset:2px}
+#admin .order-card .order-detail{overflow-wrap:anywhere}
+@media(max-width:520px){
+ #gameDetailPlans .free-fire-category-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px}
+ #gameDetailPlans .free-fire-category-tab{min-width:0;font-size:10px;line-height:1.2;gap:3px;padding:9px 3px;min-height:49px}
+ #gameDetailPlans .free-fire-category-tab b{min-width:19px;height:19px;font-size:9px}
+}
