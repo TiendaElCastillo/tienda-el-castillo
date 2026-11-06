@@ -404,10 +404,10 @@ function gamePaymentButton(method,rows){const enabled=isPaymentMethodReady(metho
 
 function gamePlanCard(p,item,method){
  const meta=gameCurrency(item),price=Number(priceForMethod(p,method)),id=clean(p.id),pay=clean(method);
- return '<article class="game-plan-card game-plan-clickable" role="button" tabindex="0" data-product-id="'+id+'" data-payment-method="'+pay+'" onclick="openCheckout(\''+id+'\',\''+pay+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openCheckout(\''+id+'\',\''+pay+'\')}">'+
+ return '<article class="game-plan-card game-plan-clickable" data-product-id="'+id+'" data-payment-method="'+pay+'">'+
  '<div class="plan-currency">'+meta.icon+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+'</small></div>'+
  '<div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||"")+'</small></div>'+
- '<button class="primary-btn plan-buy" type="button" onclick="event.stopPropagation();openCheckout(\''+id+'\',\''+pay+'\')">Comprar ahora <span aria-hidden="true">→</span></button></article>';
+ '<button class="primary-btn plan-buy" type="button" data-buy-product="'+id+'" data-payment-method="'+pay+'">Comprar ahora <span aria-hidden="true">→</span></button></article>';
 }
 let activeFreeFireCategory="diamonds";
 function renderGameDetail(){
@@ -1306,6 +1306,17 @@ async function logout(){
  $("auth").classList.remove("hidden");setAuthMode("login");window.scrollTo({top:0,behavior:"smooth"});
 }
 window.addEventListener("load",()=>{
+ // Delegación estable para botones del catálogo renderizados dinámicamente.
+ const plansRoot=$("gameDetailPlans");
+ if(plansRoot&&!plansRoot.dataset.buyHandler){
+  plansRoot.dataset.buyHandler="1";
+  plansRoot.addEventListener("click",event=>{
+   const button=event.target.closest("[data-buy-product]");
+   if(!button)return;
+   event.preventDefault();event.stopPropagation();
+   openCheckout(button.dataset.buyProduct,button.dataset.paymentMethod);
+  });
+ }
  if(window.supabase&&window.supabase.createClient) start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY);
  else{$("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo.";$("brandLoader")?.classList.add("done");}
  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
