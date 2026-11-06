@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1b35">
+<title>Vista previa · Tienda El Castillo</title>
+<style>
+:root{color-scheme:light;--ink:#17233c;--muted:#71809a;--line:#e5eaf3;--blue:#2468f2}
+*{box-sizing:border-box}body{margin:0;background:#f4f7fc;color:var(--ink);font:15px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+header{background:#102754;color:#fff;padding:24px 18px;text-align:center}header small{display:block;color:#dce8ff;letter-spacing:.12em;font-weight:800;font-size:10px}header h1{font-size:25px;margin:7px 0 4px}header p{margin:0;color:#dce8ff;font-size:13px}
+main{max-width:760px;margin:24px auto;padding:0 15px 36px}.notice{background:#fff8e8;border:1px solid #f2e0b8;color:#765319;padding:12px 14px;border-radius:13px;font-size:12px;margin-bottom:18px}
+h2{font-size:20px;margin:0 0 5px}.sub{color:var(--muted);font-size:12px;margin:0 0 15px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 7px 20px rgba(20,45,90,.07);min-width:0}
+.art{height:180px;display:grid;place-items:center;background:linear-gradient(145deg,#eef2fa,#fff);border-radius:13px;overflow:hidden;margin-bottom:12px}
+.art img{width:100%;height:100%;object-fit:contain}
+.tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:850;color:#58739f}
+.card h3{font-size:16px;margin:5px 0}.card p{font-size:12px;color:var(--muted);margin:0}
+footer{text-align:center;color:var(--muted);font-size:11px;margin-top:22px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.art{height:190px}main{margin-top:17px}}
+</style>
+</head>
+<body>
+<header><small>TIENDA EL CASTILLO</small><h1>Vista previa de los pases</h1><p>Revisión visual antes de implementar</p></header>
+<main>
+<div class="notice"><strong>Vista previa aislada.</strong> Esta página solo muestra los diseños. No inicia sesión, no conecta con Supabase y no permite realizar compras ni pagos.</div>
+<h2>Free Fire · Pases</h2>
+<p class="sub">Así se verían las ilustraciones aprobadas dentro de las tarjetas del catálogo.</p>
+<section class="grid">
+<article class="card"><div class="art"><img src="./assets/product-card.svg" alt="Diseño del pase semanal"></div><div class="tag">Pase semanal</div><h3>Tarjeta semanal</h3><p>Tarjeta morada con la W, cofre y diamantes azules.</p></article>
+<article class="card"><div class="art"><img src="./assets/product-pass.svg" alt="Diseño del Pase Booyah"></div><div class="tag">Pase Booyah</div><h3>Booyah Pass</h3><p>Tarjeta dorada con la letra B.</p></article>
+</section>
+<footer>Vista de diseño · No representa una compra real ni modifica la tienda publicada.</footer>
+</main>
+</body>
+</html>
