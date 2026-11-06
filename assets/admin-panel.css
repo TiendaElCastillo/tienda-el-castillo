@@ -101,3 +101,23 @@
 .player-name-wrap{position:relative;display:flex;align-items:center}.player-name-wrap input{width:100%;padding-left:48px!important}.player-validation-icon{position:absolute;left:12px;z-index:1;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#edf1f7;color:#7b8ba2;font-size:16px;font-weight:950}.player-name-wrap.is-loading input{border-color:#8fb2ec;background:#f4f8ff}.player-name-wrap.is-loading .player-validation-icon{background:#e5efff;color:#2766c7}.player-name-wrap.is-valid input{border-color:#78c79b;background:#f2fbf5;color:#17623e}.player-name-wrap.is-valid .player-validation-icon{background:#dcf5e5;color:#16834a}.player-name-wrap.is-invalid input{border-color:#e69a9a;background:#fff6f6;color:#a52b2b}.player-name-wrap.is-invalid .player-validation-icon{background:#ffe5e5;color:#c52f2f}.player-name-wrap.is-error input{border-color:#e5c28a;background:#fffaf0;color:#805b1c}.player-name-wrap.is-error .player-validation-icon{background:#fff0d4;color:#a36b13}.player-validation-wrap{margin:-3px 0 11px}.player-validation-message{margin:0;font-size:11px;line-height:1.5;color:#71809a}.player-validation-wrap.is-valid .player-validation-message{color:#21824d}.player-validation-wrap.is-invalid .player-validation-message{color:#c12e2e;font-weight:800}.player-validation-wrap.is-loading .player-validation-message{color:#2864c2}.player-validation-wrap.is-error .player-validation-message{color:#95661b}
 /* Ayudas breves para instrucciones de pago y código de transacción */
 .field-hint{display:block;margin:7px 2px 0;color:#687b97;font-size:11px;line-height:1.5}.payment-copy-note{margin:9px 0 0;padding-top:8px;border-top:1px solid #edf1f7;color:#61748f;font-size:10px;line-height:1.5}.payment-card-confirm .payment-copy-value{color:#205ab9;letter-spacing:.01em}
+
+/* Información pública de la tienda: ayuda, privacidad y condiciones */
+.auth-legal{margin:12px 0 0;font-size:11px;line-height:1.55;color:#71809a}
+.auth-legal a,.policy-panel a{color:#225fc4;font-weight:750;text-decoration:underline;text-underline-offset:2px}
+.policy-panel{max-width:900px;margin:0 auto;padding:clamp(18px,3vw,28px);line-height:1.65}
+.policy-panel h1{margin:8px 0 5px;color:#193253;font-size:clamp(25px,5vw,34px);letter-spacing:-.04em}
+.policy-panel h3{margin:18px 0 5px;color:#20395d;font-size:15px}
+.policy-panel p,.policy-panel li{color:#526681;font-size:13px;line-height:1.7}
+.policy-panel ul{padding-left:20px}
+.policy-kicker{display:block;margin-top:20px;color:#376fc0;font-size:9px;font-weight:900;letter-spacing:.16em}
+.faq-item{padding:13px 0;border-bottom:1px solid #e9eef5}
+.faq-item:last-of-type{border-bottom:0}
+.faq-item h3{margin:0 0 5px;font-size:14px;color:#20395d}
+.faq-item p{margin:0}
+.policy-note{margin-top:18px;padding:12px 14px;border:1px solid #e1eaf7;border-radius:13px;background:#f5f8fd;color:#60738f!important;font-size:11px!important}
+.privacy-consent{margin:16px 0 10px;padding:13px;border:1px solid #dfe8f5;border-radius:14px;background:#f8faff}
+.privacy-consent label{display:flex;align-items:flex-start;gap:10px;margin:0;color:#405572;font-size:12px;line-height:1.55;font-weight:650}
+.privacy-consent input{width:18px!important;height:18px;min-height:18px;flex:0 0 18px;margin:1px 0 0;accent-color:#2868d7}
+.privacy-consent a{color:#205fc3;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:520px){.policy-panel{padding:15px;border-radius:17px}.policy-panel p,.policy-panel li{font-size:12px}.faq-item{padding:12px 0}}
