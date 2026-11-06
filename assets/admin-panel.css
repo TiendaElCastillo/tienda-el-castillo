@@ -37,7 +37,7 @@
 .catalog-product-clickable:focus-visible,.game-plan-clickable:focus-visible{outline:3px solid rgba(36,104,242,.35);outline-offset:3px}
 .checkout-safety-note{border-color:#c8d9f8;background:#f3f7ff;color:#28436f}
 #placeOrderBtn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.15)}
-.free-fire-category-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:6px;border:1px solid #e4eaf4;background:#f4f7fc;border-radius:18px;margin:14px 0 18px}
+.free-fire-category-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:6px;border:1px solid #e4eaf4;background:#f4f7fc;border-radius:18px;margin:14px 0 18px}
 .free-fire-category-tab{min-width:0;padding:11px 8px;border:1px solid transparent;border-radius:13px;background:transparent;color:#62738e;font-size:12px;font-weight:850;line-height:1.25}
 .free-fire-category-tab.active{background:#fff;border-color:#dce7f8;color:#205dca;box-shadow:0 3px 11px rgba(20,45,90,.08)}
 .free-fire-category-panel{display:none}
