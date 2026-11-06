@@ -124,3 +124,47 @@
 .privacy-consent a{color:#205fc3;text-decoration:underline;text-underline-offset:2px}
 @media(max-width:520px){.policy-panel{padding:15px;border-radius:17px}.policy-panel p,.policy-panel li{font-size:12px}.faq-item{padding:12px 0}}
 .footer-whatsapp{display:inline-flex;align-items:center;gap:6px;width:max-content;max-width:100%;padding:7px 10px;border:1px solid #d4eadb;border-radius:999px;background:#f0faf3;color:#176b3a!important;font-weight:800!important}
+
+
+/* Tienda El Castillo: categorías claras y checkout por pasos */
+#gameDetailPlans .free-fire-category-tabs{grid-template-columns:repeat(2,minmax(0,1fr));}
+#gameDetailPlans .free-fire-category-tab{min-height:50px;}
+.ff-compartment-diamonds .ff-package-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+#gameDetailPlans .plan-icon-image{display:block;width:44px;height:44px;object-fit:contain;max-width:100%;}
+#gameDetailPlans .plan-icon-emoji{display:grid;place-items:center;width:100%;height:100%;font-size:24px;}
+@media(max-width:520px){
+ .ff-compartment-diamonds .ff-package-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+ .ff-compartment-diamonds .game-plan-card{grid-template-columns:38px minmax(0,1fr);gap:7px 8px;padding:10px;border-radius:14px;}
+ .ff-compartment-diamonds .plan-currency{width:38px;height:38px;grid-column:1;grid-row:1/3;}
+ .ff-compartment-diamonds .plan-icon-image{width:38px;height:38px;}
+ .ff-compartment-diamonds .plan-info strong{font-size:12px;overflow-wrap:anywhere;}
+ .ff-compartment-diamonds .plan-info small{font-size:9px;}
+ .ff-compartment-diamonds .plan-price{grid-column:1/3;grid-row:2;padding:7px 0 0;}
+ .ff-compartment-diamonds .plan-price strong{font-size:16px;}
+ .ff-compartment-diamonds .plan-buy{grid-column:1/3;grid-row:3;min-height:37px;padding:8px 6px;font-size:11px;}
+}
+.checkout-stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;margin:8px 0 22px;padding:0;}
+.checkout-stepper li{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;padding:10px 6px;border:1px solid #e0e7f2;border-radius:13px;background:#f7f9fc;color:#71809a;font-size:11px;font-weight:800;}
+.checkout-stepper li b{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border-radius:50%;background:#e7edf6;color:#708099;font-size:11px;}
+.checkout-stepper li.active{border-color:#b9d0f6;background:#eef5ff;color:#1d5bbd;}
+.checkout-stepper li.active b,.checkout-stepper li.done b{background:#2869db;color:#fff;box-shadow:0 3px 9px rgba(36,104,242,.2);}
+.checkout-stepper li.done{border-color:#d0e8db;background:#f1faf4;color:#257449;}
+.checkout-stage-panel{min-width:0;}
+.checkout-stage-title{display:flex;flex-direction:column;gap:4px;margin:3px 0 14px;padding:13px 14px;border:1px solid #dce8f7;border-radius:14px;background:#f5f9ff;color:#203b61;}
+.checkout-stage-title strong{font-size:15px;}
+.checkout-stage-title small{font-size:11px;color:#6d7f99;line-height:1.45;}
+.checkout-payment-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0 4px;}
+.checkout-method-choice{display:flex;align-items:center;justify-content:center;gap:9px;min-width:0;min-height:54px;padding:10px;border:1px solid #e0e7f1;border-radius:14px;background:#fff;color:#334a69;font-size:12px;font-weight:850;box-shadow:0 3px 10px rgba(20,45,90,.035);}
+.checkout-method-choice.active{border-color:#70a1ee;background:#edf4ff;color:#1e5cba;box-shadow:0 4px 12px rgba(36,104,242,.10);}
+.checkout-method-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#eaf2ff;color:#1c60c5;font-size:18px;}
+.checkout-stage-actions{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr);gap:9px;align-items:stretch;margin-top:15px;}
+.checkout-stage-actions button{min-width:0;min-height:48px;margin:0;padding:10px;font-size:12px;}
+.checkout-stage-actions #placeOrderBtn{width:100%;}
+#checkoutPlayerMsg{min-height:18px;}
+#senderPhoneHelp{display:block;}
+@media(max-width:380px){
+ .checkout-stepper{gap:5px;}
+ .checkout-stepper li{font-size:10px;gap:4px;padding:8px 3px;}
+ .checkout-step-actions{grid-template-columns:1fr;}
+ .checkout-stage-actions{grid-template-columns:1fr;}
+}
