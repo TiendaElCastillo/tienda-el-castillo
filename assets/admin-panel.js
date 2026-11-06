@@ -37,14 +37,17 @@ function showAdminSection(key){
  document.querySelectorAll("#admin [data-admin-tab]").forEach(n=>n.classList.toggle("active",n.dataset.adminTab===selected));
 }
 function classifyOrder(card){
- const status=(card.querySelector(".status")?.textContent||"").toLowerCase();
- if(status.includes("completada")||status.includes("fallida")||status.includes("rechazado")||status.includes("cancelado"))return "history";
- const detail=card.textContent.toLowerCase();
- if(detail.includes("la autorización ya está en curso")||detail.includes("autorizando")||detail.includes("respuesta pendiente de confirmar"))return "provider";
- if(card.querySelector("[data-provider-submit]"))return "ready";
+ const status=String(card.dataset.orderStatus||"").toLowerCase();
+ const provider=String(card.dataset.providerStatus||"").toLowerCase();
+ const providerId=String(card.dataset.providerId||"");
+ if(["completed","failed","rejected","cancelled"].includes(status))return "history";
+ if(providerId||["created","confirmed","processing","partially_completed","completed","submitting","unknown"].includes(provider))return "provider";
+ if(status==="processing")return "ready";
+ if(["pending","payment_review"].includes(status))return "pending";
+ const visible=(card.querySelector(".status")?.textContent||"").toLowerCase();
+ if(visible.includes("complet")||visible.includes("fallid")||visible.includes("rechaz")||visible.includes("cancel"))return "history";
  if(card.querySelector("[data-provider-refresh]"))return "provider";
- if(status.includes("pendiente")||status.includes("verificando"))return "pending";
- if(status.includes("pago confirmado"))return "ready";
+ if(card.querySelector("[data-provider-submit]"))return "ready";
  return "pending";
 }
 function applyOrderFilter(group){
@@ -60,7 +63,7 @@ function setupOrderFilters(panel){
  const container=panel.querySelector("#allorders");if(!container)return;
  const intro=el("p","track-note","Los pedidos están separados por etapa. En «Listos para autorizar» encontrarás el botón que envía la recarga a Central One.");
  const filters=el("div","admin-order-filters");filters.setAttribute("aria-label","Filtrar pedidos");
- [["pending","Pendientes de pago"],["ready","Listos para autorizar"],["provider","En Central One"],["history","Finalizados"],["all","Todos"]].forEach(([key,label])=>{
+ [["pending","Pendientes por confirmar"],["ready","Pago confirmado · listo"],["provider","En Central One"],["history","Finalizados"],["all","Todos"]].forEach(([key,label])=>{
   const b=el("button","admin-order-filter"+(key==="pending"?" active":""));b.type="button";b.dataset.orderFilter=key;b.append(document.createTextNode(label+" "));b.append(el("span","admin-filter-count","0"));b.addEventListener("click",()=>applyOrderFilter(key));filters.append(b);
  });
  const empty=el("div","admin-filter-empty","No hay pedidos en este apartado.");empty.id="adminOrderFilterEmpty";
@@ -96,13 +99,15 @@ function refreshCheckoutButton(){
  button.textContent=ready?"Confirmar que pagué y enviar pedido":!verified?"Primero verifica tu ID de jugador":!validFile?"Adjunta el comprobante para continuar":needsReference&&!reference?"Escribe el número de transferencia":"Completa los datos del pedido";
 }
 function installCheckoutFlow(){
+ // Delegación en captura: abre el checkout tanto al tocar la tarjeta como su botón.
  document.addEventListener("click",event=>{
-  const card=event.target.closest("[data-product-id]");
-  if(!card||event.target.closest("button"))return;
-  if(typeof window.openCheckout!=="function")return;
+  const target=event.target;
+  const card=target&&target.closest?target.closest(".game-plan-card[data-product-id],.catalog-product-clickable[data-product-id]"):null;
+  if(!card||typeof window.openCheckout!=="function")return;
   event.preventDefault();
+  event.stopPropagation();
   window.openCheckout(card.dataset.productId,card.dataset.paymentMethod||undefined);
- });
+ },true);
  ["player","paymentProof","reference","payment"].forEach(id=>{
   const node=document.getElementById(id);if(!node||node.dataset.checkoutGate==="1")return;
   node.dataset.checkoutGate="1";
