@@ -94,9 +94,10 @@ function refreshCheckoutButton(){
  const validFile=Boolean(proof)&&typeof validateProofFile==="function"&&!validateProofFile(proof);
  const needsReference=method==="Transferencia CUP";
  const price=typeof priceForMethod==="function"&&product?Number(priceForMethod(product,method)):0;
- const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&validFile&&(!needsReference||reference)&&price>0);
+ const methodReady=typeof paymentMethods!=="undefined"&&paymentMethods.some(item=>item.name===method&&item.active===true&&String(item.instructions||"").trim().length>0);
+ const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&methodReady&&validFile&&(!needsReference||reference)&&price>0);
  button.disabled=!ready;
- button.textContent=ready?"Confirmar que pagué y enviar pedido":!verified?"Primero verifica tu ID de jugador":!validFile?"Adjunta el comprobante para continuar":needsReference&&!reference?"Escribe el número de transferencia":"Completa los datos del pedido";
+ button.textContent=ready?"Confirmar que pagué y enviar pedido":!verified?"Primero verifica tu ID de jugador":!methodReady?"Este método de pago no está disponible":!validFile?"Adjunta el comprobante para continuar":needsReference&&!reference?"Escribe el número de transferencia":"Completa los datos del pedido";
 }
 function installCheckoutFlow(){
  // La compra se dispara directamente desde cada tarjeta y su botón; no interceptamos el toque global.
