@@ -203,6 +203,10 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Ajustes de legibilidad y carga visual en móviles */
 .auth-layout{min-width:0}.auth-visual,.auth-panel{min-width:0}.auth-visual h1{overflow-wrap:anywhere}.auth-panel h2{line-height:1.2;overflow-wrap:anywhere}.auth-panel .subtle{line-height:1.55;overflow-wrap:anywhere}.auth-tabs{min-width:0}.auth-tabs button{min-width:0;white-space:normal;line-height:1.25}.cf-turnstile{min-height:65px;max-width:100%;overflow:hidden}.brand-name{min-width:0}.brand-name strong,.brand-name span{overflow-wrap:anywhere}.game-detail-art img{display:block;width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.game-detail-art:after{pointer-events:none}.package-group{margin:20px 0 25px}.package-group-heading{margin:0 0 10px}.package-group-heading h3{margin:0;font-size:18px;letter-spacing:-.02em}.package-group-heading p{margin:3px 0 0;color:var(--muted);font-size:11px}.package-group .game-plans-grid{margin:0}.product-art img{object-fit:cover}
 @media(max-width:420px){.auth-visual{min-height:245px}.auth-panel{padding:18px}.auth-panel h2{font-size:21px}.auth-panel .subtle{font-size:12px}.auth-tabs button{font-size:12px;padding:9px 5px}.auth-visual .eyebrow{font-size:9px;letter-spacing:.06em}.auth-benefits{max-width:72%;gap:7px;font-size:10px}}
+
+/* Ajustes móviles: acceso sin textos montados unos sobre otros */
+@media(max-width:760px){.auth-layout{grid-template-columns:1fr;gap:12px;margin:12px auto}.auth-visual{min-height:0;padding:22px 21px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.auth-visual h1{max-width:none;font-size:clamp(27px,7vw,33px);line-height:1.08;margin:15px 0 10px}.auth-visual p{max-width:none;margin:0;font-size:14px;line-height:1.5;position:relative;z-index:2}.auth-visual .orb{display:none!important}.auth-benefits{position:static;left:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:15px;font-size:11px;line-height:1.4}.auth-panel{padding:20px}.auth-panel h2{font-size:22px}.auth-tabs{margin:17px 0}}
+@media(max-width:420px){.auth-visual{padding:20px 18px 18px;border-radius:22px}.auth-visual h1{font-size:29px}.auth-visual p{font-size:13px}.auth-benefits{gap:7px 10px;font-size:10px}.auth-panel{padding:18px}}
 </style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=2">
 </head>
 <body>
@@ -240,9 +244,9 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Preparar pedido</h2><p>Revisa el paquete y escribe tu ID</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div><p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="field hidden"><button id="playerValidationBtn" class="secondary-btn block-btn" type="button" onclick="validatePlayerId()">Verificar ID y región con Central One</button><p id="playerValidationMsg" class="msg" role="status" aria-live="polite"></p></div><div class="field"><label for="playername">Nombre devuelto por el proveedor</label><input id="playername" autocomplete="off" placeholder="Se completará tras verificar el ID" readonly></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
+  <div class="field"><label for="product">Paquete</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div><div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()"></div><div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div><div id="playerValidationWrap" class="field hidden"><button id="playerValidationBtn" class="secondary-btn block-btn" type="button" onclick="validatePlayerId()">Verificar ID y región con Central One</button><p id="playerValidationMsg" class="msg" role="status" aria-live="polite"></p></div><div class="field"><label for="playername">Nombre de la cuenta verificada</label><input id="playername" autocomplete="off" placeholder="Se completará tras verificar el ID" readonly></div><p class="track-note">Nunca compartas tu contraseña ni códigos de acceso. El ID se comprueba antes de crear el pedido.</p><div class="field"><label for="payment">¿Cómo prefieres pagar?</label><select id="payment" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div><div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div><div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Número de transferencia (obligatorio)</label><input id="reference" inputmode="numeric" autocomplete="off" placeholder="Escribe el número de transferencia"></div>
   <div class="field proof-field" id="proofWrap"><label id="proofLabel" for="paymentProof">Comprobante de pago (obligatorio)</label><input class="proof-input" id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPaymentProof()"><label class="proof-dropzone" for="paymentProof"><span class="proof-icon" aria-hidden="true">↑</span><span class="proof-copy"><strong id="proofTitle">Añadir comprobante</strong><small id="proofHelp">Toca aquí para elegir una captura de tu teléfono</small><small class="proof-limits">JPG, PNG o WEBP · Máximo 5 MB</small></span><img id="proofPreview" class="proof-preview hidden" alt="Vista previa del comprobante seleccionado"></label></div>
-  <div class="notice checkout-safety-note"><strong>Antes de confirmar:</strong> realiza el pago con los datos que aparecen arriba y adjunta una captura legible. Sin comprobante y sin verificar el ID, no podrás enviar el pedido.</div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()" disabled>Adjunta el comprobante para continuar</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
+  <div class="notice checkout-safety-note"><strong>Antes de confirmar:</strong> realiza el pago con los datos indicados y adjunta una captura legible. El comprobante no confirma el pago automáticamente: revisaremos la operación antes de enviar la recarga.</div><button id="placeOrderBtn" class="primary-btn block-btn" type="button" onclick="placeOrder()" disabled>Adjunta el comprobante para continuar</button><p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
  </div></section>
  <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
  <section id="profileView" class="store-view hidden">
@@ -252,7 +256,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  <section id="admin" class="store-view hidden">
  <div class="panel"><h2>Conexión con Central One</h2><p class="subtle">Prueba segura de lectura. No crea pedidos ni utiliza saldo.</p><button id="centralOneTestBtn" class="secondary-btn block-btn" type="button" onclick="testCentralOneConnection()">Probar conexión (ping)</button><p id="centralOneTestMsg" class="msg" role="status">La clave se lee desde los secretos de Supabase; nunca se muestra aquí.</p></div>
  <div class="panel"><h2>Catálogo mayorista de Central One</h2><p class="subtle">Consulta los productos y costes reales habilitados para tu cuenta. Esta acción solo lee datos; no crea pedidos ni descuenta saldo.</p><div class="field-row"><button id="centralOneCatalogBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneCatalog()">Cargar catálogo</button><button id="centralOneBalanceBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneBalance()">Consultar saldo</button></div><p id="centralOneCatalogMsg" class="msg" role="status">Todavía no se ha consultado el catálogo.</p><p id="centralOneAutoSyncMsg" class="msg" role="status">Sincronización automática cada 15 minutos: preparando primera consulta.</p><div id="centralOnePriceProposals" class="order-card"><h3>Precios sugeridos de Free Fire</h3><p class="track-note">Se calculan con el coste más reciente de Central One y tus reglas guardadas. No se publican automáticamente. Confirma compatibilidad LATAM con Cuba antes de activar un paquete.</p><div id="centralOnePriceTable" style="overflow:auto"><p class="empty-note">Esperando el primer catálogo sincronizado.</p></div><p class="track-note">Cobertura comprobada: LATAM admite verificación para los 16 paquetes publicados. Indonesia tiene productos en el catálogo, pero Central One aún no los enumera en su cobertura de verificación. No se publican para pedidos. No aparece una región USA/EEUU en el catálogo ni en la cobertura. La imagen de Free Fire que enviaste ya está instalada en su tarjeta. Las otras siete imágenes quedaron guardadas en Recursos para incorporarlas al activar esas categorías. El catálogo API no incluye fotografías.</p></div><div class="field"><label>Catálogo y precios más recientes recibidos del proveedor (datos originales del proveedor)</label><pre id="centralOneCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f5f8fd;border:1px solid #e2eaf5;border-radius:12px;padding:12px;font-size:11px;color:#263957">Aún no hay datos guardados.</pre></div><p id="centralOneBalanceMsg" class="msg" role="status"></p></div>
- <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estos valores sirven para calcular propuestas. Guardarlos no modifica los precios publicados a tus clientes.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1200"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Coste de esas unidades (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="2000"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
+ <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estos valores sirven para calcular propuestas. Guardarlos no modifica los precios publicados a tus clientes.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1200"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Valor recuperable de esas unidades en transferencia (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="1250"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
  <div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button id="adminProductSubmit" class="primary-btn block-btn" type="button" onclick="addProduct()">Guardar producto</button><button id="cancelProductEdit" class="secondary-btn block-btn hidden" type="button" onclick="cancelProductEdit()">Cancelar edición</button><p id="adminmsg" class="msg" role="status"></p><div id="adminProducts"></div></div>
  <div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div></div>
  <div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button></div><p class="track-note">Flujo de recarga: primero revisa y confirma el pago del cliente. Después aparecerá el botón <strong>«Autorizar recarga y reservar saldo»</strong>; ese segundo botón envía el pedido a Central One y es el único que usa saldo del proveedor. La solicitud queda protegida contra duplicados y podrás consultar aquí el estado real de la entrega. No marques la recarga como completada hasta que Central One informe «completed».</p><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div>
@@ -378,13 +382,26 @@ const gamePaymentCatalog=[
 function gameFor(name){return gameCatalog.find(item=>fold(item.name)===fold(name))||gameCatalog.find(item=>(item.match||[]).some(word=>fold(name).includes(fold(word))||fold(word).includes(fold(name))))}
 function isLevelUpPackage(p){return /subida\s*de\s*nivel|nivel\s*\d*|level\s*up|level\s*\d*/i.test(fold(String(p.name||"")+" "+String(p.description||"")));}
 function freeFirePackageGroup(p){const label=fold(String(p.name||"")+" "+String(p.description||""));if(/booyah/.test(label))return "booyah";if(/pase|semanal|mensual|weekly|monthly/.test(label))return "passes";return "diamonds";}
-function gameProductsFor(name){const item=gameFor(name);if(!item)return [];return products.filter(p=>{if(isGiftCard(p)||isLevelUpPackage(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return (item.match||[fold(item.name)]).some(word=>label.includes(fold(word)))})}
+function packageSortValue(p){
+ const amount=Number(p.amount||0);if(Number.isFinite(amount)&&amount>0)return amount;
+ const label=fold(String(p.name||"")+" "+String(p.description||""));
+ if(/booyah/.test(label))return 100003;
+ if(/mensual|monthly/.test(label))return 100002;
+ if(/semanal|weekly/.test(label)&&/basico|basic/.test(label))return 100000;
+ if(/semanal|weekly/.test(label))return 100001;
+ const match=String(p.name||"").match(/[0-9][0-9.,]*/);
+ if(match){const parsed=Number(match[0].replace(/[.,]/g,""));if(Number.isFinite(parsed)&&parsed>0)return parsed;}
+ return 999999;
+}
+function sortPackages(list){return [...(list||[])].sort((a,b)=>packageSortValue(a)-packageSortValue(b)||String(a.name||"").localeCompare(String(b.name||""),"es"));}
+function gameProductsFor(name){const item=gameFor(name);if(!item)return [];return sortPackages(products.filter(p=>{if(isGiftCard(p)||isLevelUpPackage(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return (item.match||[fold(item.name)]).some(word=>label.includes(fold(word))) }));}
 function priceForMethod(p,method){return method==="Transferencia CUP"?p.price_transfer:method==="Saldo móvil"?p.price_mobile:method==="USDT"?p.price_usdt:0}
 function gameCurrency(item){const n=fold(item?.name||"");if(n.includes("free fire"))return {icon:"💎",unit:"diamantes"};if(n.includes("mobile legends"))return {icon:"💎",unit:"diamantes"};if(n.includes("blood strike"))return {icon:"🪙",unit:"gold"};if(n.includes("arena breakout"))return {icon:"🪙",unit:"bonos"};if(n.includes("honor of kings"))return {icon:"💎",unit:"tokens"};if(n.includes("genshin"))return {icon:"💠",unit:"cristales génesis"};if(n.includes("wuthering"))return {icon:"💠",unit:"lunites"};if(n.includes("roblox"))return {icon:"R$",unit:"Robux"};return {icon:"✦",unit:"créditos"}}
 function packageQuantity(p,item){const meta=gameCurrency(item);const amount=Number(p.amount||0);return amount>0?money(amount)+" "+meta.unit:p.name}
 function gameMethodsFor(rows){return gamePaymentCatalog.filter(method=>rows.some(p=>Number(priceForMethod(p,method.name))>0))}
 function gamePaymentButton(method,rows){const enabled=rows.some(p=>Number(priceForMethod(p,method.name))>0);return '<button type="button" class="game-method '+(gamePaymentMethod===method.name?'active':'')+'" '+(enabled?'':'disabled')+' aria-pressed="'+(gamePaymentMethod===method.name)+'" onclick="selectGamePaymentMethod(&quot;'+clean(method.name)+'&quot;)"><span class="method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>'}
 function gamePlanCard(p,item,method){const meta=gameCurrency(item),price=Number(priceForMethod(p,method));return '<article class="game-plan-card game-plan-clickable" data-product-id="'+clean(p.id)+'" data-payment-method="'+clean(method)+'"><div class="plan-currency">'+meta.icon+'</div><div class="plan-info"><strong>'+clean(packageQuantity(p,item))+'</strong><small>'+clean(p.name)+(Number(p.amount)>0?' · Paquete digital':'')+'</small></div><div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||'')+'</small></div><button class="primary-btn plan-buy" type="button" onclick="openCheckout(&quot;'+clean(p.id)+'&quot;,&quot;'+clean(method)+'&quot;)">Elegir</button></article>'}
+let activeFreeFireCategory="diamonds";
 function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
@@ -392,13 +409,31 @@ function renderGameDetail(){
  const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'./assets/free-fire-hero.svg\'">':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Selecciona tu método de pago y encuentra el paquete que necesitas.</p><span class="detail-count">'+(rows.length?rows.length+' paquetes cargados':'Planes en preparación')+'</span></div></div>';
  $("gamePaymentChoices").innerHTML=gamePaymentCatalog.map(method=>gamePaymentButton(method,rows)).join("");
- const plans=rows.filter(p=>Number(priceForMethod(p,gamePaymentMethod))>0);
+ const plans=sortPackages(rows.filter(p=>Number(priceForMethod(p,gamePaymentMethod))>0));
  if(fold(item.name)==="free fire"){
-  const groups=[{id:"diamonds",title:"💎 Diamantes",subtitle:"Recargas de diamantes"},{id:"passes",title:"🎟️ Pases",subtitle:"Pases y tarjetas semanales o mensuales"},{id:"booyah",title:"🏆 Pase Booyah",subtitle:"Pase Booyah"}];
-  $("gameDetailPlans").innerHTML=groups.map(group=>{const list=plans.filter(p=>freeFirePackageGroup(p)===group.id);return list.length?'<section class="package-group"><div class="package-group-heading"><h3>'+group.title+'</h3><p>'+group.subtitle+'</p></div><div class="game-plans-grid">'+list.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join("")+'</div></section>':""}).join("")||'<div class="game-empty-state"><span>💎</span><strong>No hay paquetes con precio para este método.</strong><p>Prueba otro método de pago.</p></div>';
+  const diamonds=plans.filter(p=>freeFirePackageGroup(p)==="diamonds");
+  const passes=plans.filter(p=>["passes","booyah"].includes(freeFirePackageGroup(p)));
+  if(!diamonds.length&&passes.length)activeFreeFireCategory="passes";
+  else if(!passes.length&&diamonds.length)activeFreeFireCategory="diamonds";
+  const tabs='<div class="free-fire-category-tabs" role="tablist" aria-label="Categorías de Free Fire">'+
+   '<button type="button" role="tab" aria-selected="'+(activeFreeFireCategory==="diamonds")+'" class="free-fire-category-tab '+(activeFreeFireCategory==="diamonds"?"active":"")+'" data-free-fire-tab="diamonds" onclick="selectFreeFireCategory(\'diamonds\')">💎 Diamantes <small>'+diamonds.length+'</small></button>'+
+   '<button type="button" role="tab" aria-selected="'+(activeFreeFireCategory==="passes")+'" class="free-fire-category-tab '+(activeFreeFireCategory==="passes"?"active":"")+'" data-free-fire-tab="passes" onclick="selectFreeFireCategory(\'passes\')">🎟️ Pases y Booyah <small>'+passes.length+'</small></button></div>';
+  const diamondPane='<section class="free-fire-category-panel '+(activeFreeFireCategory==="diamonds"?"active":"")+'" role="tabpanel" data-free-fire-category="diamonds">'+
+   (diamonds.length?'<div class="package-group-heading"><h3>Diamantes</h3><p>Del paquete más pequeño al más grande</p></div><div class="game-plans-grid">'+diamonds.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join("")+'</div>':'<div class="game-empty-state"><span>💎</span><strong>No hay diamantes con este método de pago.</strong><p>Prueba otra forma de pago.</p></div>')+'</section>';
+  const passGroups=[{id:"passes",title:"Pases semanales y mensuales",subtitle:"Semanal básico, semanal y mensual"},{id:"booyah",title:"Pase Booyah",subtitle:"Pase premium"}];
+  const passContent=passGroups.map(group=>{const list=passes.filter(p=>freeFirePackageGroup(p)===group.id);return list.length?'<section class="package-group"><div class="package-group-heading"><h3>'+group.title+'</h3><p>'+group.subtitle+'</p></div><div class="game-plans-grid">'+sortPackages(list).map(p=>gamePlanCard(p,item,gamePaymentMethod)).join("")+'</div></section>':""}).join("");
+  const passPane='<section class="free-fire-category-panel '+(activeFreeFireCategory==="passes"?"active":"")+'" role="tabpanel" data-free-fire-category="passes">'+(passContent||'<div class="game-empty-state"><span>🎟️</span><strong>No hay pases con este método de pago.</strong><p>Prueba otra forma de pago.</p></div>')+'</section>';
+  $("gameDetailPlans").innerHTML=tabs+diamondPane+passPane;
  }else $("gameDetailPlans").innerHTML=plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state"><span>'+gameCurrency(item).icon+'</span><strong>Estamos preparando los planes de '+clean(item.name)+'</strong><p>Este juego todavía no tiene paquetes con precio para el método seleccionado.</p></div>';
  $("gamePlansTitle").textContent=fold(item.name)==="free fire"?"Paquetes de Free Fire":methods.length?"Planes disponibles":"Planes en preparación";
  $("gamePlansSubtitle").textContent=methods.length?"Precios en "+gamePaymentMethod:"Todavía no hay precios publicados para este juego.";
+}
+function selectFreeFireCategory(category){
+ if(!["diamonds","passes"].includes(category))return;
+ activeFreeFireCategory=category;
+ const root=$("gameDetailPlans");if(!root)return;
+ root.querySelectorAll("[data-free-fire-tab]").forEach(button=>{const active=button.dataset.freeFireTab===category;button.classList.toggle("active",active);button.setAttribute("aria-selected",String(active));});
+ root.querySelectorAll("[data-free-fire-category]").forEach(panel=>panel.classList.toggle("active",panel.dataset.freeFireCategory===category));
 }
 function selectGamePaymentMethod(method){const rows=gameProductsFor(activeGameFilter);if(!rows.some(p=>Number(priceForMethod(p,method))>0))return;gamePaymentMethod=method;renderGameDetail();}
 function fold(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
@@ -406,7 +441,7 @@ function isGiftCard(p){const value=fold(String(p.game||"")+" "+String(p.name||""
 function providerImageIsSafe(value){try{const url=new URL(String(value));return url.protocol==="https:"||url.protocol==="http:"}catch{return false}}
 function productArtwork(p){
  const fallback="this.onerror=null;this.src='./assets/free-fire-hero.svg'";
- if(providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Free Fire")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
+ if(!fold(p.game||"").includes("free fire")&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Free Fire")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
  const group=freeFirePackageGroup(p),file=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":"product-diamonds.svg";
  return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+file+'" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
 }
@@ -420,8 +455,8 @@ function gameTile(item){const matches=availableFor(item);const image=item.image?
 function giftTile(item){const matches=availableFor({...item,kind:"gift"});return '<button class="gift-tile" type="button" onclick="chooseGift(\''+clean(item.name)+'\')"><div class="gift-art gift-'+item.art+'">'+item.icon+'</div><div class="gift-info">'+clean(item.name)+'<small>'+(matches.length?'Disponible':'Próximamente')+'</small></div></button>'}
 function renderProductCatalogs(){
  const currentGames=gameCatalog.filter(game=>game.name==="Free Fire");$("homeGames").innerHTML=currentGames.map(gameTile).join("");$("gamesTiles").innerHTML=currentGames.map(gameTile).join("");$("homeGifts").innerHTML="";$("giftTiles").innerHTML="";$("homeGifts").parentElement.classList.add("hidden");$("giftcardsView").classList.add("hidden");
- const featured=products.filter(p=>!isGiftCard(p)&&!isLevelUpPackage(p)&&Number(p.active===undefined?1:p.active)!==0).slice(0,6);$("homeFeaturedProducts").innerHTML=featured.length?featured.map(productCard).join(''):'<div class="featured-empty"><span aria-hidden="true">✦</span><strong>Estamos preparando el catálogo</strong><p>Pronto publicaremos los paquetes disponibles. Vuelve a consultar más adelante.</p></div>';
- const gameList=products.filter(p=>!isGiftCard(p)&&!isLevelUpPackage(p));const visibleGames=activeGameFilter?gameList.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGameFilter))):gameList;
+ const featured=sortPackages(products.filter(p=>!isGiftCard(p)&&!isLevelUpPackage(p)&&Number(p.active===undefined?1:p.active)!==0)).slice(0,6);$("homeFeaturedProducts").innerHTML=featured.length?featured.map(productCard).join(''):'<div class="featured-empty"><span aria-hidden="true">✦</span><strong>Estamos preparando el catálogo</strong><p>Pronto publicaremos los paquetes disponibles. Vuelve a consultar más adelante.</p></div>';
+ const gameList=sortPackages(products.filter(p=>!isGiftCard(p)&&!isLevelUpPackage(p)));const visibleGames=sortPackages(activeGameFilter?gameList.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGameFilter))):gameList);
  $("gamesProductsTitle").textContent=activeGameFilter?"Paquetes de "+activeGameFilter:"Paquetes disponibles";$("gamesProducts").innerHTML=visibleGames.length?visibleGames.map(productCard).join(""):'<p class="empty-note">Todavía no hay paquetes disponibles en esta categoría. Pronto añadiremos más opciones.</p>';
  if(activeGameFilter){$("gamesCatalogPanel").classList.add("hidden");$("gameDetailPanel").classList.remove("hidden");renderGameDetail()}else{$("gamesCatalogPanel").classList.remove("hidden");$("gameDetailPanel").classList.add("hidden")}
  const gifts=products.filter(isGiftCard);const visibleGifts=activeGiftFilter?gifts.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGiftFilter))):gifts;
@@ -429,7 +464,7 @@ function renderProductCatalogs(){
 }
 function chooseGame(name){activeGameFilter=name;gamePaymentMethod="Transferencia CUP";renderProductCatalogs();showView("games")}function chooseGift(name){activeGiftFilter=name;renderProductCatalogs();showView("giftcards")}function clearGameFilter(){activeGameFilter="";renderProductCatalogs();$("gamesCatalogPanel")?.scrollIntoView({behavior:"smooth",block:"start"})}
 function scrollToHowItWorks(){document.getElementById("howItWorks")?.scrollIntoView({behavior:"smooth",block:"start"})}
- function renderSearchProducts(){const term=fold($("productSearch")?.value||"");const matches=products.filter(p=>!isLevelUpPackage(p)&&fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).includes(term));$("searchProducts").innerHTML=matches.length?matches.map(productCard).join():'<p class="empty-note">'+(term?"No encontramos productos con ese nombre.":"Escribe para buscar en el catálogo.")+'</p>'}
+ function renderSearchProducts(){const term=fold($("productSearch")?.value||"");const matches=sortPackages(products.filter(p=>!isLevelUpPackage(p)&&fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).includes(term)));$("searchProducts").innerHTML=matches.length?matches.map(productCard).join():'<p class="empty-note">'+(term?"No encontramos productos con ese nombre.":"Escribe para buscar en el catálogo.")+'</p>'}
 function showView(name){
  if(name==="giftcards")name="games";
  if(["orders","profile","admin"].includes(name)&&!currentUser){openAccount();$("authmsg").textContent="Inicia sesión para acceder a tu cuenta y consultar tus pedidos.";return}
@@ -586,7 +621,7 @@ function updatePaymentFields(){
  $("referenceLabel").textContent="Número de transferencia (obligatorio)";
  $("proofLabel").textContent=method==="Saldo móvil"?"Captura del SMS de ETECSA (obligatoria)":"Captura de la transferencia (obligatoria)";
  $("proofHelp").textContent=method==="Saldo móvil"?"Adjunta una captura clara del SMS de ETECSA que confirma el envío del saldo. JPG, PNG o WEBP; máximo 5 MB.":"Adjunta una captura clara del comprobante de transferencia. JPG, PNG o WEBP; máximo 5 MB.";
- if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Crear pedido y enviar comprobante";
+ if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Confirmar que pagué y enviar pedido";
 }
 function renderPaymentMethodAdmin(){
  const list=$("paymentAdminList");if(!list)return;
@@ -894,33 +929,35 @@ function centralOneStatusText(value){
 
 async function updateOrderStatus(orderId,selectId){
  if(currentProfile?.role!=="admin"||!currentUser)return;
- const select=$(selectId);
- const newStatus=select?.value;
+ const select=$(selectId),newStatus=select?.value;
  if(!orderId||!newStatus)return;
- const button=document.querySelector(`[data-order-id="${CSS.escape(orderId)}"]`);
- if(button){button.disabled=true;button.textContent="Guardando...";}
+ if(newStatus==="processing"&&!window.confirm("CONFIRMAR PAGO Y ENVIAR RECARGA\n\nComprueba primero el comprobante y confirma que el dinero ya llegó. Después, el sistema enviará este pedido a Central One y utilizará saldo real de tu cuenta.\n\n¿Confirmas que recibiste el pago y autorizas la recarga?"))return;
+ const button=document.querySelector('[data-update-order][data-order-id="'+CSS.escape(orderId)+'"]');
+ const originalText=button?.textContent||"";
+ if(button){button.disabled=true;button.textContent=newStatus==="processing"?"Confirmando y enviando…":"Guardando…";}
  $("orderadminmsg").textContent="";
  try{
   const {data,error}=await db.rpc("admin_update_order_status",{p_order_id:orderId,p_status:newStatus});
-  if(error){
-   $("orderadminmsg").textContent="No se pudo actualizar: "+error.message;
-   return;
+  if(error)throw new Error(error.message);
+  if(!data)throw new Error("Supabase no confirmó el cambio de estado.");
+  if(newStatus==="processing"){
+   $("orderadminmsg").textContent="Pago confirmado. Enviando recarga a Central One…";
+   try{
+    const sent=await requestCentralOneOrder("submit",orderId);
+    $("orderadminmsg").textContent=sent.already_submitted?"Este pedido ya estaba enviado a Central One; no se creó una recarga duplicada.":"Pago confirmado y pedido enviado a Central One. Estado: "+centralOneStatusText(sent.provider_status||"created")+".";
+   }catch(providerError){
+    $("orderadminmsg").textContent="El pago quedó confirmado, pero Central One no confirmó el envío: "+(providerError.message||"Error de comunicación")+". Revisa el pedido antes de reintentar; se conserva la protección contra duplicados.";
+   }
+  }else{
+   $("orderadminmsg").textContent="Pedido actualizado: "+statusText(data.status)+".";
   }
-  if(!data){
-   $("orderadminmsg").textContent="Supabase no confirmó el cambio. Es posible que falte una política RLS que permita a los administradores actualizar pedidos.";
-   return;
-  }
-  $("orderadminmsg").textContent="Pedido actualizado: "+statusText(data.status)+".";
-  await loadAllOrders();
-  await loadMyOrders();
+  await loadAllOrders();await loadMyOrders();
  }catch(e){
-  $("orderadminmsg").textContent="Error de conexión: "+(e.message||"inténtalo de nuevo.");
+  $("orderadminmsg").textContent="No se pudo completar la acción: "+(e.message||"Error desconocido.");
  }finally{
-  const current=document.querySelector(`[data-order-id="${CSS.escape(orderId)}"]`);
-  if(current){current.disabled=false;current.textContent="Guardar estado";}
+  if(button){button.disabled=false;button.textContent=originalText;}
  }
 }
-
 
 async function requestCentralOneOrder(action,orderId){
  if(currentProfile?.role!=="admin"||!currentUser||!db)throw new Error("Solo el administrador puede gestionar recargas de Central One.");
@@ -1196,7 +1233,7 @@ async function loadAllOrders(){
   const selectId="order-status-"+i;
   const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
   const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return '<option value="'+value+'">'+(item?.label||value)+'</option>';}).join("");
-  const actionLabel=o.status==="payment_review"?"Confirmar pago":"Rechazar pedido";
+  const actionLabel=o.status==="payment_review"?"Confirmar pago y enviar recarga":"Rechazar pedido";
   let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
    const signed=await db.storage.from("payment-proofs").createSignedUrl(o.proof_path,600);
@@ -1226,7 +1263,7 @@ async function loadAllOrders(){
    :canRefresh
     ?'<div class="order-actions"><button type="button" data-provider-refresh data-order-id="'+clean(o.id)+'">Actualizar estado en Central One</button></div>'
     :"";
-  return '<div class="order-card"><b>'+clean(o.order_code)+'</b>'+
+  return '<div class="order-card" data-order-status="'+clean(o.status)+'" data-provider-status="'+clean(providerStatus)+'" data-provider-id="'+clean(o.central_one_order_id||"")+'"><b>'+clean(o.order_code)+'</b>'+
    '<div class="order-detail">'+clean(o.game)+' – '+clean(o.package_name)+'<br>'+
    'Jugador: '+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'<br>'+
    'Precio cliente: '+money(o.price)+' '+clean(o.payment_method)+'<br>'+
@@ -1262,6 +1299,6 @@ window.addEventListener("load",()=>{
 });
 </script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<script src="./assets/admin-panel.js?v=5"></script>
+<script src="./assets/admin-panel.js?v=6"></script>
 </body>
 </html>

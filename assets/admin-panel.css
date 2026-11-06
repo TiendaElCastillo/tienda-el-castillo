@@ -1,6 +1,50 @@
-.admin-heading{margin:8px 0 16px}.admin-heading h1{font-size:27px;letter-spacing:-.04em;margin:3px 0}.admin-kicker{font-size:10px;font-weight:900;letter-spacing:.15em;color:var(--blue)}.admin-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin:0 0 10px;scrollbar-width:thin;position:sticky;top:68px;z-index:15;background:var(--bg)}.admin-tab{flex:0 0 auto;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#fff;color:#53627b;font-size:12px;font-weight:800;white-space:nowrap}.admin-tab.active{background:#1f61df;border-color:#1f61df;color:#fff;box-shadow:0 5px 14px rgba(36,104,242,.18)}.admin-section-panel{margin-top:8px}.admin-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}.admin-shortcut{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:left;border:1px solid var(--line);background:#f8faff;border-radius:14px;padding:14px;color:var(--ink)}.admin-shortcut strong{font-size:13px}.admin-shortcut span{font-size:11px;color:var(--muted);line-height:1.4}.admin-order-filters{display:flex;gap:7px;overflow-x:auto;padding:8px 0 12px;margin:0 0 8px}.admin-order-filter{flex:0 0 auto;border:1px solid var(--line);border-radius:30px;padding:8px 11px;background:#f6f8fc;color:#52627b;font-size:11px;font-weight:800;white-space:nowrap}.admin-order-filter.active{background:#e8f0ff;border-color:#b9d0ff;color:#1e5bc5}.admin-filter-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:20px;background:rgba(20,45,90,.08);margin-left:4px;font-size:10px}.admin-order-filter.active .admin-filter-count{background:#fff}.admin-filter-empty{display:none;margin:8px 0;padding:13px;border-radius:12px;border:1px dashed #cdd8e8;color:var(--muted);font-size:12px}.admin-filter-empty.show{display:block}@media(max-width:600px){.admin-heading h1{font-size:23px}.admin-tabs{top:68px;margin-left:-13px;margin-right:-13px;padding-left:13px;padding-right:13px}.admin-tab{padding:10px 12px}.admin-shortcuts{grid-template-columns:1fr}}
+
+/* Tienda El Castillo — panel administrativo responsive */
+.admin-heading{display:flex;flex-direction:column;gap:5px;margin:8px 0 18px;padding:24px 22px;border-radius:24px;color:#fff;background:radial-gradient(circle at 92% 12%,rgba(255,255,255,.2),transparent 30%),linear-gradient(125deg,#10264d,#1d58b8 68%,#347cff);box-shadow:0 16px 35px rgba(23,67,143,.18)}
+.admin-heading h1{font-size:clamp(25px,5vw,34px);letter-spacing:-.045em;line-height:1.05;margin:4px 0}
+.admin-heading p{color:#d8e6ff;margin:4px 0 0;font-size:13px}
+.admin-kicker{font-size:10px;font-weight:900;letter-spacing:.16em;color:#f1d48b}
+.admin-tabs{display:flex;gap:8px;overflow-x:auto;padding:5px 2px 13px;margin:0 0 12px;scrollbar-width:thin;position:sticky;top:68px;z-index:15;background:rgba(244,247,252,.96);backdrop-filter:blur(12px)}
+.admin-tab{flex:0 0 auto;border:1px solid #e2e9f4;border-radius:13px;padding:11px 15px;background:#fff;color:#53627b;font-size:12px;font-weight:850;white-space:nowrap;box-shadow:0 3px 10px rgba(20,45,90,.035);transition:transform .15s,background .15s}
+.admin-tab:active{transform:scale(.97)}
+.admin-tab.active{background:linear-gradient(135deg,#347cff,#185bdf);border-color:#2468f2;color:#fff;box-shadow:0 8px 18px rgba(36,104,242,.22)}
+.admin-section-panel,.admin-overview{margin:10px 0 16px;padding:22px;border:1px solid #e4eaf4;border-radius:22px;background:#fff;box-shadow:0 9px 26px rgba(20,45,90,.055)}
+#admin .admin-section-panel h2,#admin .admin-overview h2{font-size:20px;letter-spacing:-.025em;margin:0 0 7px;color:#172b4d}
+#admin .admin-section-panel h3{font-size:15px;letter-spacing:-.01em}
+.admin-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:18px}
+.admin-shortcut{display:flex;min-height:96px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;text-align:left;border:1px solid #e5ebf5;background:linear-gradient(145deg,#fff,#f6f9ff);border-radius:17px;padding:15px;color:#172b4d;box-shadow:0 3px 11px rgba(20,45,90,.035);transition:transform .16s,border-color .16s,box-shadow .16s}
+.admin-shortcut:active{transform:scale(.985);border-color:#a9c5f4;box-shadow:0 7px 17px rgba(20,45,90,.08)}
+.admin-shortcut strong{font-size:14px}.admin-shortcut span{font-size:11px;color:#74839b;line-height:1.45}
+.admin-overview .track-note{margin-top:17px;padding:13px 15px;border:1px solid #dbe8ff;border-radius:14px;background:#f3f7ff;color:#36547f;line-height:1.5}
+.admin-order-filters{display:flex;gap:7px;overflow-x:auto;padding:8px 0 13px;margin:0 0 8px;scrollbar-width:thin}
+.admin-order-filter{flex:0 0 auto;border:1px solid #e3eaf4;border-radius:30px;padding:9px 12px;background:#f8faff;color:#53627b;font-size:11px;font-weight:850;white-space:nowrap}
+.admin-order-filter.active{background:#e8f0ff;border-color:#b9d0ff;color:#1e5bc5}
+.admin-filter-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:20px;background:rgba(20,45,90,.08);margin-left:4px;font-size:10px}
+.admin-order-filter.active .admin-filter-count{background:#fff}
+.admin-filter-empty{display:none;margin:8px 0;padding:15px;border-radius:14px;border:1px dashed #cdd8e8;color:#74839b;font-size:12px;text-align:center}
+.admin-filter-empty.show{display:block}
+#admin .order-card{border:1px solid #e5ebf4;border-radius:17px;padding:16px;margin:11px 0;background:linear-gradient(160deg,#fff,#fbfcff);box-shadow:0 4px 13px rgba(20,45,90,.04)}
+#admin .order-code{font-size:11px;letter-spacing:.04em;color:#8090a8}
+#admin .order-detail{font-size:12px;line-height:1.7;color:#52627a;overflow-wrap:anywhere}
+#admin .status{display:inline-flex;padding:5px 9px;border-radius:30px;background:#eef4ff;color:#205fc9;font-size:11px}
+#admin .order-actions{gap:9px;margin-top:13px}
+#admin .order-actions button,#admin [data-provider-submit],#admin [data-provider-refresh]{border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#347cff,#185bdf);color:white;font-weight:850;font-size:12px;box-shadow:0 6px 14px rgba(36,104,242,.16)}
+#admin .order-actions select{min-width:0;border:1px solid #dfe7f2;border-radius:12px;padding:10px;background:#fff;color:#243b60}
+#admin .track-note{line-height:1.5}
+#admin .msg{padding:10px 12px;border-radius:12px;background:#f3f7ff}
 .catalog-product-clickable,.game-plan-clickable{cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
 .catalog-product-clickable:active,.game-plan-clickable:active{transform:scale(.985)}
 .catalog-product-clickable:focus-visible,.game-plan-clickable:focus-visible{outline:3px solid rgba(36,104,242,.35);outline-offset:3px}
 .checkout-safety-note{border-color:#c8d9f8;background:#f3f7ff;color:#28436f}
 #placeOrderBtn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.15)}
+.free-fire-category-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:6px;border:1px solid #e4eaf4;background:#f4f7fc;border-radius:18px;margin:14px 0 18px}
+.free-fire-category-tab{min-width:0;padding:11px 8px;border:1px solid transparent;border-radius:13px;background:transparent;color:#62738e;font-size:12px;font-weight:850;line-height:1.25}
+.free-fire-category-tab.active{background:#fff;border-color:#dce7f8;color:#205dca;box-shadow:0 3px 11px rgba(20,45,90,.08)}
+.free-fire-category-panel{display:none}
+.free-fire-category-panel.active{display:block;animation:ffPaneIn .18s ease-out}
+@keyframes ffPaneIn{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.package-group-heading{margin:0 0 12px}
+.package-group-heading h3{font-size:17px;margin:0;color:#1c3153}
+.package-group-heading p{margin:4px 0 0;color:#7a89a1;font-size:11px}
+@media(max-width:600px){.admin-heading{padding:20px 17px;border-radius:20px}.admin-heading h1{font-size:26px}.admin-tabs{top:68px;margin-left:-13px;margin-right:-13px;padding-left:13px;padding-right:13px}.admin-tab{padding:10px 12px;font-size:11px}.admin-shortcuts{grid-template-columns:1fr}.admin-section-panel,.admin-overview{padding:16px;border-radius:18px}.admin-order-filter{padding:8px 10px}.admin-order-filters{margin-left:-2px;margin-right:-2px}.free-fire-category-tabs{gap:5px;padding:5px}.free-fire-category-tab{font-size:11px;padding:10px 5px}}
+@media(max-width:380px){.free-fire-category-tab{font-size:10px}}
