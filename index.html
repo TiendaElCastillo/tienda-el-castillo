@@ -12,7 +12,7 @@
 <meta property="og:description" content="Recargas de Free Fire desde Cuba. Paga por transferencia CUP o saldo móvil y consulta el estado de tu pedido.">
 <meta property="og:url" content="https://tiendaelcastillo.github.io/tienda-el-castillo/"><meta property="og:site_name" content="Tienda El Castillo"><meta property="og:locale" content="es_CU"><meta property="og:image" content="https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp"><meta property="og:image:alt" content="Emblema de Tienda El Castillo"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp"><title>Tienda El Castillo | Recargas de Free Fire en Cuba</title>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Tienda El Castillo","url":"https://tiendaelcastillo.github.io/tienda-el-castillo/","logo":"https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp","description":"Tienda independiente de recargas digitales para jugadores en Cuba."},{"@type":"WebSite","name":"Tienda El Castillo","url":"https://tiendaelcastillo.github.io/tienda-el-castillo/","inLanguage":"es-CU"}]}</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <style>
 :root{--bg:#f4f7fc;--surface:#fff;--ink:#17233c;--muted:#71809a;--line:#e5eaf3;--blue:#2468f2;--blue2:#1455d8;--gold:#e6b957;--shadow:0 10px 30px rgba(20,45,90,.08);--radius:20px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -315,6 +315,46 @@ const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=v=>Number(v||0).toLocaleString("es-ES");
 
+let castleSupabaseSdkPromise=null;
+function loadCastleSupabaseSdk(){
+ if(window.supabase&&window.supabase.createClient)return Promise.resolve(true);
+ if(castleSupabaseSdkPromise)return castleSupabaseSdkPromise;
+ castleSupabaseSdkPromise=new Promise(resolve=>{
+  const script=document.createElement("script");
+  let finished=false;
+  const finish=ok=>{
+   if(finished)return;
+   finished=true;clearTimeout(timeout);
+   if(!ok){script.remove();castleSupabaseSdkPromise=null;}
+   resolve(Boolean(ok&&window.supabase&&window.supabase.createClient));
+  };
+  const timeout=setTimeout(()=>finish(false),20000);
+  script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  script.async=true;
+  script.crossOrigin="anonymous";
+  script.onload=()=>finish(true);
+  script.onerror=()=>finish(false);
+  document.head.appendChild(script);
+ });
+ return castleSupabaseSdkPromise;
+}
+async function bootstrapCastleStore(){
+ const button=$("authSubmit");
+ if(button){button.disabled=true;button.textContent="Conectando…";}
+ $("authmsg").textContent="Conectando con la tienda. En redes lentas puede tardar un poco; no cierres esta página.";
+ const ready=await loadCastleSupabaseSdk();
+ if(!ready){
+  $("authmsg").textContent="No se pudo descargar el módulo de conexión. Comprueba la señal y pulsa «Reintentar conexión».";
+  if(button){button.disabled=false;button.textContent="Reintentar conexión";button.onclick=bootstrapCastleStore;}
+  $("brandLoader")?.classList.add("done");
+  return;
+ }
+ await start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY);
+ if(button){
+  button.disabled=false;
+  if(!button.onclick||button.onclick===bootstrapCastleStore)setAuthMode("login");
+ }
+}
 function connect(){
  const url=$("url").value.trim();
  const key=$("key").value.trim();
@@ -1613,24 +1653,16 @@ async function logout(){
  $("auth").classList.remove("hidden");setAuthMode("login");window.scrollTo({top:0,behavior:"smooth"});
 }
 window.addEventListener("DOMContentLoaded",()=>{
- // No dependas de window.load: recursos externos lentos (por ejemplo CAPTCHA o imágenes)
- // no deben mantener bloqueada la pantalla inicial.
- const startupFailsafe=setTimeout(()=>{
-  const loader=$("brandLoader");
-  if(loader&&!loader.classList.contains("done")){
-   $("authmsg").textContent="La conexión está tardando más de lo normal. Comprueba Internet e intenta iniciar sesión de nuevo.";
-   $("auth").classList.remove("hidden");
-   loader.classList.add("done");
-  }
- },12000);
- if(window.supabase&&window.supabase.createClient){
-  start(STORE_SUPABASE_URL,STORE_SUPABASE_KEY).finally(()=>clearTimeout(startupFailsafe));
- }else{
-  $("authmsg").textContent="No se pudo cargar el módulo de conexión. Comprueba tu conexión e inténtalo de nuevo.";
-  $("brandLoader")?.classList.add("done");
-  clearTimeout(startupFailsafe);
- }
+ // Mostrar la interfaz de inmediato: la descarga de Supabase ocurre en segundo plano.
+ $("brandLoader")?.classList.add("done");
+ $("auth").classList.remove("hidden");
  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+ bootstrapCastleStore().catch(error=>{
+  console.error("No se pudo iniciar Tienda El Castillo:",error);
+  $("authmsg").textContent="La conexión está tardando. Comprueba Internet y pulsa «Reintentar conexión».";
+  const button=$("authSubmit");
+  if(button){button.disabled=false;button.textContent="Reintentar conexión";button.onclick=bootstrapCastleStore;}
+ });
 });
 </script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
