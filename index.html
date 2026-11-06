@@ -274,7 +274,7 @@ window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=do
 function resetCastleCaptcha(){window.castleCaptchaToken=null;if(window.turnstile&&document.getElementById("castleTurnstile")){try{window.turnstile.reset("#castleTurnstile")}catch(e){}}}
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null;
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceCUP=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -436,7 +436,7 @@ function renderGameDetail(){
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
  const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'./assets/free-fire-hero.svg\'">':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
- $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">No hay métodos de pago activos para este juego en este momento.</p>';
+ $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
  if(fold(item.name)==="free fire"){
   const diamonds=plans.filter(p=>freeFirePackageGroup(p)==="diamonds");
@@ -613,7 +613,7 @@ async function loadPaymentMethods(options={}){
   result=await db.from("payment_methods").select("id,name,instructions,active").order("name");
  }catch(error){
   paymentMethods=[];
-  const message="No se pudieron consultar los métodos de pago: "+(error?.message||String(error));
+  const message="No se pudieron consultar los métodos de pago: "+(error?.message||String(error));paymentLoadError=message;
   const choices=$("gamePaymentChoices");
   if(choices)choices.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
   const subtitle=$("gamePlansSubtitle");if(subtitle)subtitle.textContent=message;
@@ -623,7 +623,7 @@ async function loadPaymentMethods(options={}){
  }
  if(result.error){
   paymentMethods=[];
-  const message="Error al cargar los métodos de pago: "+result.error.message;
+  const message="Error al cargar los métodos de pago: "+result.error.message;paymentLoadError=message;
   const choices=$("gamePaymentChoices");
   if(choices)choices.innerHTML='<p class="empty-note">'+clean(message)+'</p>';
   const subtitle=$("gamePlansSubtitle");if(subtitle)subtitle.textContent=message;
@@ -631,7 +631,7 @@ async function loadPaymentMethods(options={}){
   window.updateCheckoutSubmitState?.();
   throw new Error(message);
  }
- paymentMethods=(result.data||[]).filter(item=>item.active===true&&String(item.instructions||"").trim().length>0 || currentProfile?.role==="admin");
+ paymentMethods=(result.data||[]).filter(item=>item.active===true&&String(item.instructions||"").trim().length>0 || currentProfile?.role==="admin");paymentLoadError=null;
  if(currentProfile?.role==="admin")renderPaymentMethodAdmin();
  if(options.render!==false){
   try{updateCheckoutSummary();renderProductCatalogs();}
