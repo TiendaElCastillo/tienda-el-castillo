@@ -59,3 +59,20 @@ Cuando un visitante no tiene sesión, la página abre el formulario de inicio de
 5. Mantener las pruebas reales de compra Central One aplazadas hasta que el propietario las solicite.
 
 **Regla:** no fusionar ni aplicar cambios solo porque pasen una revisión estática. Primero revisar visualmente y probar los flujos afectados.
+
+## Segunda pasada visual — 6 de noviembre de 2026
+Se añadió una segunda capa CSS, todavía en la misma rama de trabajo:
+- Registro e inicio de sesión: jerarquía más clara, campos y foco visibles, botones y tabs más coherentes con la identidad azul noche/dorado.
+- Checkout: pasos, opciones de pago, resumen, comprobante, consentimiento y mensajes con una presentación más unificada.
+- Visor de comprobantes: cabecera oscura, referencia de transferencia destacada y fondo de imagen neutral.
+- Administración: navegación, filtros, tarjetas de pedidos, controles y mensajes con el mismo lenguaje visual.
+- Service Worker actualizado a v61 para que, al publicar, los teléfonos descarguen la nueva portada.
+
+La petición del propietario es mantener el acceso obligatorio. No se hizo público el catálogo ni se modificó el requisito de iniciar sesión/crear cuenta para acceder. La validación de sesión, registro, login y cierre de sesión permanece intacta.
+
+### Comprobación de esta segunda pasada
+- Los cuatro bloques JavaScript del `index.html` son idénticos a `main`.
+- El contenido añadido en esta pasada es CSS; no se cambiaron las funciones de registro, login, checkout, pedidos ni administración.
+- CSS balanceado por conteo de llaves; no se añadieron fuentes, librerías ni imágenes externas.
+- Las llamadas de autenticación, base de datos, comprobantes y proveedor siguen fuera de caché (solo red).
+- La rama sigue sin fusionar ni publicar. La verificación visual en navegador/teléfono continúa pendiente.
