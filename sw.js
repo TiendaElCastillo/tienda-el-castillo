@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v50";
+const CACHE_NAME = "el-castillo-shell-v51";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -21,23 +21,34 @@ const APP_ROOT = self.registration.scope;
 const INDEX_URL = new URL("./index.html", APP_ROOT).href;
 const ROOT_URL = new URL("./", APP_ROOT).href;
 
-async function cacheSuccessfulResponse(cache, request, response, cacheKey = request) {
-  if (response && response.ok && response.type !== "opaque") {
-    try {
-      await cache.put(cacheKey, response.clone());
-    } catch (_) {
-      // Storage or quota errors must never break the page.
+async function cacheUrl(cache, url, cacheKey = url) {
+  try {
+    const response = await fetch(url, { cache: "reload" });
+    if (response && response.ok && response.type !== "opaque") {
+      await cache.put(cacheKey, response);
+      return true;
     }
+  } catch (_) {
+    // A missing optional asset must not prevent the store from opening.
   }
-  return response;
+  return false;
 }
 
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+
+    // Prioritize the actual store page. Optional images and admin files are
+    // cached independently so one slow or missing asset cannot cancel install.
+    const pageSaved = await cacheUrl(cache, INDEX_URL, INDEX_URL);
+    if (pageSaved) await cacheUrl(cache, ROOT_URL, ROOT_URL);
+
+    await Promise.all(APP_SHELL
+      .filter(path => path !== "./" && path !== "./index.html")
+      .map(path => cacheUrl(cache, new URL(path, APP_ROOT).href)));
+
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", event => {
@@ -60,35 +71,40 @@ self.addEventListener("fetch", event => {
     url.hostname === "cdn.jsdelivr.net" &&
     url.pathname.includes("/npm/@supabase/supabase-js");
 
-  // Auth, catalog API, orders, payment proofs and provider calls stay network-only.
+  // Auth, database reads, orders, payment proofs and provider calls are network-only.
   if (!isLocal && !isSupabaseLibrary) return;
 
-  const cachePromise = caches.open(CACHE_NAME);
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
 
-  if (request.mode === "navigate" && isLocal) {
-    event.respondWith(cachePromise.then(async cache => {
+    if (request.mode === "navigate" && isLocal) {
       const cachedPage =
         await cache.match(INDEX_URL) ||
         await cache.match(ROOT_URL);
       if (cachedPage) return cachedPage;
 
-      return fetch(request).then(response =>
-        cacheSuccessfulResponse(cache, request, response, INDEX_URL)
-      ).catch(async () =>
-        await cache.match(INDEX_URL) ||
-        await cache.match(ROOT_URL) ||
-        Response.error()
-      );
-    }));
-    return;
-  }
+      try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+          await cache.put(INDEX_URL, response.clone()).catch(() => {});
+        }
+        return response;
+      } catch (_) {
+        return Response.error();
+      }
+    }
 
-  event.respondWith(cachePromise.then(async cache => {
     const cached = await cache.match(request);
     if (cached) return cached;
 
-    return fetch(request).then(response =>
-      cacheSuccessfulResponse(cache, request, response)
-    ).catch(() => Response.error());
-  }));
+    try {
+      const response = await fetch(request);
+      if (response && response.ok && response.type !== "opaque") {
+        await cache.put(request, response.clone()).catch(() => {});
+      }
+      return response;
+    } catch (_) {
+      return Response.error();
+    }
+  })());
 });
