@@ -1237,10 +1237,10 @@ function freeFirePlanIcon(p,item){
  const group=freeFirePackageGroup(p);
  if(fold(item?.name||"")!=="free fire")return '<span class="plan-icon-emoji" aria-hidden="true">'+gameCurrency(item).icon+'</span>';
  if(group==="diamonds"){
-  const premium=Number(p.amount||0)>=1000;
-  const src=premium?"diamond-chest.svg":"diamond-pile.svg";
-  const label=premium?"Paquete grande de diamantes":"Paquete de diamantes";
-  return '<img class="plan-icon-image" src="./assets/'+src+'" alt="'+label+'" loading="lazy" decoding="async" width="48" height="48">';
+  const amount=Number(p.amount||0);
+  const src=amount>=3000?"diamond-overflow.svg":amount>=1000?"diamond-chest.svg":amount>=250?"diamond-pile.svg":"diamond-few.svg";
+  const label=amount>=3000?"Cofre desbordándose de diamantes":amount>=1000?"Cofre de diamantes":amount>=250?"Montón de diamantes":"Unos pocos diamantes";
+  return '<img class="plan-icon-image" src="./assets/'+src+'" alt="'+label+'" loading="lazy" decoding="async" width="72" height="56">';
  }
  const icon=group==="booyah"?"⭐":group==="passes"?"🎟️":group==="levels"?"🏆":gameCurrency(item).icon;
  return '<span class="plan-icon-emoji" aria-hidden="true">'+icon+'</span>';
