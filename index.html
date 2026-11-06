@@ -614,11 +614,15 @@ function isPaymentMethodReady(name){
  if(typeof paymentMethods==="undefined")return false;
  const item=paymentMethods.find(row=>row.name===name&&row.active===true&&String(row.instructions||"").trim().length>0);
  if(!item)return false;
+ const raw=String(item.instructions||"").replace(/\s+/g," ");
  if(name==="Transferencia CUP"){
-  const raw=String(item.instructions||"").replace(/\s+/g," ");
   const card=raw.match(/tarjeta\s*:?\s*([0-9][0-9\s-]{8,})/i)?.[1]||"";
   const confirm=raw.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]||"";
   return Boolean(card&&confirm.replace(/\D/g,"").length>=8);
+ }
+ if(name==="Saldo móvil"){
+  const phone=raw.match(/n[uú]mero\s*:?\s*([+]?[0-9][0-9\s-]{7,})/i)?.[1]||"";
+  return phone.replace(/\D/g,"").length>=8;
  }
  return true;
 }
