@@ -269,7 +269,7 @@ window.addEventListener("DOMContentLoaded",function(){
  <ol class="checkout-stepper" id="checkoutStepper" aria-label="Pasos de compra">
   <li class="active" data-checkout-step="player"><b>1</b><span>Cuenta</span></li>
   <li data-checkout-step="payment"><b>2</b><span>Pago</span></li>
-  <li data-checkout-step="review"><b>3</b><span>Enviar</span></li>
+  <li data-checkout-step="review"><b>3</b><span>Listo</span></li>
  </ol>
  <div id="checkoutStagePlayer" class="checkout-stage-panel">
   <p id="selectedProductText" class="status"></p>
@@ -295,6 +295,16 @@ window.addEventListener("DOMContentLoaded",function(){
   <div class="notice checkout-safety-note"><strong>Importante:</strong> no tenemos conexión automática con los SMS de tu banco. La captura y los datos son obligatorios; revisaremos el pago manualmente antes de autorizar la recarga. Adjuntar una imagen no confirma que el dinero haya llegado.</div>
   <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="updateCheckoutStage('player')">← Volver a datos</button><button id="placeOrderBtn" class="primary-btn" type="button" onclick="placeOrder()" disabled>Completa los datos de pago</button></div>
   <p id="ordermsg" class="msg" role="status" aria-live="polite"></p>
+ </div>
+ <div id="checkoutStageDone" class="checkout-stage-panel hidden">
+  <div class="checkout-done-panel">
+   <div class="checkout-done-icon" aria-hidden="true">✓</div>
+   <h2>¡Solicitud recibida!</h2>
+   <p id="checkoutDoneMessage">Tu pedido se envió a revisión.</p>
+   <p class="checkout-done-note">La captura fue recibida, pero el pago todavía debe ser comprobado. La recarga solo se autorizará después de confirmar que el dinero llegó.</p>
+   <button class="primary-btn block-btn" type="button" onclick="showView('orders')">Ver mis pedidos</button>
+   <button class="secondary-btn block-btn" type="button" onclick="showView('home')">Volver a la tienda</button>
+  </div>
  </div>
 </div></section>
 <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
@@ -735,6 +745,7 @@ function updateCheckoutStage(stage){
  const current=["player","payment","review"].includes(stage)?stage:"player";
  $("checkoutStagePlayer")?.classList.toggle("hidden",current!=="player");
  $("checkoutStagePayment")?.classList.toggle("hidden",current!=="payment");
+ $("checkoutStageDone")?.classList.toggle("hidden",current!=="review");
  document.querySelectorAll("[data-checkout-step]").forEach(item=>{
   const key=item.dataset.checkoutStep;
   const order={player:0,payment:1,review:2};
@@ -743,6 +754,17 @@ function updateCheckoutStage(stage){
   if(active)item.setAttribute("aria-current","step");else item.removeAttribute("aria-current");
  });
  if(current==="payment"){updateCheckoutSummary();window.updateCheckoutSubmitState?.();}
+}
+async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000){
+ const requestKey=String(productId)+"::"+String(playerId);
+ const started=Date.now();
+ while(Date.now()-started<timeoutMs){
+  if(validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(productId)&&validatedPlayerCheckout.playerId===playerId)return true;
+  if($("player")?.value.trim()!==playerId||String($("product")?.value||"")!==String(productId))return false;
+  if(playerValidationInFlightKey!==requestKey)return false;
+  await new Promise(resolve=>setTimeout(resolve,250));
+ }
+ return Boolean(validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(productId)&&validatedPlayerCheckout.playerId===playerId);
 }
 async function continueToPayment(){
  const message=$("checkoutPlayerMsg"),button=$("continueToPaymentBtn");
@@ -755,7 +777,16 @@ async function continueToPayment(){
   if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
    if(message)message.textContent="Estamos comprobando el ID. Espera el resultado y confirma que el nombre sea correcto.";
    if(button){button.disabled=true;button.textContent="Comprobando ID…";}
-   try{await validatePlayerId();}catch(e){}
+   try{
+    const requestKey=String(p.id)+"::"+player;
+    if(playerValidationInFlightKey===requestKey)await waitForCurrentPlayerValidation(p.id,player);
+    else{
+     await validatePlayerId();
+     if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
+      await waitForCurrentPlayerValidation(p.id,player);
+     }
+    }
+   }catch(e){}
    if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
     if(message)message.textContent="No se pudo validar este ID. Comprueba los números y vuelve a intentarlo.";
     if(button){button.disabled=false;button.textContent="Continuar al pago →";}
@@ -1224,10 +1255,11 @@ async function placeOrder(){
    await uploadProofForOrder(data.id,method,file,reference,senderPhone,reportedAmount);
   }catch(uploadError){
    $("ordermsg").textContent="El pedido "+data.order_code+" quedó creado, pero no se pudieron asociar todas las pruebas: "+(uploadError.message||"error de carga")+". No crees otro pedido. Entra en «Mis pedidos» y completa los datos y la captura pendientes.";
-   updateCheckoutStage("review");
-  await loadMyOrders();showView("orders");return;
+   await loadMyOrders();
+  updateCheckoutStage("review");return;
   }
   $("ordermsg").textContent="Comprobante y datos recibidos. Pedido "+data.order_code+" enviado a revisión. La recarga se realizará únicamente después de verificar el pago.";
+  $("checkoutDoneMessage").textContent="Tu pedido "+data.order_code+" fue recibido y quedó pendiente de revisión del pago.";
   $("player").value="";$("playername").value="";resetPlayerValidation();$("reference").value="";$("senderPhone").value="";$("reportedAmount").value="";$("paymentProof").value="";previewPaymentProof();
   await loadMyOrders();showView("orders");
  }catch(e){$("ordermsg").textContent="Error de conexión. Comprueba tu conexión e inténtalo de nuevo. Si el pedido llegó a crearse, revisa «Mis pedidos» antes de repetirlo."}
