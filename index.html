@@ -617,7 +617,8 @@ function gamePaymentButton(method,rows){const enabled=isPaymentMethodReady(metho
 
 function freeFirePlanIcon(p,item){
  const group=freeFirePackageGroup(p);
- if(fold(item?.name||"")==="free fire"&&group==="diamonds"){
+ if(fold(item?.name||"")!=="free fire")return '<span class="plan-icon-emoji" aria-hidden="true">'+gameCurrency(item).icon+'</span>';
+ if(group==="diamonds"){
   const premium=Number(p.amount||0)>=1000;
   const src=premium?"diamond-chest.svg":"diamond-pile.svg";
   const label=premium?"Paquete grande de diamantes":"Paquete de diamantes";
@@ -1008,7 +1009,7 @@ function updatePaymentInstructions(){
   const confirm=digits.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Tarjeta para transferir",card,"payment-card-number");
   rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
-  rows+=paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en el campo «Móvil a confirmar» al hacer la transferencia. Así el SMS de confirmación llegará a la tienda.");
+  rows+=paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en el campo «Móvil a confirmar» al hacer la transferencia. La notificación de esa operación llegará a la línea de la tienda y se revisará antes de autorizar la recarga.");
   if(!card||confirm.replace(/\D/g,"").length<8)warning='<div class="payment-unavailable"><strong>Datos bancarios incompletos</strong><span>No hagas la transferencia todavía. La tienda debe completar la tarjeta y el móvil de confirmación.</span></div>';
  }else if(name==="Saldo móvil"){
   const phone=digits.match(/n[uú]mero\s*:?\s*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
