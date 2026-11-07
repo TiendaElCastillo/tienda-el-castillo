@@ -217,3 +217,8 @@
 .admin-order-search{display:block;width:100%;min-height:44px;margin:4px 0 8px;padding:11px 14px;border:1px solid #dfe7f2;border-radius:13px;background:#fff;color:#243b60;font-size:13px;outline:none;box-sizing:border-box}
 .admin-order-search:focus{border-color:#7da7ec;box-shadow:0 0 0 3px rgba(52,124,255,.12)}
 .admin-order-search::placeholder{color:#8795aa}
+
+
+/* Estado explícito de métodos que todavía no pueden recibir pagos. */
+.method-status{display:block;margin-top:3px;font-size:10px;font-weight:600;opacity:.75;line-height:1.25}
+.game-method:disabled,.checkout-method-choice:disabled{opacity:.58;cursor:not-allowed;filter:saturate(.35)}
