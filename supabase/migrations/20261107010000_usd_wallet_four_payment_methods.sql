@@ -429,6 +429,9 @@ begin
   if not found then
     raise exception 'El producto ya no está disponible.';
   end if;
+  if coalesce(selected_product.price_wallet_usd,0) <= 0 then
+    raise exception 'Este paquete no tiene configurado un precio de billetera USD. La tienda debe completar los cuatro precios antes de venderlo.';
+  end if;
 
   if coalesce(new.payment_source,'direct') = 'wallet' then
     if new.payment_method <> 'Billetera USD' then
