@@ -802,24 +802,6 @@ $function$;
 
 revoke all on function public.submit_payment_proof(uuid,text,text,text,numeric) from public;
 grant execute on function public.submit_payment_proof(uuid,text,text,text,numeric) to authenticated;
-
- then
-      raise exception 'Escribe el hash/TxID USDT de 64 caracteres hexadecimales.';
-    end if;
-    perform pg_advisory_xact_lock(hashtextextended('USDT_TX:' || v_reference,0));
-    if exists (
-      select 1 from public.wallet_deposits d
-      where d.id <> p_deposit_id and upper(coalesce(d.payment_reference,'')) = v_reference
-        and d.status in ('payment_review','approved')
-    ) or exists (
-      select 1 from public.orders o
-      where o.payment_method = 'USDT' and upper(coalesce(o.payment_reference,'')) = v_reference
-        and o.status in ('payment_review','processing','completed')
-    ) then
-      raise exception 'Ese TxID ya fue utilizado en otra operación.';
-    end if;
-  else
-    raise exception 'Moneda de depósito no válida.';
   end if;
 
   if p_proof_path !~ (
