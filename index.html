@@ -267,6 +267,20 @@ window.addEventListener("DOMContentLoaded",function(){
 .wallet-rate-row button{width:auto;margin-bottom:8px;white-space:nowrap}
 @media(max-width:680px){.wallet-content-grid{grid-template-columns:1fr}.wallet-hero{padding:18px}.wallet-coin{width:52px;height:52px;border-radius:17px}.wallet-admin-actions{grid-template-columns:1fr 1fr}}
 @media(max-width:390px){.wallet-rate-row{grid-template-columns:1fr}.wallet-rate-row button{width:100%;margin:0}}
+
+/* Acreditación de saldo en tres pasos, compacta y adaptable a móvil */
+.wallet-deposit-stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;list-style:none;margin:16px 0 18px;padding:0}
+.wallet-deposit-stepper li{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;padding:9px 5px;border:1px solid #e1e8f2;border-radius:12px;background:#f7f9fc;color:#78869b;font-size:10px;font-weight:800;text-align:center}
+.wallet-deposit-stepper li b{display:grid;place-items:center;flex:0 0 23px;width:23px;height:23px;border-radius:50%;background:#e8edf5;color:#708099;font-size:10px}
+.wallet-deposit-stepper li.active{border-color:#b9d0f6;background:#eef5ff;color:#1d5bbd}
+.wallet-deposit-stepper li.active b,.wallet-deposit-stepper li.done b{background:#2869db;color:#fff}
+.wallet-deposit-stepper li.done{border-color:#d0e8db;background:#f1faf4;color:#257449}
+.wallet-deposit-stage{min-width:0}
+.wallet-deposit-stage .checkout-stage-actions{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+.wallet-deposit-stage .checkout-stage-actions button{width:100%;min-width:0}
+.wallet-deposit-stage .checkout-stage-actions span{display:block}
+.wallet-deposit-wizard .wallet-instructions{margin:10px 0 14px}
+@media(max-width:390px){.wallet-deposit-stepper{gap:4px}.wallet-deposit-stepper li{font-size:9px;gap:4px;padding:8px 3px}.wallet-deposit-stepper li b{flex-basis:20px;width:20px;height:20px}.wallet-deposit-stage .checkout-stage-actions{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -375,19 +389,36 @@ window.addEventListener("DOMContentLoaded",function(){
    <div class="wallet-coin" aria-hidden="true">💳</div>
   </section>
   <div class="wallet-content-grid">
-   <section class="wallet-panel">
+   <section class="wallet-panel wallet-deposit-wizard">
     <h3>Agregar fondos</h3>
-    <p>Elige cómo vas a depositar. Antes de enviar el dinero, revisa el importe y el saldo que recibirás.</p>
-    <div class="field"><label for="walletDepositMethod">Método de depósito</label><select id="walletDepositMethod" onchange="updateWalletDepositMethod()"><option value="Transferencia CUP">Transferencia CUP</option><option value="USDT">USDT · BNB Smart Chain (BEP20)</option></select></div>
-    <div class="field"><label id="walletDepositAmountLabel" for="walletDepositAmount">Cantidad exacta que enviarás (CUP)</label><input id="walletDepositAmount" type="number" inputmode="decimal" min="1160" step="1" placeholder="Ej. 2000" oninput="previewWalletDeposit()"><small id="walletDepositAmountHint" class="wallet-field-hint">Mínimo inicial: 1160 CUP, equivalente a 1 USD.</small></div>
-    <div class="field hidden" id="walletDepositSenderPhoneWrap"><label for="walletDepositSenderPhone">Teléfono desde el que haces la transferencia</label><input id="walletDepositSenderPhone" type="tel" inputmode="tel" maxlength="20" placeholder="+53 5XXXXXXX"><small class="wallet-field-hint">Escribe tu línea de origen, no el número receptor de la tienda.</small></div>
-    <div class="field" id="walletDepositReferenceWrap"><label for="walletDepositReference">Número de transacción bancaria</label><input id="walletDepositReference" inputmode="text" maxlength="100" placeholder="Copia el Nro. de Transacción"></div>
-    <div class="field hidden" id="walletDepositTxidWrap"><label for="walletDepositTxid">Hash / TxID de la transacción</label><input id="walletDepositTxid" inputmode="text" autocapitalize="off" maxlength="64" placeholder="64 caracteres hexadecimales"><small class="wallet-field-hint">Copia el hash de la transacción confirmada en BNB Smart Chain.</small></div>
-    <div id="walletDepositPreview" class="wallet-preview"><small>Saldo que recibirás tras la revisión</small><strong>0,00 USD</strong><small>El importe final se calcula y verifica en el servidor antes de acreditarse.</small></div>
-    <div id="walletDepositInstructions" class="wallet-instructions">Cargando las instrucciones de pago…</div>
-    <div class="field proof-field"><label for="walletDepositProof">Comprobantes (puedes adjuntar hasta 5 imágenes)</label><input id="walletDepositProof" type="file" accept="image/jpeg,image/png,image/webp" multiple><small class="wallet-field-hint">Adjunta capturas legibles del pago. JPG, PNG o WEBP, máximo 5 MB cada una.</small></div>
-    <div class="wallet-warning"><strong>Importante:</strong> enviar una solicitud o una captura no acredita dinero. Tu depósito quedará pendiente y solo se sumará al saldo cuando la administración compruebe que el pago llegó correctamente.</div>
-    <button id="walletDepositSubmit" class="primary-btn block-btn" type="button" onclick="requestWalletDeposit()">Enviar solicitud de depósito</button>
+    <p>Completa los pasos en orden. Tu saldo solo se acreditará cuando la administración confirme el pago.</p>
+    <ol id="walletDepositStepper" class="wallet-deposit-stepper" aria-label="Pasos para acreditar saldo">
+     <li class="active" data-step="1"><b>1</b><span>Método e importe</span></li>
+     <li data-step="2"><b>2</b><span>Realizar el pago</span></li>
+     <li data-step="3"><b>3</b><span>Enviar comprobante</span></li>
+    </ol>
+    <div id="walletDepositStep1" class="wallet-deposit-stage">
+     <div class="checkout-stage-title"><strong>1. Elige cómo vas a depositar</strong><small>Selecciona el método e indica cuánto dinero vas a enviar.</small></div>
+     <div class="field"><label for="walletDepositMethod">Método de depósito</label><select id="walletDepositMethod" onchange="updateWalletDepositMethod()"><option value="Transferencia CUP">Transferencia CUP</option><option value="USDT">USDT · BNB Smart Chain (BEP20)</option></select></div>
+     <div class="field"><label id="walletDepositAmountLabel" for="walletDepositAmount">Cantidad exacta que enviarás (CUP)</label><input id="walletDepositAmount" type="number" inputmode="decimal" min="1160" step="1" placeholder="Ej. 2000" oninput="previewWalletDeposit()"><small id="walletDepositAmountHint" class="wallet-field-hint">Mínimo inicial: 1160 CUP, equivalente a 1 USD.</small></div>
+     <div id="walletDepositPreview" class="wallet-preview"><small>Saldo que recibirás tras la revisión</small><strong>0,00 USD</strong><small>El importe final se calcula y verifica en el servidor antes de acreditarse.</small></div>
+     <div class="checkout-stage-actions"><span></span><button class="primary-btn" type="button" onclick="goWalletDepositStep(2)">Continuar al pago →</button></div>
+    </div>
+    <div id="walletDepositStep2" class="wallet-deposit-stage hidden">
+     <div class="checkout-stage-title"><strong>2. Realiza el pago y registra sus datos</strong><small>Revisa las instrucciones. Después de pagar, completa los datos de la operación.</small></div>
+     <div id="walletDepositInstructions" class="wallet-instructions">Cargando las instrucciones de pago…</div>
+     <div class="field hidden" id="walletDepositSenderPhoneWrap"><label for="walletDepositSenderPhone">Teléfono desde el que haces la transferencia</label><input id="walletDepositSenderPhone" type="tel" inputmode="tel" maxlength="20" placeholder="+53 5XXXXXXX"><small class="wallet-field-hint">Escribe tu línea de origen, no el número receptor de la tienda.</small></div>
+     <div class="field" id="walletDepositReferenceWrap"><label for="walletDepositReference">Número de transacción bancaria</label><input id="walletDepositReference" inputmode="text" maxlength="100" placeholder="Copia el Nro. de Transacción"></div>
+     <div class="field hidden" id="walletDepositTxidWrap"><label for="walletDepositTxid">Hash / TxID de la transacción</label><input id="walletDepositTxid" inputmode="text" autocapitalize="off" maxlength="64" placeholder="64 caracteres hexadecimales"><small class="wallet-field-hint">Copia el hash de la transacción confirmada en BNB Smart Chain.</small></div>
+     <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="goWalletDepositStep(1)">← Volver</button><button class="primary-btn" type="button" onclick="goWalletDepositStep(3)">Continuar a los comprobantes →</button></div>
+    </div>
+    <div id="walletDepositStep3" class="wallet-deposit-stage hidden">
+     <div class="checkout-stage-title"><strong>3. Adjunta las pruebas y envía tu solicitud</strong><small>Sube capturas claras donde se puedan comprobar los datos del pago.</small></div>
+     <div class="field proof-field"><label for="walletDepositProof">Comprobantes (de 1 a 5 imágenes)</label><input id="walletDepositProof" type="file" accept="image/jpeg,image/png,image/webp" multiple><small class="wallet-field-hint">JPG, PNG o WEBP, máximo 5 MB cada una. Puedes adjuntar hasta 5 imágenes.</small></div>
+     <div id="walletDepositFinalSummary" class="wallet-preview"><small>Resumen de tu solicitud</small><strong>Revisa los datos antes de enviarla.</strong></div>
+     <div class="wallet-warning"><strong>Importante:</strong> enviar la solicitud no acredita dinero. Quedará pendiente hasta que la administración compruebe la recepción real. Si todo está correcto, aprobará y acreditará el saldo; si no, la rechazará indicando el motivo.</div>
+     <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="goWalletDepositStep(2)">← Volver</button><button id="walletDepositSubmit" class="primary-btn" type="button" onclick="requestWalletDeposit()">Enviar solicitud para revisión</button></div>
+    </div>
     <p id="walletDepositMsg" class="msg" role="status" aria-live="polite"></p>
    </section>
    <section class="wallet-panel">
@@ -1774,6 +1805,40 @@ async function uploadWalletDepositProofs(depositId,method,files,reference,sender
  });
  if(result.error)throw new Error(result.error.message);
  return result.data;
+}
+function goWalletDepositStep(step){
+ const target=Math.max(1,Math.min(3,Number(step)||1));
+ const method=$("walletDepositMethod")?.value||"Transferencia CUP";
+ const isCup=method==="Transferencia CUP";
+ const amount=Number($("walletDepositAmount")?.value||0);
+ const minimum=isCup?Math.ceil(Number(walletSettings.cup_per_usd||1160)):1;
+ const msg=$("walletDepositMsg");
+ if(target>=2){
+  if(!Number.isFinite(amount)||amount<minimum){if(msg)msg.textContent=isCup?"El depósito mínimo actual es "+money(minimum)+" CUP (1 USD).":"El depósito mínimo es 1 USDT.";return;}
+  if(!paymentMethods.some(m=>m.name===method&&m.active&&m.instructions)){if(msg)msg.textContent="Ese método no está configurado. No realices el pago.";return;}
+ }
+ if(target>=3){
+  if(isCup){
+   const phone=$("walletDepositSenderPhone")?.value.trim()||"",digits=phone.replace(/\\D/g,"");
+   const reference=$("walletDepositReference")?.value.trim()||"";
+   if(!/^\\+?[0-9\\s().-]+$/.test(phone)||digits.length<8||digits.length>15){if(msg)msg.textContent="Escribe correctamente el teléfono desde el que hiciste la transferencia.";return;}
+   if(reference.length<3||reference.length>100){if(msg)msg.textContent="Escribe el Nro. de Transacción del banco.";return;}
+  }else if(!/^[a-f0-9]{64}$/.test(($("walletDepositTxid")?.value||"").trim().toLowerCase())){if(msg)msg.textContent="El TxID debe tener 64 caracteres hexadecimales. Comprueba la red y copia el hash completo.";return;}
+ }
+ if(target===3){
+  const files=Array.from($("walletDepositProof")?.files||[]);
+  if(files.length<1||files.length>5){if(msg)msg.textContent="Adjunta entre 1 y 5 comprobantes para continuar.";return;}
+  for(const file of files){const invalid=validateProofFile(file);if(invalid){if(msg)msg.textContent=invalid;return;}}
+  const credited=isCup?Math.floor((amount/Number(walletSettings.cup_per_usd||1160))*100)/100:amount;
+  const details=isCup?("Transferencia: "+money(amount)+" CUP · "+moneyUSD(credited)+" USD estimados"):("USDT: "+amount+" · "+moneyUSD(amount)+" USD estimados");
+  $("walletDepositFinalSummary").innerHTML="<small>Resumen de tu solicitud</small><strong>"+details+"</strong><small>Método: "+(isCup?"Transferencia CUP":"USDT · BNB Smart Chain (BEP20)")+" · Comprobantes: "+files.length+"</small>";
+ }
+ [1,2,3].forEach(n=>{
+  const panel=$("walletDepositStep"+n);if(panel)panel.classList.toggle("hidden",n!==target);
+  const item=document.querySelector('#walletDepositStepper [data-step="'+n+'"]');
+  if(item){item.classList.toggle("active",n===target);item.classList.toggle("done",n<target);const number=item.querySelector("b");if(number)number.textContent=n<target?"✓":String(n);}
+ });
+ if(msg)msg.textContent="";
 }
 async function requestWalletDeposit(){
  if(!currentUser){openAccount();return;}
