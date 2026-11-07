@@ -97,18 +97,21 @@ function refreshCheckoutButton(){
  const reportedAmount=Number(document.getElementById("reportedAmount")?.value||0);
  const consent=document.getElementById("privacyConsent")?.checked===true;
  const verified=!product?.provider_product_id||(typeof validatedPlayerCheckout!=="undefined"&&validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(product.id)&&validatedPlayerCheckout.playerId===player);
- const validFile=Boolean(proof)&&typeof validateProofFile==="function"&&!validateProofFile(proof);
- const needsReference=method==="Transferencia CUP";
- const needsSender=needsReference||method==="Saldo móvil";
- const needsReported=method==="Saldo móvil";
- const validReference=reference.length>=3&&reference.length<=100;
+ const isWallet=method==="Billetera USD";
+ const validFile=isWallet||(Boolean(proof)&&typeof validateProofFile==="function"&&!validateProofFile(proof));
+ const needsReference=method==="Transferencia CUP"||method==="USDT";
+ const needsSender=method==="Transferencia CUP"||method==="Saldo móvil";
+ const needsReported=method==="Saldo móvil"||method==="USDT";
+ const validReference=method==="USDT"?/^[A-F0-9]{64}$/i.test(reference):reference.length>=3&&reference.length<=100;
  const validSender=/^\+?[0-9\s().-]+$/.test(senderPhone)&&senderDigits.length>=8&&senderDigits.length<=15;
  const price=typeof priceForMethod==="function"&&product?Number(priceForMethod(product,method)):0;
- const validReported=Number.isFinite(reportedAmount)&&reportedAmount>0&&Math.abs(reportedAmount-price)<=0.01;
+ const validReported=Number.isFinite(reportedAmount)&&reportedAmount>0&&Math.abs(reportedAmount-price)<=(method==="USDT"?0.000001:0.01);
+ const walletBalance=typeof walletBalanceUSD!=="undefined"?Number(walletBalanceUSD):0;
+ const enoughWallet=!isWallet||walletBalance>=price;
  const methodReady=typeof isPaymentMethodReady==="function"?isPaymentMethodReady(method):typeof paymentMethods!=="undefined"&&paymentMethods.some(item=>item.name===method&&item.active===true&&String(item.instructions||"").trim().length>0);
- const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&methodReady&&validFile&&(!needsReference||validReference)&&(!needsSender||validSender)&&(!needsReported||validReported)&&consent&&price>0);
+ const ready=Boolean(product&&player.length>=3&&player.length<=64&&verified&&methodReady&&enoughWallet&&validFile&&(!needsReference||validReference)&&(!needsSender||validSender)&&(!needsReported||validReported)&&consent&&price>0);
  button.disabled=!ready;
- button.textContent=ready?"Ya transferí · Enviar a revisión":!verified?"Primero verifica tu ID de jugador":!methodReady?"Este método de pago no está disponible":!validFile?"Adjunta la captura del comprobante":needsReference&&!validReference?"Escribe el N.º de transacción completo":needsSender&&!validSender?"Escribe el móvil desde el que pagaste":needsReported&&!validReported?"Confirma el importe exacto de saldo":!consent?"Acepta la política y los términos":"Completa los datos del pedido";
+ button.textContent=ready?(isWallet?"Pagar con mi billetera":method==="USDT"?"Ya envié USDT · Enviar a revisión":"Ya pagué · Enviar a revisión"):!verified?"Primero verifica tu ID de jugador":!methodReady?"Este método de pago no está disponible":isWallet&&!enoughWallet?"Saldo insuficiente en tu billetera":!validFile?"Adjunta la captura del comprobante":needsReference&&!validReference?(method==="USDT"?"Escribe el TxID USDT de 64 caracteres":"Escribe el N.º de transacción completo"):needsSender&&!validSender?"Escribe el móvil desde el que pagaste":needsReported&&!validReported?"Confirma el importe exacto":!consent?"Acepta la política y los términos":"Completa los datos del pedido";
 }
 function installCheckoutFlow(){
  // La compra se dispara directamente desde cada tarjeta y su botón; no interceptamos el toque global.
