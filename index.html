@@ -1696,8 +1696,8 @@ async function updateOrderStatus(orderId,selectId){
  if(currentProfile?.role!=="admin"||!currentUser)return;
  const select=$(selectId),newStatus=select?.value;
  if(!orderId||!newStatus)return;
- if(newStatus==="processing"&&!window.confirm("CONFIRMAR RECEPCIÓN DEL PAGO\\n\\nComprueba primero en tu banco o teléfono que el dinero/saldo llegó realmente. Compara el móvil del remitente, el número de transacción, el importe declarado y el comprobante.\\n\\nEsta acción SOLO confirma que recibiste el pago. NO envía la recarga ni utiliza saldo de Central One. La autorización de la recarga será un segundo paso separado.\\n\\n¿Confirmas que recibiste el pago?"))return;
- if(newStatus==="rejected"&&!window.confirm("RECHAZAR PEDIDO\\n\\nComprueba que el pago no se recibió o que existe un motivo válido para rechazarlo. El cliente verá el pedido como rechazado.\\n\\n¿Deseas rechazar este pedido?"))return;
+ if(newStatus==="processing"&&!window.confirm("CONFIRMAR RECEPCIÓN DEL PAGO\n\nComprueba primero en tu banco o teléfono que el dinero/saldo llegó realmente. Compara el móvil del remitente, el número de transacción, el importe declarado y el comprobante.\n\nEsta acción SOLO confirma que recibiste el pago. NO envía la recarga ni utiliza saldo de Central One. La autorización de la recarga será un segundo paso separado.\n\n¿Confirmas que recibiste el pago?"))return;
+ if(newStatus==="rejected"&&!window.confirm("RECHAZAR PEDIDO\n\nComprueba que el pago no se recibió o que existe un motivo válido para rechazarlo. El cliente verá el pedido como rechazado.\n\n¿Deseas rechazar este pedido?"))return;
  const button=document.querySelector('[data-update-order][data-order-id="'+CSS.escape(orderId)+'"]');
  const originalText=button?.textContent||"";
  if(button){button.disabled=true;button.textContent="Guardando decisión…";}
@@ -1734,7 +1734,7 @@ async function requestCentralOneOrder(action,orderId){
 async function authorizeCentralOneOrder(orderId,orderCode){
  if(currentProfile?.role!=="admin"||!currentUser||!orderId)return;
  const accepted=window.confirm(
-  "AUTORIZAR RECARGA REAL\\n\\nPedido "+(orderCode||orderId)+"\\n\\nEsta acción creará una orden real en Central One y utilizará tu saldo prepago. El coste puede quedar reservado o descontado según el estado que devuelva el proveedor.\\n\\nAntes de continuar, confirma que el pago del cliente ya fue verificado y que el paquete, la región y el ID del jugador son correctos.\\n\\nIMPORTANTE: «Pedido creado», «Saldo reservado» o «En proceso» NO significan que los diamantes ya llegaron. Solo considera la recarga entregada cuando Central One confirme «Entregado».\\n\\n¿Autorizas ahora esta recarga y el uso de saldo real?"
+  "AUTORIZAR RECARGA REAL\n\nPedido "+(orderCode||orderId)+"\n\nEsta acción creará una orden real en Central One y utilizará tu saldo prepago. El coste puede quedar reservado o descontado según el estado que devuelva el proveedor.\n\nAntes de continuar, confirma que el pago del cliente ya fue verificado y que el paquete, la región y el ID del jugador son correctos.\n\nIMPORTANTE: «Pedido creado», «Saldo reservado» o «En proceso» NO significan que los diamantes ya llegaron. Solo considera la recarga entregada cuando Central One confirme «Entregado».\n\n¿Autorizas ahora esta recarga y el uso de saldo real?"
  );
  if(!accepted)return;
  const button=document.querySelector('[data-provider-submit][data-order-id="'+CSS.escape(orderId)+'"]');
