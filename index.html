@@ -1484,11 +1484,27 @@ async function placeOrder(){
  }
  if(!$("privacyConsent")?.checked){$("ordermsg").textContent="Lee y acepta la Política de privacidad y los Términos de compra para enviar tu solicitud.";return}
  const method=$("payment").value;
- const price=method==="USDT"?product.price_usdt:method==="Saldo móvil"?product.price_mobile:method==="Transferencia CUP"?product.price_transfer:null;
- if(!(Number(price)>0)){$("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";return}
- if(method==="Billetera CUP"){$("ordermsg").textContent="La billetera interna está desactivada por el momento. Utiliza Transferencia CUP o Saldo móvil.";return}
+ const price=Number(priceForMethod(product,method));
+ if(!(price>0)){$("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";return}
+ if(method==="Billetera USD"){
+  if(!currentProfile){$("ordermsg").textContent="Inicia sesión para utilizar tu billetera.";return}
+  if(walletBalanceUSD<price){$("ordermsg").textContent="Saldo insuficiente. Disponible: "+walletBalanceUSD.toFixed(2)+" USD. Necesitas: "+price.toFixed(2)+" USD.";return}
+  const walletButton=$("placeOrderBtn");if(walletButton){walletButton.disabled=true;walletButton.textContent="Procesando pago…";}
+  $("ordermsg").textContent="";
+  try{
+   const result=await db.rpc("create_wallet_order",{p_product_id:product.id,p_player_id:player,p_player_name:validatedPlayerCheckout?.playerName||$("playername").value.trim(),p_player_validation_token:product.provider_product_id?validatedPlayerCheckout?.token||null:null,p_privacy_policy_version:"2026-11-07-v1"});
+   if(result.error)throw new Error(result.error.message);
+   const data=result.data||{};
+   $("checkoutDoneMessage").textContent="Tu pedido "+(data.order_code||"")+" fue pagado con tu billetera. La recarga está pendiente de procesamiento.";
+   $("ordermsg").textContent="Pedido "+(data.order_code||"creado")+" pagado con tu billetera.";
+   $("player").value="";$("playername").value="";resetPlayerValidation();
+   await loadMyOrders();await loadWalletData();showView("orders");
+  }catch(e){$("ordermsg").textContent="No se pudo procesar el pago de la billetera: "+(e.message||"error desconocido")+". Tu saldo no debe descontarse si el pedido no se creó.";}
+  finally{if(walletButton)window.updateCheckoutSubmitState?.();}
+  return;
+ }
  if(!["Transferencia CUP","Saldo móvil","USDT"].includes(method)){$("ordermsg").textContent="Este método de pago todavía no está disponible.";return}
- if(!paymentMethods.some(item=>item.name===method&&item.active&&item.instructions)){$("ordermsg").textContent="Este método de pago todavía no está configurado. Elige otro método o espera la confirmación de la tienda.";return}
+ if(!isPaymentMethodReady(method)){$("ordermsg").textContent="Este método de pago no está configurado correctamente. No realices ningún pago.";return}
  const file=$("paymentProof")?.files?.[0];
  const invalid=validateProofFile(file);if(invalid){$("ordermsg").textContent=invalid;return}
  const reference=$("reference").value.trim().toUpperCase().replace(/\s+/g,"");
@@ -1537,12 +1553,14 @@ async function loadMyOrders(){
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
     ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
+  const refundInfo=o.wallet_refunded_at&&Number(o.wallet_refund_usd)>0
+   ?'<p class="track-note">Se devolvieron '+Number(o.wallet_refund_usd).toFixed(2)+' USD a tu billetera el '+new Date(o.wallet_refunded_at).toLocaleString("es-CU")+'.</p>':"";
   const supportMessage="Hola, necesito ayuda con el pedido "+String(o.order_code||"")+" de Tienda El Castillo.";
   const supportUrl="https://wa.me/5351884050?text="+encodeURIComponent(supportMessage);
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
-   '<span class=\"status\">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+providerInfo+'<a class=\"order-support-link\" href=\"'+supportUrl+'\" target=\"_blank\" rel=\"noopener noreferrer\">Contactar por WhatsApp sobre este pedido</a>'+retry+'</article>';
+   '<span class=\"status\">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+providerInfo+refundInfo+'<a class=\"order-support-link\" href=\"'+supportUrl+'\" target=\"_blank\" rel=\"noopener noreferrer\">Contactar por WhatsApp sobre este pedido</a>'+retry+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
 }
 async function loadWalletData(){
