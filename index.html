@@ -1496,15 +1496,21 @@ async function placeOrder(){
   if(walletBalanceUSD<price){$("ordermsg").textContent="Saldo insuficiente. Disponible: "+walletBalanceUSD.toFixed(2)+" USD. Necesitas: "+price.toFixed(2)+" USD.";return}
   const walletButton=$("placeOrderBtn");if(walletButton){walletButton.disabled=true;walletButton.textContent="Procesando pago…";}
   $("ordermsg").textContent="";
+  let walletRequest=null;
   try{
-   const result=await db.rpc("create_wallet_order",{p_product_id:product.id,p_player_id:player,p_player_name:validatedPlayerCheckout?.playerName||$("playername").value.trim(),p_player_validation_token:product.provider_product_id?validatedPlayerCheckout?.token||null:null,p_privacy_policy_version:"2026-11-07-v1"});
+   walletRequest=getWalletCheckoutRequest(product.id,player);
+   const result=await db.rpc("create_wallet_order",{p_product_id:product.id,p_player_id:player,p_player_name:validatedPlayerCheckout?.playerName||$("playername").value.trim(),p_player_validation_token:product.provider_product_id?validatedPlayerCheckout?.token||null:null,p_privacy_policy_version:"2026-11-07-v1",p_request_id:walletRequest.id});
    if(result.error)throw new Error(result.error.message);
    const data=result.data||{};
-   $("checkoutDoneMessage").textContent="Tu pedido "+(data.order_code||"")+" fue pagado con tu billetera. La recarga está pendiente de procesamiento.";
-   $("ordermsg").textContent="Pedido "+(data.order_code||"creado")+" pagado con tu billetera.";
+   $("checkoutDoneMessage").textContent=data.reused_existing_order
+    ?"Tu pedido "+(data.order_code||"")+" ya estaba registrado. No se volvió a descontar saldo."
+    :"Tu pedido "+(data.order_code||"")+" fue pagado con tu billetera. La recarga está pendiente de procesamiento.";
+   $("ordermsg").textContent=data.reused_existing_order
+    ?"Se recuperó el pedido "+(data.order_code||"")+" sin crear un cobro duplicado."
+    :"Pedido "+(data.order_code||"creado")+" pagado con tu billetera.";
    $("player").value="";$("playername").value="";resetPlayerValidation();
-   await loadMyOrders();await loadWalletData();showView("orders");
-  }catch(e){$("ordermsg").textContent="No se pudo procesar el pago de la billetera: "+(e.message||"error desconocido")+". Tu saldo no debe descontarse si el pedido no se creó.";}
+   await loadMyOrders();await loadWalletData();clearWalletCheckoutRequest(walletRequest);showView("orders");
+  }catch(e){$("ordermsg").textContent="No se pudo confirmar el resultado del pago: "+(e.message||"error desconocido")+". Conservamos la clave de esta solicitud para que puedas reintentar sin crear un cobro duplicado.";}
   finally{if(walletButton)window.updateCheckoutSubmitState?.();}
   return;
  }
@@ -1567,6 +1573,38 @@ async function loadMyOrders(){
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
    '<span class=\"status\">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+providerInfo+refundInfo+'<a class=\"order-support-link\" href=\"'+supportUrl+'\" target=\"_blank\" rel=\"noopener noreferrer\">Contactar por WhatsApp sobre este pedido</a>'+retry+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
+}
+function getWalletCheckoutRequest(productId,playerId){
+ if(!currentUser)throw new Error("Inicia sesión para utilizar tu billetera.");
+ const storageKey="el_castillo_wallet_checkout_requests_v1";
+ const signature=[currentUser.id,String(productId),String(playerId)].join("|");
+ let entries={};
+ try{
+  entries=JSON.parse(localStorage.getItem(storageKey)||"{}");
+  if(!entries||typeof entries!=="object"||Array.isArray(entries))entries={};
+ }catch(e){
+  throw new Error("El navegador no permite guardar la protección contra compras duplicadas. Habilita el almacenamiento del sitio antes de pagar con billetera.");
+ }
+ let requestId=entries[signature];
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(requestId||""))){
+  requestId=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,k=>{const r=Math.random()*16|0;return (k==="x"?r:(r&3|8)).toString(16)});
+  entries[signature]=requestId;
+  const keys=Object.keys(entries);
+  while(keys.length>20)delete entries[keys.shift()];
+  try{localStorage.setItem(storageKey,JSON.stringify(entries));}
+  catch(e){throw new Error("No se pudo guardar la clave segura de esta compra. No se ha enviado ningún pedido.");}
+ }
+ return {id:requestId,signature,storageKey};
+}
+function clearWalletCheckoutRequest(request){
+ if(!request)return;
+ try{
+  const entries=JSON.parse(localStorage.getItem(request.storageKey)||"{}");
+  if(entries&&entries[request.signature]===request.id){
+   delete entries[request.signature];
+   localStorage.setItem(request.storageKey,JSON.stringify(entries));
+  }
+ }catch(e){}
 }
 async function loadWalletData(){
  if(!currentUser){walletBalanceUSD=0;return}
