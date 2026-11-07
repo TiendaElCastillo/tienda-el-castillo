@@ -188,7 +188,7 @@ async function preflightPriceAndStock(claim: any) {
   const method = String(localOrder.payment_method || "");
   if (method === "Transferencia CUP" || method === "Billetera CUP") retailCup = salePrice;
   else if (method === "Saldo móvil") retailCup = salePrice * mobileCost / mobileUnits;
-  else if (method === "USDT") retailCup = salePrice * rate;
+  else if (method === "USDT" || method === "Saldo de Tienda El Castillo") retailCup = salePrice * rate;
   else return { ok:false, code:"unsupported_payment_method", message:"No reconocemos la moneda de cobro del pedido. No se enviará la recarga." };
 
   const wholesaleCup = wholesale * rate;
