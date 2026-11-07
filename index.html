@@ -814,8 +814,8 @@ function isPaymentMethodReady(name){
  }
  return false;
 }
-function gameMethodsFor(rows){return gamePaymentCatalog.filter(method=>isPaymentMethodReady(method.name)&&rows.some(p=>Number(priceForMethod(p,method.name))>0))}
-function gamePaymentButton(method,rows){const enabled=isPaymentMethodReady(method.name)&&rows.some(p=>Number(priceForMethod(p,method.name))>0);return '<button type="button" class="game-method '+(gamePaymentMethod===method.name?'active':'')+'" '+(enabled?'':'disabled')+' aria-pressed="'+(gamePaymentMethod===method.name)+'" onclick="selectGamePaymentMethod(&quot;'+clean(method.name)+'&quot;)"><span class="method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>';}
+function gameMethodsFor(rows){return gamePaymentCatalog.filter(method=>rows.some(p=>Number(priceForMethod(p,method.name))>0))}
+function gamePaymentButton(method,rows){const ready=isPaymentMethodReady(method.name),enabled=ready&&rows.some(p=>Number(priceForMethod(p,method.name))>0),status=enabled?"":'<small class="method-status">Configuración pendiente</small>';return '<button type="button" class="game-method '+(gamePaymentMethod===method.name?'active':'')+'" '+(enabled?'':'disabled')+' aria-pressed="'+(gamePaymentMethod===method.name)+'" title="'+(enabled?method.short:"Este método todavía no está configurado para recibir pagos")+'" onclick="selectGamePaymentMethod(&quot;'+clean(method.name)+'&quot;)"><span class="method-icon">'+method.icon+'</span><span>'+method.short+status+'</span></button>';}
 
 function freeFirePlanIcon(p,item){
  const group=freeFirePackageGroup(p);
@@ -1023,8 +1023,11 @@ async function continueToPayment(){
 function renderCheckoutPaymentMethods(){
  const box=$("checkoutPaymentMethods"),select=$("payment"),product=products.find(item=>String(item.id)===String($("product")?.value||""));
  if(!box||!select)return;
- const methods=gamePaymentCatalog.filter(method=>product&&Number(priceForMethod(product,method.name))>0&&isPaymentMethodReady(method.name));
- box.innerHTML=methods.length?methods.map(method=>'<button type="button" class="checkout-method-choice '+(select.value===method.name?"active":"")+'" aria-pressed="'+(select.value===method.name)+'" onclick="chooseCheckoutPaymentMethod(&quot;'+method.name+'&quot;)"><span class="checkout-method-icon">'+method.icon+'</span><span>'+method.short+'</span></button>').join(""):'<p class="empty-note">No hay métodos de pago configurados para este paquete. No realices ningún pago.</p>';
+ const methods=gamePaymentCatalog.filter(method=>product&&Number(priceForMethod(product,method.name))>0);
+ box.innerHTML=methods.length?methods.map(method=>{
+  const ready=isPaymentMethodReady(method.name),active=select.value===method.name;
+  return '<button type="button" class="checkout-method-choice '+(active?"active":"")+'" '+(ready?'':'disabled')+' aria-pressed="'+active+'" title="'+(ready?method.short:"Este método todavía no está configurado")+'" onclick="chooseCheckoutPaymentMethod(&quot;'+method.name+'&quot;)"><span class="checkout-method-icon">'+method.icon+'</span><span>'+method.short+(ready?"":'<small class="method-status">Configuración pendiente</small>')+'</span></button>';
+ }).join(""):'<p class="empty-note">No hay métodos de pago configurados para este paquete. No realices ningún pago.</p>';
 }
 function chooseCheckoutPaymentMethod(name){
  const select=$("payment");
