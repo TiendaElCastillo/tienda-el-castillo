@@ -209,7 +209,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
 @media(max-width:760px){.auth-layout{grid-template-columns:1fr;gap:12px;margin:12px auto}.auth-visual{min-height:0;padding:22px 21px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.auth-visual h1{max-width:none;font-size:clamp(27px,7vw,33px);line-height:1.08;margin:15px 0 10px}.auth-visual p{max-width:none;margin:0;font-size:14px;line-height:1.5;position:relative;z-index:2}.auth-visual .orb{display:none!important}.auth-benefits{position:static;left:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:15px;font-size:11px;line-height:1.4}.auth-panel{padding:20px}.auth-panel h2{font-size:22px}.auth-tabs{margin:17px 0}}
 @media(max-width:420px){.auth-visual{padding:20px 18px 18px;border-radius:22px}.auth-visual h1{font-size:29px}.auth-visual p{font-size:13px}.auth-benefits{gap:7px 10px;font-size:10px}.auth-panel{padding:18px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=17">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=18">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -1041,7 +1041,9 @@ function showView(name){
  Object.values(views).forEach(id=>$(id)?.classList.add("hidden"));
  $(views[name]||views.home)?.classList.remove("hidden");
  document.querySelectorAll("#bottomNav [data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
- $("bottomNav").classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});
+ $("bottomNav").classList.remove("hidden");
+ if(name==="profile"&&currentUser){loadWalletUsdRate();loadWalletData();loadMyWalletDeposits();}
+ window.scrollTo({top:0,behavior:"smooth"});
 }
 function openPublicInfo(name){$("auth").classList.add("hidden");$("siteHeader").classList.remove("hidden");$("store").classList.remove("hidden");showView(name||"faq");}
 function setAuthMode(mode){
@@ -2066,6 +2068,12 @@ function startCustomerOrderRealtime(){
   .on("postgres_changes",{event:"*",schema:"public",table:"orders",filter:"user_id=eq."+userId},payload=>{
    if(currentUser?.id===userId)loadMyOrders();
   })
+  .on("postgres_changes",{event:"*",schema:"public",table:"wallet_transactions",filter:"user_id=eq."+userId},payload=>{
+   if(currentUser?.id===userId)loadWalletData();
+  })
+  .on("postgres_changes",{event:"*",schema:"public",table:"wallet_deposits",filter:"user_id=eq."+userId},payload=>{
+   if(currentUser?.id===userId)loadMyWalletDeposits();
+  })
   .subscribe();
  customerOrderPoll=setInterval(()=>{
   if(currentUser?.id===userId&&document.visibilityState!=="hidden")loadMyOrders();
@@ -2081,10 +2089,11 @@ function startAdminPaymentPolling(){
  if(db&&currentUser){
   adminOrderChannel=db.channel("castle-admin-orders-"+currentUser.id)
    .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>{if(currentProfile?.role==="admin")loadAllOrders({silent:true});})
+   .on("postgres_changes",{event:"*",schema:"public",table:"wallet_deposits"},()=>{if(currentProfile?.role==="admin")loadWalletDepositsAdmin();})
    .subscribe();
  }
  adminOrderPoll=setInterval(()=>{
-  if(currentProfile?.role==="admin"&&document.visibilityState!=="hidden")loadAllOrders({silent:true});
+  if(currentProfile?.role==="admin"&&document.visibilityState!=="hidden"){loadAllOrders({silent:true});loadWalletDepositsAdmin();}
  },30000);
 }
 async function enablePaymentNotifications(){
@@ -2317,6 +2326,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=11" async></script>
+<script src="./assets/admin-panel.js?v=12" async></script>
 </body>
 </html>
