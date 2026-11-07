@@ -17,6 +17,32 @@ alter table public.pricing_settings
 alter table public.pricing_settings
   add constraint pricing_settings_usd_cup_rate_check check (usd_cup_rate > 0);
 
+-- Expose only the wallet conversion rate to signed-in customers for a pre-payment estimate.
+create or replace function public.get_wallet_usd_cup_rate()
+returns numeric(14,4)
+language plpgsql
+stable
+security definer
+set search_path to ''
+as $function$
+declare
+  v_rate numeric(14,4);
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+  select usd_cup_rate into v_rate
+  from public.pricing_settings
+  where id = 1;
+  if v_rate is null or v_rate <= 0 then
+    raise exception 'La tasa de la billetera no está configurada.';
+  end if;
+  return v_rate;
+end;
+$function$;
+revoke all on function public.get_wallet_usd_cup_rate() from public;
+grant execute on function public.get_wallet_usd_cup_rate() to authenticated;
+
 alter table public.pricing_rate_history
   add column if not exists usd_cup_rate numeric(14,4);
 update public.pricing_rate_history
