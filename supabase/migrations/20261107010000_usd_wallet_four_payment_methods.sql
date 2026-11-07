@@ -803,36 +803,6 @@ $function$;
 revoke all on function public.submit_payment_proof(uuid,text,text,text,numeric) from public;
 grant execute on function public.submit_payment_proof(uuid,text,text,text,numeric) to authenticated;
 
-  if p_proof_path !~ (
-    '^' || v_uid::text || '/' || p_deposit_id::text ||
-    '/[a-f0-9-]{36}[.](jpg|jpeg|png|webp)$'
-  ) then
-    raise exception 'La ruta del comprobante no es válida.';
-  end if;
-  if not exists (
-    select 1 from storage.objects so
-    where so.bucket_id = 'payment-proofs' and so.name = p_proof_path
-  ) then
-    raise exception 'No encontramos la imagen subida.';
-  end if;
-
-  update public.wallet_deposits
-  set proof_path = p_proof_path,
-      payment_reference = v_reference,
-      status = 'payment_review'
-  where id = p_deposit_id and user_id = v_uid;
-
-  return jsonb_build_object(
-    'deposit_id',p_deposit_id,
-    'status','payment_review',
-    'credit_usd',v_deposit.credit_usd,
-    'exchange_rate_snapshot',v_deposit.exchange_rate_snapshot
-  );
-end;
-$function$;
-
-revoke all on function public.submit_wallet_deposit_proof(uuid,text,text) from public;
-grant execute on function public.submit_wallet_deposit_proof(uuid,text,text) to authenticated;
 
 create or replace function public.admin_review_wallet_deposit(
   p_deposit_id uuid,
