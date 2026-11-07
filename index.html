@@ -1876,14 +1876,18 @@ async function loadWalletDepositsAdmin(){
  const cards=[];
  for(const d of data){
   const cup=d.currency==="CUP",currency=cup?"CUP":"USDT",profile=profileMap.get(d.user_id);
-  const proofs=await createSignedWalletProofLinks(proofsByDeposit.get(d.id)||[],"Ver captura");
-  const canReview=d.status==="payment_review";
+  const proofRows=proofsByDeposit.get(d.id)||[];
+  const proofs=await createSignedWalletProofLinks(proofRows,"Ver captura");
+  const visibleProofCount=(proofs.match(/<a /g)||[]).length;
+  const proofsAccessible=proofRows.length>0&&visibleProofCount===proofRows.length;
+  const canReview=d.status==="payment_review"&&proofsAccessible;
+  const proofWarning=d.status==="payment_review"&&!proofsAccessible?'<p class="wallet-warning"><strong>Revisión bloqueada:</strong> no se pudieron abrir todos los comprobantes. Actualiza el panel y comprueba el acceso a las capturas antes de decidir.</p>':"";
   const explorer=d.txid&&/^[a-f0-9]{64}$/i.test(d.txid)?'<p class="wallet-admin-summary">TxID: <code>'+clean(d.txid)+'</code><br><a href="https://bscscan.com/tx/'+encodeURIComponent(d.txid)+'" target="_blank" rel="noopener noreferrer">Abrir transacción en BscScan ↗</a></p>':"";
   const methodDetails=cup
    ?'Enviado: <strong>'+money(d.amount)+' CUP</strong><br>Teléfono de origen: '+clean(d.sender_phone||"No indicado")+'<br>Referencia bancaria: '+clean(d.payment_reference||"No indicada")+'<br>Tasa guardada: '+money(d.exchange_rate||0)+' CUP/USD'
    :'Enviado: <strong>'+moneyUSD(d.amount)+' USDT</strong><br>Red: '+clean(d.network||"BNB Smart Chain (BEP20)")+'<br>Dirección receptora: '+clean(d.recipient_address||walletSettings.usdt_address);
   const actions=canReview?'<div class="wallet-admin-actions"><button class="primary-btn" type="button" onclick="reviewWalletDeposit(\''+clean(d.id)+'\',true)">Aprobar y acreditar</button><button class="secondary-btn" type="button" onclick="reviewWalletDeposit(\''+clean(d.id)+'\',false)">Rechazar</button></div>':'';
-  cards.push('<article class="wallet-admin-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><strong>'+clean(profile?.full_name||profile?.email||d.user_id)+'</strong><span class="wallet-status '+(d.status==="approved"?"approved":d.status==="rejected"?"rejected":"")+'">'+clean(d.status==="payment_review"?"En revisión":d.status==="approved"?"Aprobado":d.status==="rejected"?"Rechazado":"Pendiente")+'</span></div><div class="wallet-admin-summary">'+clean(d.payment_method)+' · '+new Date(d.created_at).toLocaleString("es-CU")+'<br>'+methodDetails+'<br>Crédito calculado: <strong>'+moneyUSD(d.credited_amount)+' USD</strong><br>Comprobantes: '+(proofsByDeposit.get(d.id)||[]).length+ '</div>'+explorer+proofs+(d.admin_notes?'<p class="wallet-warning">Motivo: '+clean(d.admin_notes)+'</p>':'')+actions+'</article>');
+  cards.push('<article class="wallet-admin-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><strong>'+clean(profile?.full_name||profile?.email||d.user_id)+'</strong><span class="wallet-status '+(d.status==="approved"?"approved":d.status==="rejected"?"rejected":"")+'">'+clean(d.status==="payment_review"?"En revisión":d.status==="approved"?"Aprobado":d.status==="rejected"?"Rechazado":"Pendiente")+'</span></div><div class="wallet-admin-summary">'+clean(d.payment_method)+' · '+new Date(d.created_at).toLocaleString("es-CU")+'<br>'+methodDetails+'<br>Crédito calculado: <strong>'+moneyUSD(d.credited_amount)+' USD</strong><br>Comprobantes: '+(proofsByDeposit.get(d.id)||[]).length+ '</div>'+explorer+proofs+proofWarning+(d.admin_notes?'<p class="wallet-warning">Motivo: '+clean(d.admin_notes)+'</p>':'')+actions+'</article>');
  }
  list.innerHTML=cards.join("");
 }
