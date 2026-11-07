@@ -772,7 +772,9 @@ function providerImageIsSafe(value){try{const url=new URL(String(value));return 
 function productArtwork(p){
  const fallback="this.onerror=null;this.src='./assets/free-fire-hero.svg'";
  if(!fold(p.game||"").includes("free fire")&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Free Fire")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
- const group=freeFirePackageGroup(p),file=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":"product-diamonds.svg";
+ const group=freeFirePackageGroup(p);
+ const diamondPackFiles={110:"ff-diamonds-110.svg",341:"ff-diamonds-341.svg",572:"ff-diamonds-572.svg",1166:"ff-diamonds-1166.svg",2398:"ff-diamonds-2398.svg",6160:"ff-diamonds-6160.svg"};
+ const file=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":group==="levels"?"product-level.svg":group==="diamonds"?(diamondPackFiles[Number(p.amount)]||"product-diamonds.svg"):"product-diamonds.svg";
  return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+file+'" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
 }
 function productCard(p){
