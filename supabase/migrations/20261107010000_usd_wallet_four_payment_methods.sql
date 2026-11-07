@@ -286,12 +286,10 @@ begin
       select 1 from public.wallet_deposits d
       where d.id <> p_deposit_id
         and upper(coalesce(d.payment_reference,'')) = v_reference
-        and d.status in ('payment_review','approved')
     ) or exists (
       select 1 from public.orders o
       where o.payment_method = 'USDT'
         and upper(coalesce(o.payment_reference,'')) = v_reference
-        and o.status in ('payment_review','processing','completed')
     ) then
       raise exception 'Ese TxID ya fue utilizado en otra operación.';
     end if;
@@ -771,12 +769,10 @@ begin
       select 1 from public.orders o
       where o.id <> p_order_id and o.payment_method='USDT'
         and upper(coalesce(o.payment_reference,''))=v_reference
-        and o.status in ('payment_review','processing','completed')
     ) or exists (
       select 1 from public.wallet_deposits d
       where d.payment_method='USDT'
         and upper(coalesce(d.payment_reference,''))=v_reference
-        and d.status in ('payment_review','approved')
     ) then
       raise exception 'Ese TxID ya fue utilizado en otra operación.';
     end if;
