@@ -499,7 +499,7 @@ function loadCastleTurnstile(){
 }
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, walletRequestMemory={}, walletSettings={cup_per_usd:1160,usdt_network:"BNB Smart Chain (BEP20)",usdt_address:"0x30d000d6B30f241986186BfFeCa8A449E5790C1D"}, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds";
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, walletRequestMemory={}, walletDepositMethodPrevious="Transferencia CUP", walletSettings={cup_per_usd:1160,usdt_network:"BNB Smart Chain (BEP20)",usdt_address:"0x30d000d6B30f241986186BfFeCa8A449E5790C1D"}, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds";
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1659,7 +1659,8 @@ async function loadWalletSettings(){
  if(!db)return;
  const result=await db.from("wallet_settings").select("cup_per_usd,usdt_network,usdt_address,updated_at").eq("id",1).maybeSingle();
  if(result.error)throw new Error(result.error.message);
- if(result.data)walletSettings=result.data;
+ if(!result.data)throw new Error("No encontramos la configuración de la wallet en Supabase.");
+ walletSettings=result.data;
  if(currentProfile?.role==="admin"&&$("walletCupRate"))$("walletCupRate").value=walletSettings.cup_per_usd;
  updateWalletDepositMethod();
  updatePaymentInstructions();
@@ -1672,8 +1673,9 @@ async function saveWalletSettings(){
  const button=document.querySelector("#admin button[onclick='saveWalletSettings()']");
  if(button){button.disabled=true;button.textContent="Guardando…";}
  try{
-  const result=await db.from("wallet_settings").update({cup_per_usd:rate,updated_at:new Date().toISOString(),updated_by:currentUser.id}).eq("id",1);
+  const result=await db.from("wallet_settings").update({cup_per_usd:rate,updated_at:new Date().toISOString(),updated_by:currentUser.id}).eq("id",1).select("id,cup_per_usd").maybeSingle();
   if(result.error)throw new Error(result.error.message);
+  if(!result.data)throw new Error("La tasa no se actualizó. Comprueba tu permiso de administrador y vuelve a cargar.");
   await loadWalletSettings();
   $("walletSettingsMsg").textContent="Tasa guardada. Se aplicará solo a los depósitos nuevos; las solicitudes anteriores conservan su conversión.";
  }catch(e){$("walletSettingsMsg").textContent="No se pudo guardar la tasa: "+(e.message||"error de conexión.");}
@@ -1684,7 +1686,7 @@ async function loadWalletData(){
  let rows=[];
  for(let from=0;;from+=1000){
   const result=await db.from("wallet_transactions").select("kind,amount,currency,description,created_at,order_id,deposit_id").eq("user_id",currentUser.id).eq("currency","USD").order("created_at",{ascending:false}).range(from,from+999);
-  if(result.error){if($("walletBalance"))$("walletBalance").textContent="No disponible";if($("walletTransactions"))$("walletTransactions").textContent="No se pudo cargar la billetera.";return;}
+  if(result.error){walletBalanceUSD=0;if($("walletBalance"))$("walletBalance").textContent="No disponible";if($("walletTransactions"))$("walletTransactions").textContent="No se pudo cargar la billetera. Actualiza el perfil antes de comprar con saldo.";updateCheckoutSummary();return;}
   rows=rows.concat(result.data||[]);
   if(!result.data||result.data.length<1000)break;
  }
@@ -1701,17 +1703,25 @@ function previewWalletDeposit(){
  const amount=Number($("walletDepositAmount")?.value||0),method=$("walletDepositMethod")?.value||"Transferencia CUP",box=$("walletDepositPreview");
  if(!box)return;
  if(!Number.isFinite(amount)||amount<=0){
-  box.innerHTML="<small>Saldo que recibirás tras la revisión</small><strong>— USD</strong><small>Escribe la cantidad exacta que vas a enviar.</small>";return;
+  box.innerHTML="<small>Saldo que recibirás después de aprobar</small><strong>— USD</strong><small>Escribe la cantidad exacta que vas a enviar.</small>";
+  updateWalletDepositInstructions();
+  return;
  }
  if(method==="Transferencia CUP"){
   const rate=Number(walletSettings.cup_per_usd||1160),credit=Math.floor((amount/rate)*100)/100;
-  box.innerHTML='<small>Saldo estimado después de aprobar el depósito</small><strong>'+moneyUSD(credit)+' USD</strong><small>Cálculo: '+money(amount)+' CUP ÷ '+money(rate)+' CUP/USD, redondeado hacia abajo a dos decimales. Mínimo: '+money(Math.ceil(rate))+' CUP.</small>';
+  box.innerHTML='<small>Saldo estimado después de aprobar</small><strong>'+moneyUSD(credit)+' USD</strong><small>Cálculo: '+money(amount)+' CUP ÷ '+money(rate)+' CUP/USD, redondeado hacia abajo a dos decimales. Mínimo: '+money(Math.ceil(rate))+' CUP.</small>';
  }else{
-  box.innerHTML='<small>Saldo estimado después de aprobar el depósito</small><strong>'+moneyUSD(amount)+' USD</strong><small>Conversión 1 USDT = 1 USD. Solo se acreditará el importe que la tienda verifique como recibido en la red indicada.</small>';
+  box.innerHTML='<small>Saldo estimado después de aprobar</small><strong>'+moneyUSD(amount)+' USD</strong><small>Conversión 1 USDT = 1 USD. Solo se acreditará el importe que la tienda verifique como recibido en la red indicada.</small>';
  }
+ updateWalletDepositInstructions();
 }
 function updateWalletDepositMethod(){
  const method=$("walletDepositMethod")?.value||"Transferencia CUP",isCup=method==="Transferencia CUP";
+ if(method!==walletDepositMethodPrevious){
+  walletDepositMethodPrevious=method;
+  ["walletDepositAmount","walletDepositSenderPhone","walletDepositReference","walletDepositTxid"].forEach(id=>{const field=$(id);if(field)field.value="";});
+  const proof=$("walletDepositProof");if(proof)proof.value="";
+ }
  const amount=$("walletDepositAmount");
  $("walletDepositAmountLabel").textContent=isCup?"Cantidad exacta que enviarás (CUP)":"Cantidad exacta que enviarás (USDT)";
  $("walletDepositAmountHint").textContent=isCup?"Mínimo actual: "+money(Math.ceil(Number(walletSettings.cup_per_usd||1160)))+" CUP, equivalente a 1 USD.":"Mínimo: 1 USDT. Red: BNB Smart Chain (BEP20).";
@@ -1721,7 +1731,6 @@ function updateWalletDepositMethod(){
  $("walletDepositSenderPhoneWrap").classList.toggle("hidden",!isCup);
  $("walletDepositReferenceWrap").classList.toggle("hidden",!isCup);
  $("walletDepositTxidWrap").classList.toggle("hidden",isCup);
- updateWalletDepositInstructions();
  previewWalletDeposit();
 }
 function updateWalletDepositInstructions(){
@@ -1828,6 +1837,7 @@ async function loadMyWalletDeposits(){
  }
  if(!data.length){list.innerHTML='<p class="empty-note">Todavía no has solicitado depósitos.</p>';return;}
  const ids=data.map(d=>d.id),proofResult=await db.from("wallet_deposit_proofs").select("deposit_id,proof_path,uploaded_at").in("deposit_id",ids);
+ const proofLoadWarning=proofResult.error?'<p class="wallet-warning">No se pudieron cargar todos los comprobantes: '+clean(proofResult.error.message)+'</p>':"";
  const proofsByDeposit=new Map();
  (proofResult.data||[]).forEach(p=>{if(!proofsByDeposit.has(p.deposit_id))proofsByDeposit.set(p.deposit_id,[]);proofsByDeposit.get(p.deposit_id).push(p);});
  const cards=[];
@@ -1843,7 +1853,7 @@ async function loadMyWalletDeposits(){
   const credited=d.credited_amount==null?"Pendiente de cálculo":moneyUSD(d.credited_amount)+" USD";
   cards.push('<article class="wallet-history-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><strong>Depósito · '+money(d.amount)+' '+currency+'</strong><span class="wallet-status '+statusClass+'">'+status+'</span></div><div class="order-detail">'+clean(d.payment_method)+'<br>Saldo previsto: '+credited+(d.status==="approved"?"<br>Saldo acreditado: "+moneyUSD(d.credited_amount)+" USD":"")+'<br>Fecha: '+new Date(d.created_at).toLocaleString("es-CU")+(d.exchange_rate?"<br>Tasa aplicada: "+money(d.exchange_rate)+" CUP/USD":"")+(d.network?"<br>Red: "+clean(d.network):"")+(d.payment_reference?"<br>Referencia: "+clean(d.payment_reference):"")+'</div>'+links+(d.admin_notes?'<p class="wallet-warning"><strong>Motivo del rechazo:</strong> '+clean(d.admin_notes)+'</p>':'')+retry+'</article>');
  }
- list.innerHTML=cards.join("");
+ list.innerHTML=proofLoadWarning+cards.join("");
 }
 async function loadWalletDepositsAdmin(){
  if(currentProfile?.role!=="admin")return;
@@ -1860,6 +1870,7 @@ async function loadWalletDepositsAdmin(){
  const profiles=await db.from("profiles").select("id,full_name,email").in("id",ids);
  const profileMap=new Map((profiles.data||[]).map(p=>[p.id,p]));
  const proofResult=await db.from("wallet_deposit_proofs").select("deposit_id,proof_path,uploaded_at").in("deposit_id",depositIds);
+ if(proofResult.error){list.textContent="No se pudieron cargar los comprobantes de forma segura: "+proofResult.error.message+". No se puede aprobar ni rechazar hasta recuperar esa información.";return;}
  const proofsByDeposit=new Map();
  (proofResult.data||[]).forEach(p=>{if(!proofsByDeposit.has(p.deposit_id))proofsByDeposit.set(p.deposit_id,[]);proofsByDeposit.get(p.deposit_id).push(p);});
  const cards=[];
