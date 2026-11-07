@@ -1,6 +1,7 @@
 (function(){
 "use strict";
 let activeOrderFilter="pending";
+let orderSearchQuery="";
 const groupLabels={pending:"Pendientes de pago",ready:"Listos para autorizar",provider:"En Central One",history:"Finalizados",all:"Todos"};
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
 function initAdminLayout(){
@@ -21,7 +22,7 @@ function initAdminLayout(){
  const shortcuts=el("div","admin-shortcuts");
  const cards=[["orders","Pedidos","Revisa pagos y autoriza recargas"],["products","Productos","Crea, edita y activa paquetes"],["payments","Pagos","Configura cobros y revisa depósitos"],["pricing","Precios y capital","Actualiza tasas y calcula precios"],["central","Central One","Consulta catálogo y saldo mayorista"]];
  cards.forEach(([key,title,desc])=>{const b=el("button","admin-shortcut");b.type="button";b.append(el("strong","",title),el("span","",desc));b.addEventListener("click",()=>showAdminSection(key));shortcuts.append(b);});
- overview.append(shortcuts,el("p","track-note","Importante: primero confirma el pago del cliente. Después, en «Pedidos», autoriza la recarga real para que Central One utilice tu saldo."));
+ overview.append(shortcuts,el("p","track-note","Flujo seguro en dos pasos: 1) verifica que el pago llegó y confirma solo el pago; 2) después autoriza la recarga para que Central One use tu saldo prepago. Confirmar el pago NO envía diamantes. La entrega solo se da por terminada cuando Central One marca el pedido como «Entregado»."));
  const sectionForPanel=["central","central","pricing","products","payments","orders"];
  panels.forEach((panel,i)=>{panel.dataset.adminSection=sectionForPanel[i];panel.classList.add("admin-section-panel");});
  admin.insertBefore(overview,panels[0]);
@@ -55,19 +56,20 @@ function applyOrderFilter(group){
  const container=document.getElementById("allorders");if(!container)return;
  const cards=Array.from(container.querySelectorAll(":scope > .order-card"));
  let visible=0;const counts={pending:0,ready:0,provider:0,history:0,all:cards.length};
- cards.forEach(card=>{const category=classifyOrder(card);counts[category]++;const show=activeOrderFilter==="all"||category===activeOrderFilter;card.classList.toggle("hidden",!show);if(show)visible++;});
+ cards.forEach(card=>{const category=classifyOrder(card);counts[category]++;const searchMatch=!orderSearchQuery||card.textContent.toLocaleLowerCase("es").includes(orderSearchQuery);const show=(activeOrderFilter==="all"||category===activeOrderFilter)&&searchMatch;card.classList.toggle("hidden",!show);if(show)visible++;});
  document.querySelectorAll("[data-order-filter]").forEach(b=>{b.classList.toggle("active",b.dataset.orderFilter===activeOrderFilter);const badge=b.querySelector(".admin-filter-count");if(badge)badge.textContent=String(counts[b.dataset.orderFilter]||0);});
- const empty=document.getElementById("adminOrderFilterEmpty");if(empty){empty.classList.toggle("show",cards.length>0&&visible===0);empty.textContent="No hay pedidos en este apartado.";}
+ const empty=document.getElementById("adminOrderFilterEmpty");if(empty){empty.classList.toggle("show",cards.length>0&&visible===0);empty.textContent=orderSearchQuery?"No se encontraron pedidos con esa búsqueda.":"No hay pedidos en este apartado.";}
 }
 function setupOrderFilters(panel){
  const container=panel.querySelector("#allorders");if(!container)return;
  const intro=el("p","track-note","Los pedidos están separados por etapa. En «Listos para autorizar» encontrarás el botón que envía la recarga a Central One.");
  const filters=el("div","admin-order-filters");filters.setAttribute("aria-label","Filtrar pedidos");
- [["pending","Pendientes por confirmar"],["ready","Pago confirmado · listo"],["provider","En Central One"],["history","Finalizados"],["all","Todos"]].forEach(([key,label])=>{
+ [["pending","Revisar pagos"],["ready","Pago confirmado · autorizar"],["provider","En Central One"],["history","Finalizados"],["all","Todos"]].forEach(([key,label])=>{
   const b=el("button","admin-order-filter"+(key==="pending"?" active":""));b.type="button";b.dataset.orderFilter=key;b.append(document.createTextNode(label+" "));b.append(el("span","admin-filter-count","0"));b.addEventListener("click",()=>applyOrderFilter(key));filters.append(b);
  });
+ const search=el("input","admin-order-search");search.type="search";search.placeholder="Buscar folio, jugador, paquete o pago…";search.setAttribute("aria-label","Buscar pedidos por folio, jugador, paquete o pago");search.autocomplete="off";search.addEventListener("input",()=>{orderSearchQuery=search.value.trim().toLocaleLowerCase("es");applyOrderFilter(activeOrderFilter);});
  const empty=el("div","admin-filter-empty","No hay pedidos en este apartado.");empty.id="adminOrderFilterEmpty";
- container.parentNode.insertBefore(intro,container);container.parentNode.insertBefore(filters,container);container.parentNode.insertBefore(empty,container.nextSibling);
+ container.parentNode.insertBefore(intro,container);container.parentNode.insertBefore(search,container);container.parentNode.insertBefore(filters,container);container.parentNode.insertBefore(empty,container.nextSibling);
 }
 function installOrderRefreshFilter(){
  if(typeof window.loadAllOrders!=="function"||window.loadAllOrders.__castleWrapped)return;
