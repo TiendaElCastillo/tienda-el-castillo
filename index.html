@@ -2079,7 +2079,11 @@ function startCustomerOrderRealtime(){
   })
   .subscribe();
  customerOrderPoll=setInterval(()=>{
-  if(currentUser?.id===userId&&document.visibilityState!=="hidden")loadMyOrders();
+  if(currentUser?.id===userId&&document.visibilityState!=="hidden"){
+   loadMyOrders();
+   loadWalletData();
+   loadMyWalletDeposits();
+  }
  },60000);
 }
 function stopAdminPaymentPolling(){
