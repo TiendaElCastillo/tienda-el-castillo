@@ -1819,9 +1819,9 @@ function goWalletDepositStep(step){
  }
  if(target>=3){
   if(isCup){
-   const phone=$("walletDepositSenderPhone")?.value.trim()||"",digits=phone.replace(/\\D/g,"");
+   const phone=$("walletDepositSenderPhone")?.value.trim()||"",digits=phone.replace(/[^0-9]/g,"");
    const reference=$("walletDepositReference")?.value.trim()||"";
-   if(!/^\\+?[0-9\\s().-]+$/.test(phone)||digits.length<8||digits.length>15){if(msg)msg.textContent="Escribe correctamente el teléfono desde el que hiciste la transferencia.";return;}
+   if(!/^[+0-9 ().-]+$/.test(phone)||digits.length<8||digits.length>15){if(msg)msg.textContent="Escribe correctamente el teléfono desde el que hiciste la transferencia.";return;}
    if(reference.length<3||reference.length>100){if(msg)msg.textContent="Escribe el Nro. de Transacción del banco.";return;}
   }else if(!/^[a-f0-9]{64}$/.test(($("walletDepositTxid")?.value||"").trim().toLowerCase())){if(msg)msg.textContent="El TxID debe tener 64 caracteres hexadecimales. Comprueba la red y copia el hash completo.";return;}
  }
