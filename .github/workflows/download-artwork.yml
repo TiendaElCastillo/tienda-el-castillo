@@ -7,17 +7,42 @@ jobs:
   download:
     runs-on: ubuntu-latest
     steps:
-      - name: Download artwork
+      - name: Try alternative image sources
+        shell: bash
         run: |
+          set +e
           mkdir -p artwork
-          curl -fLsS 'https://raw.githubusercontent.com/Duenss/clothers/a7e4fe8e2548bd9951eac7d935269135bd220ae2/OTROS/imagenes/804605802.png' -o artwork/weekly-membership-game-icon.webp
-          curl -fLsS 'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/ca95925e-2399-49da-7139-f02c17fea900/w%3D192%2Ch%3D192%2Cfit%3Dcover%2Cq%3D80%2Cmetadata%3Dnone%2Cformat%3Dauto' -o artwork/weekly-membership-product.webp
-          curl -fLsS 'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/5107a8e6-f4cb-45d7-dea6-2f2a645ee000/w%3D192%2Ch%3D192%2Cfit%3Dcover%2Cq%3D80%2Cmetadata%3Dnone%2Cformat%3Dauto' -o artwork/booyah-pass-card.webp
-          file artwork/*
-          ls -lh artwork
+          try_download() {
+            name="$1"; shift
+            for url in "$@"; do
+              echo "TRY $name $url"
+              curl -L -sS --max-time 30 -w "\nHTTP_STATUS:%{http_code}\n" "$url" -o "artwork/$name"
+              status=$?
+              if [ "$status" -eq 0 ] && [ -s "artwork/$name" ]; then
+                echo "DOWNLOADED $name"
+                file "artwork/$name"
+                return 0
+              fi
+              rm -f "artwork/$name"
+            done
+            echo "FAILED $name"
+            return 1
+          }
+          try_download weekly-membership-game-icon.webp \
+            'https://cdn.jsdelivr.net/gh/Duenss/clothers@a7e4fe8e2548bd9951eac7d935269135bd220ae2/OTROS/imagenes/804605802.png' \
+            'https://raw.githubusercontent.com/Duenss/clothers/a7e4fe8e2548bd9951eac7d935269135bd220ae2/OTROS/imagenes/804605802.png'
+          try_download weekly-membership-product.webp \
+            'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/ca95925e-2399-49da-7139-f02c17fea900/w=192,h=192,fit=cover,q=80,metadata=none,format=auto' \
+            'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/ca95925e-2399-49da-7139-f02c17fea900/w%3D192%2Ch%3D192%2Cfit%3Dcover%2Cq%3D80%2Cmetadata%3Dnone%2Cformat%3Dauto'
+          try_download booyah-pass-card.webp \
+            'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/5107a8e6-f4cb-45d7-dea6-2f2a645ee000/w=192,h=192,fit=cover,q=80,metadata=none,format=auto' \
+            'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/5107a8e6-f4cb-45d7-dea6-2f2a645ee000/w%3D192%2Ch%3D192%2Cfit%3Dcover%2Cq%3D80%2Cmetadata%3Dnone%2Cformat%3Dauto'
+          echo "FINAL FILES:"
+          ls -lh artwork || true
+          file artwork/* || true
       - name: Upload downloaded images
         uses: actions/upload-artifact@v4
         with:
           name: free-fire-original-artwork
           path: artwork/
-          if-no-files-found: error
+          if-no-files-found: warn
