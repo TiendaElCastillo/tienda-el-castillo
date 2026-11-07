@@ -119,10 +119,6 @@ create unique index if not exists wallet_transactions_one_deposit_credit_idx
 create unique index if not exists wallet_transactions_one_refund_per_order_idx
   on public.wallet_transactions(order_id)
   where order_id is not null and kind = 'refund';
-create unique index if not exists orders_user_wallet_request_id_idx
-  on public.orders(user_id,wallet_request_id)
-  where wallet_request_id is not null;
-
 -- Snapshot the refund value at order creation, so later price changes never change a refund.
 alter table public.orders
   add column if not exists wallet_refund_usd numeric(18,2) not null default 0,
@@ -132,6 +128,11 @@ alter table public.orders
   drop constraint if exists orders_wallet_refund_usd_check;
 alter table public.orders
   add constraint orders_wallet_refund_usd_check check (wallet_refund_usd >= 0);
+
+create unique index if not exists orders_user_wallet_request_id_idx
+  on public.orders(user_id,wallet_request_id)
+  where wallet_request_id is not null;
+
 
 -- Record the amount paid in its native currency and the exact USD credit calculated
 -- at request time. The exchange rate is not recalculated on the approval day.
