@@ -2288,7 +2288,11 @@ function startCustomerOrderRealtime(){
   })
   .subscribe();
  customerOrderPoll=setInterval(()=>{
-  if(currentUser?.id===userId&&document.visibilityState!=="hidden")loadMyOrders();
+  if(currentUser?.id===userId&&document.visibilityState!=="hidden"){
+   loadMyOrders();
+   loadWalletData().catch(error=>console.error("No se pudo actualizar la wallet:",error));
+   loadMyWalletDeposits().catch(error=>console.error("No se pudo actualizar el historial de depósitos:",error));
+  }
  },60000);
 }
 function stopAdminPaymentPolling(){
@@ -2304,7 +2308,13 @@ function startAdminPaymentPolling(){
    .subscribe();
  }
  adminOrderPoll=setInterval(()=>{
-  if(currentProfile?.role==="admin"&&document.visibilityState!=="hidden")loadAllOrders({silent:true});
+  if(currentProfile?.role==="admin"&&document.visibilityState!=="hidden"){
+   loadAllOrders({silent:true});
+   loadWalletDepositsAdmin().catch(error=>{
+    const list=$("walletDepositsAdmin");
+    if(list)list.textContent="No se pudo actualizar el panel de depósitos: "+clean(error.message||error);
+   });
+  }
  },30000);
 }
 async function enablePaymentNotifications(){
