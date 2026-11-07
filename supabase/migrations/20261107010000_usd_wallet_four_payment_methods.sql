@@ -138,7 +138,12 @@ create unique index if not exists orders_user_wallet_request_id_idx
 -- at request time. The exchange rate is not recalculated on the approval day.
 alter table public.wallet_deposits
   add column if not exists exchange_rate_snapshot numeric(14,4),
-  add column if not exists credit_usd numeric(18,2);
+  add column if not exists credit_usd numeric(18,2),
+  add column if not exists client_request_id uuid;
+
+create unique index if not exists wallet_deposits_user_client_request_id_idx
+  on public.wallet_deposits(user_id,client_request_id)
+  where client_request_id is not null;
 
 alter table public.wallet_deposits
   drop constraint if exists wallet_deposits_currency_check;
@@ -152,7 +157,6 @@ alter table public.wallet_deposits
   check (payment_method in ('Transferencia CUP','USDT'));
 
 -- These grants are paired with the existing owner/admin RLS policies.
-grant insert on public.wallet_deposits to authenticated;
 grant select on public.wallet_transactions to authenticated;
 
 drop policy if exists "wallet deposits insert own pending" on public.wallet_deposits;
@@ -238,6 +242,75 @@ begin
   return new;
 end;
 $function$;
+
+create or replace function public.create_wallet_deposit_request(
+  p_amount numeric,
+  p_currency text,
+  p_payment_method text,
+  p_client_request_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_uid uuid := auth.uid();
+  v_deposit public.wallet_deposits%rowtype;
+  v_existing boolean := false;
+begin
+  if v_uid is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+  if p_client_request_id is null then
+    raise exception 'Falta la clave segura de esta solicitud. Vuelve a intentarlo.';
+  end if;
+  if p_amount is null or p_amount <= 0 then
+    raise exception 'El importe debe ser mayor que cero.';
+  end if;
+  if p_currency not in ('CUP','USDT') then
+    raise exception 'Moneda de recarga no admitida.';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text || ':wallet-deposit:' || p_client_request_id::text,0));
+
+  select * into v_deposit
+  from public.wallet_deposits
+  where user_id=v_uid and client_request_id=p_client_request_id
+  for update;
+
+  if found then
+    v_existing := true;
+    if v_deposit.amount is distinct from p_amount
+       or v_deposit.currency is distinct from p_currency
+       or v_deposit.payment_method is distinct from p_payment_method then
+      raise exception 'La clave de esta solicitud ya se usó con otros datos.';
+    end if;
+  else
+    insert into public.wallet_deposits(
+      user_id,amount,currency,payment_method,status,client_request_id
+    ) values (
+      v_uid,p_amount,p_currency,p_payment_method,'pending',p_client_request_id
+    )
+    returning * into v_deposit;
+  end if;
+
+  return jsonb_build_object(
+    'deposit_id',v_deposit.id,
+    'amount',v_deposit.amount,
+    'currency',v_deposit.currency,
+    'payment_method',v_deposit.payment_method,
+    'credit_usd',v_deposit.credit_usd,
+    'exchange_rate_snapshot',v_deposit.exchange_rate_snapshot,
+    'status',v_deposit.status,
+    'created_at',v_deposit.created_at,
+    'reused_existing_request',v_existing
+  );
+end;
+$function$;
+
+revoke all on function public.create_wallet_deposit_request(numeric,text,text,uuid) from public;
+grant execute on function public.create_wallet_deposit_request(numeric,text,text,uuid) to authenticated;
 
 create or replace function public.submit_wallet_deposit_proof(
   p_deposit_id uuid,
