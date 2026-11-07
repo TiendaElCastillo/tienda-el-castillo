@@ -598,7 +598,8 @@ function showPasswordRecovery(){
 async function sendPasswordRecovery(){
  if(!db){$("authmsg").textContent="La conexión todavía no está preparada. Inténtalo de nuevo.";return}
  const email=$("email").value.trim().toLowerCase();
- const emailParts=email.split("@");\n if(emailParts.length!==2||!emailParts[0]||!emailParts[1].includes(".")||emailParts[1].startsWith(".")||emailParts[1].endsWith(".")){
+ const emailParts=email.split("@");
+ if(emailParts.length!==2||!emailParts[0]||!emailParts[1].includes(".")||emailParts[1].startsWith(".")||emailParts[1].endsWith(".")){
   $("authmsg").textContent="Escribe primero el correo electrónico de tu cuenta.";return;
  }
  const button=$("forgotPasswordBtn");
