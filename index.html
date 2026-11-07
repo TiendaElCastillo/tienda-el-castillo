@@ -1572,6 +1572,38 @@ async function loadMyOrders(){
    '<span class=\"status\">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+providerInfo+refundInfo+'<a class=\"order-support-link\" href=\"'+supportUrl+'\" target=\"_blank\" rel=\"noopener noreferrer\">Contactar por WhatsApp sobre este pedido</a>'+retry+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
 }
+function getWalletDepositRequest(amount,currency,paymentMethod){
+ if(!currentUser)throw new Error("Inicia sesión para recargar tu billetera.");
+ const storageKey="el_castillo_wallet_deposit_requests_v1";
+ const signature=[currentUser.id,String(amount),String(currency),String(paymentMethod)].join("|");
+ let entries={};
+ try{
+  entries=JSON.parse(localStorage.getItem(storageKey)||"{}");
+  if(!entries||typeof entries!=="object"||Array.isArray(entries))entries={};
+ }catch(e){
+  throw new Error("El navegador no permite guardar la protección contra recargas duplicadas. Habilita el almacenamiento del sitio antes de continuar.");
+ }
+ let requestId=entries[signature];
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(requestId||""))){
+  requestId=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,k=>{const r=Math.random()*16|0;return (k==="x"?r:(r&3|8)).toString(16)});
+  entries[signature]=requestId;
+  const keys=Object.keys(entries);
+  while(keys.length>20)delete entries[keys.shift()];
+  try{localStorage.setItem(storageKey,JSON.stringify(entries));}
+  catch(e){throw new Error("No se pudo guardar la clave segura de la solicitud. No se ha creado ninguna recarga.");}
+ }
+ return {id:requestId,signature,storageKey};
+}
+function clearWalletDepositRequest(request){
+ if(!request)return;
+ try{
+  const entries=JSON.parse(localStorage.getItem(request.storageKey)||"{}");
+  if(entries&&entries[request.signature]===request.id){
+   delete entries[request.signature];
+   localStorage.setItem(request.storageKey,JSON.stringify(entries));
+  }
+ }catch(e){}
+}
 function getWalletCheckoutRequest(productId,playerId){
  if(!currentUser)throw new Error("Inicia sesión para utilizar tu billetera.");
  const storageKey="el_castillo_wallet_checkout_requests_v1";
@@ -1660,21 +1692,33 @@ async function requestWalletDeposit(){
  if(currency==="USDT"&&Math.abs(amount-Math.round(amount*100)/100)>0.000001){$("walletDepositMsg").textContent="USDT admite como máximo dos decimales.";return}
  if(currency==="CUP"&&walletUsdCupRate<=0){await loadWalletUsdRate();if(walletUsdCupRate<=0){$("walletDepositMsg").textContent="No se pudo confirmar la tasa diaria. No crees ni pagues la solicitud todavía.";return}}
  const button=document.querySelector('#profileView button[onclick="requestWalletDeposit()"]');
+ let request=null;
  if(button){button.disabled=true;button.textContent="Fijando tasa y crédito…";}
  try{
-  const created=await db.from("wallet_deposits")
-   .insert({user_id:currentUser.id,amount,currency,payment_method:method,status:"pending"})
-   .select("id,amount,currency,payment_method,credit_usd,exchange_rate_snapshot,status,created_at").single();
-  if(created.error)throw new Error(created.error.message);
-  const credit=Number(created.data.credit_usd||0),rate=Number(created.data.exchange_rate_snapshot||0);
-  if(!created.data.id||!Number.isFinite(credit)||credit<=0)throw new Error("El servidor no devolvió un crédito válido. No realices el pago; contacta con la tienda.");
-  $("walletDepositMsg").textContent="Solicitud creada correctamente. Crédito fijado: "+credit.toFixed(2)+" USD"+(currency==="CUP"?" con tasa "+rate.toLocaleString("es-ES")+" CUP/USD.":" (1 USDT = 1 USD).")+" Ahora realiza el pago y adjunta el comprobante en la tarjeta de esta solicitud. Todavía no se ha acreditado saldo.";
+  request=getWalletDepositRequest(amount,currency,method);
+  const result=await db.rpc("create_wallet_deposit_request",{
+   p_amount:amount,
+   p_currency:currency,
+   p_payment_method:method,
+   p_client_request_id:request.id
+  });
+  if(result.error)throw new Error(result.error.message);
+  const created=result.data||{};
+  const credit=Number(created.credit_usd||0),rate=Number(created.exchange_rate_snapshot||0);
+  if(!created.deposit_id||!Number.isFinite(credit)||credit<=0)throw new Error("El servidor no devolvió una solicitud y un crédito válidos. No realices el pago; contacta con la tienda.");
+  clearWalletDepositRequest(request);
+  $("walletDepositMsg").textContent=created.reused_existing_request
+   ?"Recuperamos tu solicitud anterior "+created.deposit_id+". No se creó otra recarga."
+   :"Solicitud creada correctamente. Crédito fijado: "+credit.toFixed(2)+" USD"+(currency==="CUP"?" con tasa "+rate.toLocaleString("es-ES")+" CUP/USD.":" (1 USDT = 1 USD).")+" Ahora realiza el pago y adjunta el comprobante en esta solicitud. Todavía no se ha acreditado saldo.";
   $("walletDepositAmount").value="";
   await loadMyWalletDeposits();
   updateWalletDepositInstructions();
- }catch(e){$("walletDepositMsg").textContent="No se pudo crear la solicitud: "+(e.message||"error de conexión.");}
+ }catch(e){
+  $("walletDepositMsg").textContent="No se pudo confirmar la creación de la solicitud: "+(e.message||"error de conexión.")+". Conservamos la clave para reintentar sin duplicarla.";
+ }
  finally{if(button){button.disabled=false;button.textContent="Crear solicitud de recarga";}}
 }
+
 async function attachWalletDepositProof(id,method){
  const file=$("wallet-retry-proof-"+id)?.files?.[0],reference=$("wallet-retry-reference-"+id)?.value||"",button=$("wallet-retry-button-"+id);
  if(button){button.disabled=true;button.textContent="Enviando…";}
