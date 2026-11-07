@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v60";
+const CACHE_NAME = "el-castillo-shell-v61";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -22,7 +22,11 @@ const APP_SHELL = [
   "./assets/ff-diamonds-572.svg",
   "./assets/ff-diamonds-1166.svg",
   "./assets/ff-diamonds-2398.svg",
-  "./assets/ff-diamonds-6160.svg"
+  "./assets/ff-diamonds-6160.svg",
+  "./assets/ff-diamonds-small-medium.webp",
+  "./assets/ff-diamonds-chest-booyah.webp",
+  "./assets/ff-weekly-blue-purple.webp",
+  "./assets/ff-monthly.webp"
 ];
 
 const APP_ROOT = self.registration.scope;

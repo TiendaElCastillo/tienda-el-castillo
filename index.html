@@ -203,7 +203,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 
 
 /* Ajustes de legibilidad y carga visual en móviles */
-.auth-layout{min-width:0}.auth-visual,.auth-panel{min-width:0}.auth-visual h1{overflow-wrap:anywhere}.auth-panel h2{line-height:1.2;overflow-wrap:anywhere}.auth-panel .subtle{line-height:1.55;overflow-wrap:anywhere}.auth-tabs{min-width:0}.auth-tabs button{min-width:0;white-space:normal;line-height:1.25}#castleTurnstile{min-height:65px;max-width:100%;overflow:hidden}.brand-name{min-width:0}.brand-name strong,.brand-name span{overflow-wrap:anywhere}.game-detail-art img{display:block;width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.game-detail-art:after{pointer-events:none}.package-group{margin:20px 0 25px}.package-group-heading{margin:0 0 10px}.package-group-heading h3{margin:0;font-size:18px;letter-spacing:-.02em}.package-group-heading p{margin:3px 0 0;color:var(--muted);font-size:11px}.package-group .game-plans-grid{margin:0}.product-art img{object-fit:cover}
+.auth-layout{min-width:0}.auth-visual,.auth-panel{min-width:0}.auth-visual h1{overflow-wrap:anywhere}.auth-panel h2{line-height:1.2;overflow-wrap:anywhere}.auth-panel .subtle{line-height:1.55;overflow-wrap:anywhere}.auth-tabs{min-width:0}.auth-tabs button{min-width:0;white-space:normal;line-height:1.25}#castleTurnstile{min-height:65px;max-width:100%;overflow:hidden}.brand-name{min-width:0}.brand-name strong,.brand-name span{overflow-wrap:anywhere}.game-detail-art img{display:block;width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.game-detail-art:after{pointer-events:none}.package-group{margin:20px 0 25px}.package-group-heading{margin:0 0 10px}.package-group-heading h3{margin:0;font-size:18px;letter-spacing:-.02em}.package-group-heading p{margin:3px 0 0;color:var(--muted);font-size:11px}.package-group .game-plans-grid{margin:0}.product-art img{object-fit:cover}.product-art-official{height:auto;aspect-ratio:300/171;background-color:#050916;padding:0}.product-art-official:before,.product-art-official:after{display:none}
 @media(max-width:420px){.auth-visual{min-height:245px}.auth-panel{padding:18px}.auth-panel h2{font-size:21px}.auth-panel .subtle{font-size:12px}.auth-tabs button{font-size:12px;padding:9px 5px}.auth-visual .eyebrow{font-size:9px;letter-spacing:.06em}.auth-benefits{max-width:72%;gap:7px;font-size:10px}}
 
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
@@ -771,11 +771,29 @@ function isGiftCard(p){const value=fold(String(p.game||"")+" "+String(p.name||""
 function providerImageIsSafe(value){try{const url=new URL(String(value));return url.protocol==="https:"||url.protocol==="http:"}catch{return false}}
 function productArtwork(p){
  const fallback="this.onerror=null;this.src='./assets/free-fire-hero.svg'";
- if(!fold(p.game||"").includes("free fire")&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Free Fire")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
+ const isFreeFire=fold(p.game||"").includes("free fire");
+ if(!isFreeFire&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Producto digital")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
  const group=freeFirePackageGroup(p);
- const diamondPackFiles={110:"ff-diamonds-110.svg",341:"ff-diamonds-341.svg",572:"ff-diamonds-572.svg",1166:"ff-diamonds-1166.svg",2398:"ff-diamonds-2398.svg",6160:"ff-diamonds-6160.svg"};
- const file=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":group==="levels"?"product-level.svg":group==="diamonds"?(diamondPackFiles[Number(p.amount)]||"product-diamonds.svg"):"product-diamonds.svg";
- return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+file+'" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
+ const label=fold(String(p.name||"")+" "+String(p.description||""));
+ const amount=Number(p.amount||0);
+ let file="",position="0%",alt="";
+ if(isFreeFire&&group==="booyah"){
+  file="ff-diamonds-chest-booyah.webp";position="100%";alt="Pase Booyah Premium de Free Fire";
+ }else if(isFreeFire&&group==="passes"){
+  if(/mensual|monthly/.test(label)){file="ff-monthly.webp";alt="Tarjeta mensual de Free Fire"}
+  else if(/semanal|weekly/.test(label)&&/basica|basico|basic/.test(label)){file="ff-weekly-blue-purple.webp";alt="Tarjeta semanal básica de Free Fire"}
+  else if(/semanal|weekly/.test(label)){file="ff-weekly-blue-purple.webp";position="100%";alt="Tarjeta semanal de Free Fire"}
+ }else if(isFreeFire&&group==="diamonds"){
+  if(amount===110){file="ff-diamonds-small-medium.webp";alt="Paquete de 110 diamantes de Free Fire"}
+  else if(amount===341||amount===572){file="ff-diamonds-small-medium.webp";position="100%";alt="Paquete de diamantes de Free Fire"}
+  else if(amount===1166||amount===2398||amount===6160){file="ff-diamonds-chest-booyah.webp";alt="Paquete grande de diamantes de Free Fire"}
+ }
+ if(file){
+  const size=file==="ff-monthly.webp"?"100% 100%":"200% 100%";
+  return '<div class="product-art product-art-official" role="img" aria-label="'+alt+'" style="background-image:url(./assets/'+file+');background-size:'+size+';background-position:'+position+';background-repeat:no-repeat"></div>';
+ }
+ const legacyFile=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":group==="levels"?"product-level.svg":"product-diamonds.svg";
+ return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+legacyFile+'" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
 }
 function productCard(p){
  const options=[["CUP",p.price_transfer,"CUP","Transferencia CUP"],["Saldo",p.price_mobile,"saldo","Saldo móvil"],["USDT",p.price_usdt,"USDT","USDT"]].filter(item=>Number(item[1])>0&&isPaymentMethodReady(item[3]));
