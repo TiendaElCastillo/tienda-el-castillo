@@ -209,7 +209,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
 @media(max-width:760px){.auth-layout{grid-template-columns:1fr;gap:12px;margin:12px auto}.auth-visual{min-height:0;padding:22px 21px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.auth-visual h1{max-width:none;font-size:clamp(27px,7vw,33px);line-height:1.08;margin:15px 0 10px}.auth-visual p{max-width:none;margin:0;font-size:14px;line-height:1.5;position:relative;z-index:2}.auth-visual .orb{display:none!important}.auth-benefits{position:static;left:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:15px;font-size:11px;line-height:1.4}.auth-panel{padding:20px}.auth-panel h2{font-size:22px}.auth-tabs{margin:17px 0}}
 @media(max-width:420px){.auth-visual{padding:20px 18px 18px;border-radius:22px}.auth-visual h1{font-size:29px}.auth-visual p{font-size:13px}.auth-benefits{gap:7px 10px;font-size:10px}.auth-panel{padding:18px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=16">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=17">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -1696,29 +1696,22 @@ async function updateOrderStatus(orderId,selectId){
  if(currentProfile?.role!=="admin"||!currentUser)return;
  const select=$(selectId),newStatus=select?.value;
  if(!orderId||!newStatus)return;
- if(newStatus==="processing"&&!window.confirm("CONFIRMAR PAGO Y ENVIAR RECARGA\n\nComprueba en tu banco o teléfono que el dinero/saldo realmente llegó. Compara el móvil del remitente, el número de transferencia o importe de saldo, y la captura del cliente.\n\nSi todo coincide y recibiste el pago, el sistema enviará la recarga a Central One y utilizará saldo real de tu cuenta.\n\n¿Confirmas que recibiste el pago y autorizas esta recarga?"))return;
+ if(newStatus==="processing"&&!window.confirm("CONFIRMAR RECEPCIÓN DEL PAGO\\n\\nComprueba primero en tu banco o teléfono que el dinero/saldo llegó realmente. Compara el móvil del remitente, el número de transacción, el importe declarado y el comprobante.\\n\\nEsta acción SOLO confirma que recibiste el pago. NO envía la recarga ni utiliza saldo de Central One. La autorización de la recarga será un segundo paso separado.\\n\\n¿Confirmas que recibiste el pago?"))return;
+ if(newStatus==="rejected"&&!window.confirm("RECHAZAR PEDIDO\\n\\nComprueba que el pago no se recibió o que existe un motivo válido para rechazarlo. El cliente verá el pedido como rechazado.\\n\\n¿Deseas rechazar este pedido?"))return;
  const button=document.querySelector('[data-update-order][data-order-id="'+CSS.escape(orderId)+'"]');
  const originalText=button?.textContent||"";
- if(button){button.disabled=true;button.textContent=newStatus==="processing"?"Confirmando y enviando…":"Guardando…";}
+ if(button){button.disabled=true;button.textContent="Guardando decisión…";}
  $("orderadminmsg").textContent="";
  try{
   const {data,error}=await db.rpc("admin_update_order_status",{p_order_id:orderId,p_status:newStatus});
   if(error)throw new Error(error.message);
   if(!data)throw new Error("Supabase no confirmó el cambio de estado.");
-  if(newStatus==="processing"){
-   $("orderadminmsg").textContent="Pago confirmado. Enviando recarga a Central One…";
-   try{
-    const sent=await requestCentralOneOrder("submit",orderId);
-    $("orderadminmsg").textContent=sent.already_submitted?"Este pedido ya estaba enviado a Central One; no se creó una recarga duplicada.":"Pago confirmado y pedido enviado a Central One. Estado: "+centralOneStatusText(sent.provider_status||"created")+".";
-   }catch(providerError){
-    $("orderadminmsg").textContent="El pago quedó confirmado, pero Central One no confirmó el envío: "+(providerError.message||"Error de comunicación")+". Revisa el pedido antes de reintentar; se conserva la protección contra duplicados.";
-   }
-  }else{
-   $("orderadminmsg").textContent="Pedido actualizado: "+statusText(data.status)+".";
-  }
+  $("orderadminmsg").textContent=newStatus==="processing"
+   ?"Pago confirmado. Todavía NO se ha enviado la recarga ni se ha usado saldo de Central One. Revisa el pedido en «Listos para autorizar» y pulsa «Autorizar recarga» solo cuando estés seguro."
+   :"Pedido rechazado. No se envió ninguna recarga a Central One.";
   await loadAllOrders();await loadMyOrders();
  }catch(e){
-  $("orderadminmsg").textContent="No se pudo completar la acción: "+(e.message||"Error desconocido.");
+  $("orderadminmsg").textContent="No se pudo completar la decisión: "+(e.message||"Error desconocido.");
  }finally{
   if(button){button.disabled=false;button.textContent=originalText;}
  }
@@ -1741,27 +1734,28 @@ async function requestCentralOneOrder(action,orderId){
 async function authorizeCentralOneOrder(orderId,orderCode){
  if(currentProfile?.role!=="admin"||!currentUser||!orderId)return;
  const accepted=window.confirm(
-  "AUTORIZAR RECARGA REAL\n\nPedido "+(orderCode||orderId)+"\n\nSe enviará a Central One y se reservará saldo real de tu cuenta. Esta acción no es una simulación.\n\n¿Aceptas descontar/reservar el saldo y realizar esta recarga?"
+  "AUTORIZAR RECARGA REAL\\n\\nPedido "+(orderCode||orderId)+"\\n\\nEsta acción creará una orden real en Central One y utilizará tu saldo prepago. El coste puede quedar reservado o descontado según el estado que devuelva el proveedor.\\n\\nAntes de continuar, confirma que el pago del cliente ya fue verificado y que el paquete, la región y el ID del jugador son correctos.\\n\\nIMPORTANTE: «Pedido creado», «Saldo reservado» o «En proceso» NO significan que los diamantes ya llegaron. Solo considera la recarga entregada cuando Central One confirme «Entregado».\\n\\n¿Autorizas ahora esta recarga y el uso de saldo real?"
  );
  if(!accepted)return;
  const button=document.querySelector('[data-provider-submit][data-order-id="'+CSS.escape(orderId)+'"]');
- if(button){button.disabled=true;button.textContent="Enviando a Central One…";}
- $("orderadminmsg").textContent="Autorización en curso. No cierres la página ni pulses otra vez.";
+ if(button){button.disabled=true;button.textContent="Enviando autorización…";}
+ $("orderadminmsg").textContent="Autorización real en curso. No pulses otra vez; la tienda está esperando la respuesta de Central One.";
  try{
   const result=await requestCentralOneOrder("submit",orderId);
+  const state=centralOneStatusText(result.provider_status||"unknown");
   $("orderadminmsg").textContent=result.already_submitted
-   ?"Este pedido ya estaba enviado. No se creó otra recarga."
-   :"Pedido enviado a Central One. Estado: "+centralOneStatusText(result.provider_status||"confirmed")+(result.reference_code?" · "+result.reference_code:"")+
-    (result.provider_total_sale_amount?" · Coste proveedor: "+result.provider_total_sale_amount+" "+(result.provider_currency||"USD"):"")+
-    (Number.isFinite(Number(result.preflight_margin_percent))?" · Recargo estimado: "+Number(result.preflight_margin_percent).toFixed(2)+" %":"")+".";
+   ?"Este pedido ya tiene una orden registrada en Central One. No se creó otra orden ni se repitió el cobro. Estado: "+state+"."
+   :result.provider_status==="completed"
+    ?"Central One confirma que la recarga fue entregada. Estado: "+state+"."
+    :"Central One aceptó la orden. Estado: "+state+". La entrega todavía no está confirmada; pulsa «Actualizar estado en Central One» para comprobarla.";
   await loadAllOrders();
   await loadMyOrders();
  }catch(e){
-  $("orderadminmsg").textContent="No se pudo confirmar el envío: "+(e.message||"error desconocido")+". Revisa el estado antes de volver a autorizar.";
+  $("orderadminmsg").textContent="No se pudo confirmar la respuesta de Central One: "+(e.message||"error desconocido")+". No pulses varias veces. Revisa el estado y vuelve a intentarlo solo desde el botón que muestre el pedido.";
   await loadAllOrders();
  }finally{
   const current=document.querySelector('[data-provider-submit][data-order-id="'+CSS.escape(orderId)+'"]');
-  if(current){current.disabled=false;current.textContent="Reintentar autorización segura";}
+  if(current){current.disabled=false;current.textContent="Reintentar con la misma clave segura";}
  }
 }
 async function refreshCentralOneOrder(orderId){
@@ -2137,7 +2131,7 @@ async function loadAllOrders(options={}){
   const selectId="order-status-"+i;
   const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
   const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return '<option value="'+value+'">'+(item?.label||value)+'</option>';}).join("");
-  const actionLabel=o.status==="payment_review"?"Confirmar pago y enviar recarga":"Rechazar pedido";
+  const actionLabel=o.status==="payment_review"?"Confirmar pago recibido":"Rechazar pedido";
   let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
    proofLink='<a href="#" data-proof-preview data-proof-path="'+clean(o.proof_path)+'" data-order-code="'+clean(o.order_code||"")+'" data-payment-reference="'+clean(o.payment_reference||"No indicado")+'" data-payment-sender-phone="'+clean(o.payment_sender_phone||"No indicado")+'" data-payment-method="'+clean(o.payment_method||"")+'" data-payment-amount="'+clean(o.price||"")+'">Ver comprobante (10 min)</a>';
@@ -2159,10 +2153,12 @@ async function loadAllOrders(options={}){
   }else if(o.status==="processing"&&!o.player_id_validated){
    providerInfo='<p class="track-note">Este pedido no puede enviarse automáticamente: no tiene la validación de jugador exigida por Central One.</p>';
   }else if(providerStatus==="submitting"&&!staleSubmitting){
-   providerInfo='<p class="track-note">La autorización ya está en curso. Espera a que responda; no la repitas.</p>';
+   providerInfo='<p class="track-note">La autorización está en curso. No pulses otra vez ni cierres esta ficha hasta que llegue una respuesta.</p>';
+  }else if(providerStatus==="submitting"&&staleSubmitting){
+   providerInfo='<p class="track-note">La solicitud lleva más de 90 segundos sin respuesta. Puedes reintentar con la misma clave segura; Central One indica que una repetición con esa clave no genera un segundo cobro. Comprueba también el historial del proveedor.</p>';
   }
   const providerAction=canAuthorize
-   ?'<div class="order-actions"><button type="button" data-provider-submit data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">'+(providerStatus==="not_submitted"?"Autorizar recarga y reservar saldo":"Reintentar autorización segura")+'</button></div>'
+   ?'<div class="order-actions"><button type="button" data-provider-submit data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">'+(providerStatus==="not_submitted"?"Autorizar recarga (usa saldo real)":"Reintentar con la misma clave segura")+'</button></div>'
    :canRefresh
     ?'<div class="order-actions"><button type="button" data-provider-refresh data-order-id="'+clean(o.id)+'">Actualizar estado en Central One</button></div>'
     :"";
@@ -2206,6 +2202,9 @@ async function loadAllOrders(options={}){
   });
  });
  container.querySelectorAll("[data-update-order]").forEach(button=>{
+  const select=document.getElementById(button.dataset.selectId);
+  const syncLabel=()=>{button.textContent=select?.value==="processing"?"Confirmar pago recibido":"Rechazar pedido";};
+  select?.addEventListener("change",syncLabel);syncLabel();
   button.addEventListener("click",()=>updateOrderStatus(button.dataset.orderId,button.dataset.selectId));
  });
  container.querySelectorAll("[data-provider-submit]").forEach(button=>{
@@ -2245,6 +2244,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=10" async></script>
+<script src="./assets/admin-panel.js?v=11" async></script>
 </body>
 </html>
