@@ -263,7 +263,8 @@ begin
   end if;
   if not exists (
     select 1 from public.payment_methods pm
-    where pm.name = v_deposit.payment_method and pm.active = true
+    where pm.name = v_deposit.payment_method
+      and pm.active = true
       and nullif(trim(coalesce(pm.instructions,'')),'') is not null
   ) then
     raise exception 'El método de pago ya no está disponible.';
@@ -276,13 +277,19 @@ begin
     end if;
   elsif v_deposit.currency = 'USDT' then
     if v_deposit.payment_method <> 'USDT'
-       or v_reference !~ '^[A-F0-9]{64}
+       or v_reference !~ '^[A-F0-9]{64}$' then
+      raise exception 'Escribe el hash/TxID USDT de 64 caracteres hexadecimales.';
+    end if;
+    perform pg_advisory_xact_lock(hashtextextended('USDT_TX:' || v_reference,0));
+    if exists (
       select 1 from public.wallet_deposits d
-      where d.id <> p_deposit_id and upper(coalesce(d.payment_reference,'')) = v_reference
+      where d.id <> p_deposit_id
+        and upper(coalesce(d.payment_reference,'')) = v_reference
         and d.status in ('payment_review','approved')
     ) or exists (
       select 1 from public.orders o
-      where o.payment_method = 'USDT' and upper(coalesce(o.payment_reference,'')) = v_reference
+      where o.payment_method = 'USDT'
+        and upper(coalesce(o.payment_reference,'')) = v_reference
         and o.status in ('payment_review','processing','completed')
     ) then
       raise exception 'Ese TxID ya fue utilizado en otra operación.';
