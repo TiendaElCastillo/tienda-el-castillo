@@ -27,6 +27,12 @@ alter table public.wallet_deposits
 alter table public.wallet_transactions
   add column if not exists deposit_id uuid references public.wallet_deposits(id) on delete restrict;
 
+-- The wallet balance is denominated in USD. The old table check only allowed CUP/USDT,
+-- which silently blocked every USD credit and every wallet purchase.
+alter table public.wallet_transactions drop constraint if exists wallet_transactions_currency_check;
+alter table public.wallet_transactions add constraint wallet_transactions_currency_check
+  check(currency in ('CUP','USDT','USD'));
+
 alter table public.orders
   add column if not exists wallet_request_id uuid;
 
@@ -55,8 +61,9 @@ create index if not exists wallet_deposits_reviewed_by_idx
 create index if not exists wallet_settings_updated_by_idx
   on public.wallet_settings(updated_by) where updated_by is not null;
 
-create unique index if not exists wallet_deposits_transfer_reference_unique
-  on public.wallet_deposits(upper(trim(payment_reference)))
+drop index if exists public.wallet_deposits_transfer_reference_unique;
+create unique index wallet_deposits_transfer_reference_unique
+  on public.wallet_deposits(upper(regexp_replace(trim(payment_reference),'[[:space:]]+','','g')))
   where payment_method='Transferencia CUP' and payment_reference is not null and trim(payment_reference)<>'';
 create unique index if not exists wallet_deposits_txid_unique
   on public.wallet_deposits(lower(txid))
