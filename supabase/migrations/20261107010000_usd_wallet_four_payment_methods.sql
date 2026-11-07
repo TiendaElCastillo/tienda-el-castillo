@@ -145,6 +145,10 @@ alter table public.wallet_deposits
   add constraint wallet_deposits_payment_method_check
   check (payment_method in ('Transferencia CUP','USDT'));
 
+-- These grants are paired with the existing owner/admin RLS policies.
+grant insert on public.wallet_deposits to authenticated;
+grant select on public.wallet_transactions to authenticated;
+
 drop policy if exists "wallet deposits insert own pending" on public.wallet_deposits;
 create policy "wallet deposits insert own pending"
 on public.wallet_deposits
@@ -192,6 +196,14 @@ begin
       and nullif(trim(coalesce(pm.instructions,'')),'') is not null
   ) then
     raise exception 'El método de pago no está disponible o no tiene instrucciones configuradas.';
+  end if;
+  if new.payment_method = 'USDT' and not exists (
+    select 1 from public.payment_methods pm
+    where pm.name = 'USDT' and pm.active = true
+      and pm.instructions ~* E'(^|\\n)\\s*(red|network)\\s*:\\s*[^\\n]+'
+      and pm.instructions ~* E'(^|\\n)\\s*(dirección|direccion|address)\\s*:\\s*[A-Za-z0-9]{20,}\\s*($|\\n)'
+  ) then
+    raise exception 'USDT no está configurado con una red y dirección válidas.';
   end if;
 
   select usd_cup_rate into v_rate
@@ -423,6 +435,14 @@ begin
         and nullif(trim(coalesce(pm.instructions,'')),'') is not null
     ) then
       raise exception 'El método de pago no está activo o no tiene instrucciones.';
+    end if;
+    if new.payment_method = 'USDT' and not exists (
+      select 1 from public.payment_methods pm
+      where pm.name = 'USDT' and pm.active = true
+        and pm.instructions ~* E'(^|\\n)\\s*(red|network)\\s*:\\s*[^\\n]+'
+        and pm.instructions ~* E'(^|\\n)\\s*(dirección|direccion|address)\\s*:\\s*[A-Za-z0-9]{20,}\\s*($|\\n)'
+    ) then
+      raise exception 'USDT no está configurado con una red y dirección válidas.';
     end if;
     case new.payment_method
       when 'Transferencia CUP' then final_price := selected_product.price_transfer;
