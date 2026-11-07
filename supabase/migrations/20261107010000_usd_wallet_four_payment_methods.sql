@@ -503,6 +503,9 @@ as $function$
 declare
   selected_product public.products%rowtype;
   final_price numeric;
+  v_usd_cup_rate numeric(14,4);
+  v_mobile_credit_units numeric;
+  v_mobile_cost_cup numeric;
 begin
   if auth.uid() is null or new.user_id is distinct from auth.uid() then
     raise exception 'No autorizado para crear este pedido.';
@@ -566,7 +569,33 @@ begin
   new.game := selected_product.game;
   new.package_name := selected_product.name;
   new.price := final_price;
-  new.wallet_refund_usd := selected_product.price_wallet_usd;
+  if coalesce(new.payment_source,'direct') = 'wallet' then
+    new.wallet_refund_usd := round(final_price,2);
+  elsif new.payment_method = 'USDT' then
+    new.wallet_refund_usd := round(final_price,2);
+  else
+    select usd_cup_rate,mobile_credit_units,mobile_cost_cup
+      into v_usd_cup_rate,v_mobile_credit_units,v_mobile_cost_cup
+    from public.pricing_settings
+    where id = 1;
+    if v_usd_cup_rate is null or v_usd_cup_rate <= 0 then
+      raise exception 'La tasa CUP/USD no está configurada para calcular una devolución segura.';
+    end if;
+    if new.payment_method = 'Transferencia CUP' then
+      new.wallet_refund_usd := round(final_price / v_usd_cup_rate,2);
+    elsif new.payment_method = 'Saldo móvil' then
+      if v_mobile_credit_units is null or v_mobile_credit_units <= 0
+         or v_mobile_cost_cup is null or v_mobile_cost_cup <= 0 then
+        raise exception 'La equivalencia del saldo móvil no está configurada para calcular una devolución segura.';
+      end if;
+      new.wallet_refund_usd := round((final_price * v_mobile_cost_cup / v_mobile_credit_units) / v_usd_cup_rate,2);
+    else
+      raise exception 'No se puede calcular el crédito de devolución para este método.';
+    end if;
+  end if;
+  if new.wallet_refund_usd is null or new.wallet_refund_usd <= 0 then
+    raise exception 'El importe de devolución convertido a USD no es válido.';
+  end if;
   new.status := 'pending';
   new.order_code := 'EC-' || upper(substr(replace(gen_random_uuid()::text,'-',''),1,10));
   new.player_id := btrim(new.player_id);
