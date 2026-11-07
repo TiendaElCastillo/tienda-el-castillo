@@ -298,7 +298,7 @@ window.addEventListener("DOMContentLoaded",function(){
  </div>
  <div id="checkoutStagePayment" class="checkout-stage-panel hidden">
   <div class="checkout-stage-title"><strong>Completa los datos de pago</strong><small>Envía la cantidad exacta y conserva el comprobante original.</small></div>
-  <div class="field"><label>Selecciona el método de pago</label><div id="checkoutPaymentMethods" class="checkout-payment-methods" role="group" aria-label="Método de pago"></div><select id="payment" class="hidden" aria-hidden="true" tabindex="-1" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option></select></div>
+  <div class="field"><label>Selecciona el método de pago</label><div id="checkoutPaymentMethods" class="checkout-payment-methods" role="group" aria-label="Método de pago"></div><select id="payment" class="hidden" aria-hidden="true" tabindex="-1" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option></select></div>
   <div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div>
   <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">¿Desde qué número haces el pago? (obligatorio)</label><input id="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+53 5XXXXXXX" maxlength="20"><small class="field-hint" id="senderPhoneHelp">Escribe el número de la línea desde la que realizaste el pago.</small></div>
   <div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div>
@@ -1296,23 +1296,28 @@ function previewPaymentProof(){
 function updatePaymentFields(){
  const copyBox=$("paymentInstructions");if(copyBox&&!copyBox.dataset.copyHandler){copyBox.dataset.copyHandler="1";copyBox.addEventListener("click",event=>{const button=event.target.closest("[data-copy]");if(button)copyPaymentButton(button)})}
  const method=$("payment")?.value||"";
- const isWallet=false,isTransfer=method==="Transferencia CUP",isMobile=method==="Saldo móvil";
- $("referenceWrap")?.classList.toggle("hidden",!isTransfer);
+ const isWallet=false,isTransfer=method==="Transferencia CUP",isMobile=method==="Saldo móvil",isUsdt=method==="USDT";
+ $("referenceWrap")?.classList.toggle("hidden",!isTransfer&&!isUsdt);
  $("senderPhoneWrap")?.classList.toggle("hidden",!isTransfer&&!isMobile);
- $("reportedAmountWrap")?.classList.toggle("hidden",!isMobile);
+ $("reportedAmountWrap")?.classList.toggle("hidden",!isMobile&&!isUsdt);
  $("proofWrap")?.classList.toggle("hidden",isWallet);
- $("reference").required=isTransfer;
- $("reference").minLength=isTransfer?3:0;
+ $("reference").required=isTransfer||isUsdt;
+ $("reference").minLength=isUsdt?64:isTransfer?3:0;
+ $("reference").maxLength=isUsdt?128:100;
  $("senderPhone").required=isTransfer||isMobile;
- $("reportedAmount").required=isMobile;
+ $("reportedAmount").required=isMobile||isUsdt;
+ $("reportedAmount").min=isUsdt?"0.000001":"1";
+ $("reportedAmount").step=isUsdt?"0.000001":"0.01";
  $("paymentProof").required=!isWallet;
- $("referenceLabel").textContent="N.º de transacción del banco (obligatorio)";
+ $("referenceLabel").textContent=isUsdt?"Hash de transacción USDT (64 caracteres)": "N.º de transacción del banco (obligatorio)";
+ $("referenceHelp").textContent=isUsdt?"Copia el hash/TxID de la operación en la red indicada en las instrucciones. Debe tener 64 caracteres hexadecimales.":"Copia el código que aparece junto a «Nro. Transacción» en el comprobante del banco. Es único para cada pago.";
  $("senderPhoneLabel").textContent=isMobile?"¿Desde qué número enviaste el saldo? (obligatorio)":"¿Desde qué número haces la transferencia? (obligatorio)";
  $("senderPhoneHelp").textContent=isTransfer?"Tiene que ser la misma línea con la que entras a Transfermóvil. No escribas el número receptor de la tienda.":"Escribe la línea desde la que enviaste el saldo móvil.";
  $("senderPhone").placeholder="+53 5XXXXXXX";
- $("proofLabel").textContent=isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura completa de Transfermóvil (obligatoria)";
- $("proofHelp").textContent=isMobile?"La captura debe mostrar el envío, el número receptor, la fecha y el importe. JPG, PNG o WEBP; máximo 5 MB.":"La captura debe mostrar el importe, la fecha, la tarjeta destinataria y el N.º de transacción. JPG, PNG o WEBP; máximo 5 MB. La imagen se optimiza antes de subirla si pesa mucho.";
- if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":"Ya transferí · Enviar a revisión";
+ $("reportedAmount").previousElementSibling.textContent=isUsdt?"Cantidad exacta de USDT enviada":"Cantidad exacta de saldo móvil enviada";
+ $("proofLabel").textContent=isUsdt?"Captura del envío USDT (obligatoria)":isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura completa de Transfermóvil (obligatoria)";
+ $("proofHelp").textContent=isUsdt?"La captura debe mostrar la red, la dirección receptora, el importe y el hash de la transacción. La tienda comprobará el pago manualmente. JPG, PNG o WEBP; máximo 5 MB.":isMobile?"La captura debe mostrar el envío, el número receptor, la fecha y el importe. JPG, PNG o WEBP; máximo 5 MB.":"La captura debe mostrar el importe, la fecha, la tarjeta destinataria y el N.º de transacción. JPG, PNG o WEBP; máximo 5 MB. La imagen se optimiza antes de subirla si pesa mucho.";
+ if($("placeOrderBtn"))$("placeOrderBtn").textContent=isWallet?"Pagar con mi billetera":isUsdt?"Ya envié USDT · Enviar a revisión":"Ya transferí · Enviar a revisión";
 }
 function renderPaymentMethodAdmin(){
  const list=$("paymentAdminList");if(!list)return;
@@ -1392,13 +1397,15 @@ function validateProofFile(file){
 }
 async function uploadProofForOrder(orderId,method,file,reference,senderPhone,reportedAmount){
  const invalid=validateProofFile(file);if(invalid)throw new Error(invalid);
- if(method==="Transferencia CUP"&&!String(reference||"").trim())throw new Error("Escribe el número de transferencia.");
+ const tx=String(reference||"").trim().toUpperCase().replace(/\s+/g,"");
+ if(method==="Transferencia CUP"&&(!tx||tx.length<3||tx.length>100))throw new Error("Escribe el número de transferencia.");
+ if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(tx))throw new Error("Escribe el hash/TxID válido de 64 caracteres hexadecimales.");
  const phone=String(senderPhone||"").trim(),digits=phone.replace(/\D/g,"");
- if(!/^\+?[0-9\s().-]+$/.test(phone)||digits.length<8||digits.length>15)throw new Error("Escribe el móvil desde el que realizaste el pago.");
+ if((method==="Transferencia CUP"||method==="Saldo móvil")&&(!/^\+?[0-9\s().-]+$/.test(phone)||digits.length<8||digits.length>15))throw new Error("Escribe el móvil desde el que realizaste el pago.");
  const {data:order,error:orderError}=await db.from("orders").select("id,price,payment_method,status,payment_source").eq("id",orderId).eq("user_id",currentUser.id).maybeSingle();
  if(orderError||!order)throw new Error("No se pudo comprobar el pedido de tu cuenta.");
  if(order.payment_source!=="direct"||!["pending","payment_review"].includes(order.status))throw new Error("Este pedido ya no admite comprobantes.");
- if(method==="Saldo móvil"&&(!Number.isFinite(Number(reportedAmount))||Number(reportedAmount)<=0||Math.abs(Number(reportedAmount)-Number(order.price))>0.01))throw new Error("El importe de saldo debe coincidir exactamente con el precio del paquete: "+money(order.price)+" unidades de saldo.");
+ if((method==="Saldo móvil"||method==="USDT")&&(!Number.isFinite(Number(reportedAmount))||Number(reportedAmount)<=0||Math.abs(Number(reportedAmount)-Number(order.price))>(method==="USDT"?0.000001:0.01)))throw new Error("El importe enviado debe coincidir exactamente con el precio del paquete: "+money(order.price)+" "+(method==="USDT"?"USDT":"unidades de saldo")+".");
  if(method==="Transferencia CUP"&&reportedAmount!==null&&reportedAmount!==undefined&&reportedAmount!=="")throw new Error("No escribas importe manual para la transferencia bancaria.");
  const uploadFile=await optimizeProofForUpload(file);
  const ext=uploadFile.type==="image/jpeg"?"jpg":uploadFile.type==="image/png"?"png":"webp";
@@ -1409,9 +1416,9 @@ async function uploadProofForOrder(orderId,method,file,reference,senderPhone,rep
  const result=await db.rpc("submit_payment_proof",{
   p_order_id:orderId,
   p_proof_path:path,
-  p_reference:method==="Transferencia CUP"?String(reference||"").trim():null,
-  p_sender_phone:phone,
-  p_reported_amount:method==="Saldo móvil"?Number(reportedAmount):null
+  p_reference:(method==="Transferencia CUP"||method==="USDT")?tx:null,
+  p_sender_phone:method==="USDT"?null:phone,
+  p_reported_amount:(method==="Saldo móvil"||method==="USDT")?Number(reportedAmount):null
  });
  if(result.error)throw new Error("La imagen se subió, pero no se pudo asociar al pedido: "+result.error.message);
  return result.data;
@@ -1451,17 +1458,18 @@ async function placeOrder(){
  const price=method==="USDT"?product.price_usdt:method==="Saldo móvil"?product.price_mobile:method==="Transferencia CUP"?product.price_transfer:null;
  if(!(Number(price)>0)){$("ordermsg").textContent="Este producto no tiene precio para ese método de pago.";return}
  if(method==="Billetera CUP"){$("ordermsg").textContent="La billetera interna está desactivada por el momento. Utiliza Transferencia CUP o Saldo móvil.";return}
- if(!["Transferencia CUP","Saldo móvil"].includes(method)){$("ordermsg").textContent="Este método de pago todavía no está disponible.";return}
+ if(!["Transferencia CUP","Saldo móvil","USDT"].includes(method)){$("ordermsg").textContent="Este método de pago todavía no está disponible.";return}
  if(!paymentMethods.some(item=>item.name===method&&item.active&&item.instructions)){$("ordermsg").textContent="Este método de pago todavía no está configurado. Elige otro método o espera la confirmación de la tienda.";return}
  const file=$("paymentProof")?.files?.[0];
  const invalid=validateProofFile(file);if(invalid){$("ordermsg").textContent=invalid;return}
  const reference=$("reference").value.trim().toUpperCase().replace(/\s+/g,"");
  if(method==="Transferencia CUP"&&(reference.length<3||reference.length>100)){$("ordermsg").textContent="Escribe el N.º de transacción del banco (entre 3 y 100 caracteres).";return}
+ if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(reference)){$("ordermsg").textContent="Escribe el hash/TxID de 64 caracteres hexadecimales de la red indicada.";return}
  const senderPhone=$("senderPhone").value.trim(),phoneDigits=senderPhone.replace(/\D/g,"");
- if(!/^\+?[0-9\s().-]+$/.test(senderPhone)||phoneDigits.length<8||phoneDigits.length>15){$("ordermsg").textContent="Escribe el móvil desde el que realizaste el pago.";return}
- const reportedAmount=method==="Saldo móvil"?Number($("reportedAmount").value):null;
- if(method==="Saldo móvil"&&(!Number.isFinite(reportedAmount)||reportedAmount<=0||Math.abs(reportedAmount-Number(price))>0.01)){
-  $("ordermsg").textContent="El importe de saldo que enviaste debe ser exactamente "+money(price)+" unidades de saldo, como el paquete elegido.";return
+ if((method==="Transferencia CUP"||method==="Saldo móvil")&&(!/^\+?[0-9\s().-]+$/.test(senderPhone)||phoneDigits.length<8||phoneDigits.length>15)){$("ordermsg").textContent="Escribe el móvil desde el que realizaste el pago.";return}
+ const reportedAmount=(method==="Saldo móvil"||method==="USDT")?Number($("reportedAmount").value):null;
+ if((method==="Saldo móvil"||method==="USDT")&&(!Number.isFinite(reportedAmount)||reportedAmount<=0||Math.abs(reportedAmount-Number(price))>(method==="USDT"?0.000001:0.01))){
+  $("ordermsg").textContent="El importe debe coincidir exactamente con el precio del paquete: "+money(price)+" "+(method==="USDT"?"USDT":"unidades de saldo")+".";return
  }
  const button=$("placeOrderBtn");
  if(button){button.disabled=true;button.textContent="Creando pedido…";}
@@ -1492,8 +1500,9 @@ async function loadMyOrders(){
  (data||[]).length?(data||[]).map(o=>{
   const canUpload=o.payment_source==="direct"&&!o.proof_path&&o.status==="pending";
   const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
-   '<div class="field"><label for="retry-sender-phone-'+clean(o.id)+'">Móvil desde el que realizaste el pago</label><input id="retry-sender-phone-'+clean(o.id)+'" type="tel" inputmode="tel" placeholder="+535XXXXXXXX"></div>'+
-   (o.payment_method==="Transferencia CUP"?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">Nro. Transacción</label><input id="retry-reference-'+clean(o.id)+'" inputmode="text" autocapitalize="characters" maxlength="100" placeholder="Ej. AY600UJ716R999"><small class="field-hint">Copia el código «Nro. Transacción» del comprobante.</small></div>':'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">Cantidad de saldo móvil enviada</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="1" step="0.01" inputmode="decimal" placeholder="Importe exacto"></div>')+
+   (o.payment_method!=="USDT"?'<div class="field"><label for="retry-sender-phone-'+clean(o.id)+'">Móvil desde el que realizaste el pago</label><input id="retry-sender-phone-'+clean(o.id)+'" type="tel" inputmode="tel" placeholder="+535XXXXXXXX"></div>':'')+
+   ((o.payment_method==="Transferencia CUP"||o.payment_method==="USDT")?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">'+(o.payment_method==="USDT"?"Hash/TxID USDT":"Nro. Transacción")+'</label><input id="retry-reference-'+clean(o.id)+'" inputmode="text" autocapitalize="characters" maxlength="100" placeholder="'+(o.payment_method==="USDT"?"Hash de 64 caracteres":"Ej. AY600UJ716R999")+'"><small class="field-hint">'+(o.payment_method==="USDT"?"Copia el hash/TxID de la red indicada.":"Copia el código «Nro. Transacción» del comprobante.")+'</small></div>':'')+
+   ((o.payment_method==="Saldo móvil"||o.payment_method==="USDT")?'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">'+(o.payment_method==="USDT"?"Cantidad exacta de USDT enviada":"Cantidad de saldo móvil enviada")+'</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="0.000001" step="0.000001" inputmode="decimal" placeholder="Importe exacto"></div>':'')+
    '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
   const providerInfo=o.central_one_reference_code
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
