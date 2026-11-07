@@ -276,6 +276,19 @@ begin
        or v_reference is null or length(v_reference) < 3 or length(v_reference) > 100 then
       raise exception 'Escribe el número válido de la transferencia.';
     end if;
+    perform pg_advisory_xact_lock(hashtextextended('CUP_TX:' || v_reference,0));
+    if exists (
+      select 1 from public.wallet_deposits d
+      where d.id <> p_deposit_id
+        and d.payment_method = 'Transferencia CUP'
+        and upper(coalesce(d.payment_reference,'')) = v_reference
+    ) or exists (
+      select 1 from public.orders o
+      where o.payment_method = 'Transferencia CUP'
+        and upper(coalesce(o.payment_reference,'')) = v_reference
+    ) then
+      raise exception 'Ese número de transferencia ya fue utilizado en otra operación.';
+    end if;
   elsif v_deposit.currency = 'USDT' then
     if v_deposit.payment_method <> 'USDT'
        or v_reference !~ '^[A-F0-9]{64}$' then
@@ -742,6 +755,19 @@ begin
   if v_order.payment_method = 'Transferencia CUP' then
     if v_reference is null or length(v_reference) < 3 or length(v_reference) > 100 then
       raise exception 'Escribe el número de transferencia.';
+    end if;
+    perform pg_advisory_xact_lock(hashtextextended('CUP_TX:' || v_reference,0));
+    if exists (
+      select 1 from public.orders o
+      where o.id <> p_order_id
+        and o.payment_method = 'Transferencia CUP'
+        and upper(coalesce(o.payment_reference,'')) = v_reference
+    ) or exists (
+      select 1 from public.wallet_deposits d
+      where d.payment_method = 'Transferencia CUP'
+        and upper(coalesce(d.payment_reference,'')) = v_reference
+    ) then
+      raise exception 'Ese número de transferencia ya fue utilizado en otra operación.';
     end if;
     if p_reported_amount is not null then
       raise exception 'No envíes un importe manual para la transferencia bancaria.';
