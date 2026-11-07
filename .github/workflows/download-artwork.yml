@@ -1,0 +1,23 @@
+name: Download temporary Free Fire artwork
+on:
+  push:
+    branches:
+      - temp/download-original-artwork-20261107
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artwork
+        run: |
+          mkdir -p artwork
+          curl -fLsS 'https://raw.githubusercontent.com/Duenss/clothers/a7e4fe8e2548bd9951eac7d935269135bd220ae2/OTROS/imagenes/804605802.png' -o artwork/weekly-membership-game-icon.webp
+          curl -fLsS 'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/ca95925e-2399-49da-7139-f02c17fea900/w%3D192%2Ch%3D192%2Cfit%3Dcover%2Cq%3D80%2Cmetadata%3Dnone%2Cformat%3Dauto' -o artwork/weekly-membership-product.webp
+          curl -fLsS 'https://img.keygold.gg/cdn-cgi/imagedelivery/YiOyiAditmsufk6Ngg5iSw/5107a8e6-f4cb-45d7-dea6-2f2a645ee000/w%3D192%2Ch%3D192%2Cfit%3Dcover%2Cq%3D80%2Cmetadata%3Dnone%2Cformat%3Dauto' -o artwork/booyah-pass-card.webp
+          file artwork/*
+          ls -lh artwork
+      - name: Upload downloaded images
+        uses: actions/upload-artifact@v4
+        with:
+          name: free-fire-original-artwork
+          path: artwork/
+          if-no-files-found: error
