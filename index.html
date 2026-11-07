@@ -435,7 +435,7 @@ function loadCastleTurnstile(){
 }
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds";
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, walletUsdCupRate=0, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds";
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1544,52 +1544,69 @@ async function loadMyOrders(){
  }).join(""):"Todavía no tienes pedidos.";
 }
 async function loadWalletData(){
- if(!currentUser){walletBalanceCUP=0;return}
- const result=await db.from("wallet_transactions").select("kind,amount,currency,description,created_at").eq("user_id",currentUser.id).eq("currency","CUP").order("created_at",{ascending:false});
+ if(!currentUser){walletBalanceUSD=0;return}
+ const result=await db.from("wallet_transactions").select("kind,amount,currency,description,created_at").eq("user_id",currentUser.id).eq("currency","USD").order("created_at",{ascending:false});
  if(result.error){if($("walletBalance"))$("walletBalance").textContent="No disponible";if($("walletTransactions"))$("walletTransactions").textContent="No se pudo cargar la billetera.";return}
  const rows=result.data||[];
- walletBalanceCUP=rows.reduce((sum,row)=>sum+(["deposit","refund","adjustment"].includes(row.kind)?1:-1)*Number(row.amount||0),0);
- if($("walletBalance"))$("walletBalance").textContent=money(walletBalanceCUP);
- if($("walletTransactions"))$("walletTransactions").innerHTML=rows.length?rows.slice(0,15).map(row=>'<div class="order-card"><strong>'+clean(row.kind==="purchase"?"Compra":row.kind==="deposit"?"Depósito":row.kind==="refund"?"Reembolso":"Ajuste")+'</strong><div class="order-detail">'+money(row.amount)+' CUP · '+clean(row.description||"Movimiento")+'<br>'+new Date(row.created_at).toLocaleString("es-CU")+'</div></div>').join(""):'<p class="empty-note">Todavía no tienes movimientos.</p>';
+ walletBalanceUSD=rows.reduce((sum,row)=>sum+(["deposit","refund","adjustment"].includes(row.kind)?1:-1)*Number(row.amount||0),0);
+ if($("walletBalance"))$("walletBalance").textContent=walletBalanceUSD.toFixed(2);
+ if($("walletTransactions"))$("walletTransactions").innerHTML=rows.length?rows.slice(0,20).map(row=>'<div class="order-card"><strong>'+clean(row.kind==="purchase"?"Compra":row.kind==="deposit"?"Recarga aprobada":row.kind==="refund"?"Devolución por fallo":"Ajuste")+'</strong><div class="order-detail">'+Number(row.amount).toFixed(2)+' USD · '+clean(row.description||"Movimiento")+'<br>'+new Date(row.created_at).toLocaleString("es-CU")+'</div></div>').join(""):'<p class="empty-note">Todavía no tienes movimientos.</p>';
  updateCheckoutSummary();
+ updateWalletDepositInstructions();
+}
+async function loadWalletUsdRate(){
+ if(!currentUser)return;
+ const result=await db.rpc("get_wallet_usd_cup_rate");
+ if(result.error){walletUsdCupRate=0;updateWalletDepositInstructions();return}
+ walletUsdCupRate=Number(result.data||0);
  updateWalletDepositInstructions();
 }
 function updateWalletDepositInstructions(){
  const method=$("walletDepositMethod")?.value||"Transferencia CUP";
- const item=paymentMethods.find(m=>m.name===method&&m.active&&m.instructions);
- const box=$("walletDepositInstructions");
- if(box)box.innerHTML=item?"<strong>Cómo realizar el pago</strong><br>"+clean(item.instructions).replace(/\n/g,"<br>"):"Este método todavía no está configurado. No realices el pago.";
- $("walletDepositReferenceWrap")?.classList.toggle("hidden",method!=="Transferencia CUP");
+ const item=paymentMethods.find(m=>m.name===method&&m.active&&m.instructions&&isPaymentMethodReady(m.name));
+ const box=$("walletDepositInstructions"),amount=Number($("walletDepositAmount")?.value||0);
+ if($("walletDepositAmountLabel"))$("walletDepositAmountLabel").textContent=method==="USDT"?"Cantidad USDT que quieres ingresar":"Cantidad que vas a ingresar (CUP)";
+ if($("walletDepositAmount")){$("walletDepositAmount").min=method==="USDT"?"0.01":"1";$("walletDepositAmount").step=method==="USDT"?"0.01":"1";}
+ if($("walletDepositReferenceLabel"))$("walletDepositReferenceLabel").textContent=method==="USDT"?"Hash/TxID USDT (64 caracteres)":"Número de transferencia";
+ if($("walletDepositReference"))$("walletDepositReference").placeholder=method==="USDT"?"Hash de la transacción":"Código de transferencia";
+ $("walletDepositReferenceWrap")?.classList.remove("hidden");
+ const credit=method==="USDT"?amount:(walletUsdCupRate>0?Math.round((amount/walletUsdCupRate+Number.EPSILON)*100)/100:0);
+ if($("walletDepositCreditPreview"))$("walletDepositCreditPreview").textContent=amount>0&&credit>0?"Crédito estimado: "+credit.toFixed(2)+" USD. Tasa: "+(method==="USDT"?"1 USDT = 1 USD":walletUsdCupRate.toLocaleString("es-ES")+" CUP/USD")+". Se fija al crear la solicitud.":"El crédito en USD se calcula con la tasa vigente al solicitar el depósito.";
+ if(box)box.innerHTML=item?"<strong>Cómo realizar el pago</strong><br>"+clean(item.instructions).replace(/\n/g,"<br>")+(method==="USDT"?"<br><br><strong>Importante:</strong> la tienda debe recibir el importe neto completo. Asume cualquier comisión y comprueba la red y dirección.":""):"Este método no está configurado correctamente. No realices el pago.";
 }
 async function uploadWalletDepositProof(depositId,method,file,reference){
  const invalid=validateProofFile(file);if(invalid)throw new Error(invalid);
  if(method==="Transferencia CUP"&&!String(reference||"").trim())throw new Error("Escribe el número de transferencia.");
+ if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(String(reference||"").trim()))throw new Error("Escribe el TxID USDT válido de 64 caracteres.");
  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
  const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)});
  const path=currentUser.id+"/"+depositId+"/"+token+"."+ext;
  const upload=await db.storage.from("payment-proofs").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
  if(upload.error)throw new Error("No se pudo subir la captura: "+upload.error.message);
- const result=await db.rpc("submit_wallet_deposit_proof",{p_deposit_id:depositId,p_proof_path:path,p_reference:method==="Transferencia CUP"?String(reference||"").trim():null});
+ const result=await db.rpc("submit_wallet_deposit_proof",{p_deposit_id:depositId,p_proof_path:path,p_reference:String(reference||"").trim()||null});
  if(result.error)throw new Error(result.error.message);
 }
 async function requestWalletDeposit(){
  if(!currentUser){openAccount();return}
  const amount=Number($("walletDepositAmount").value),method=$("walletDepositMethod").value,file=$("walletDepositProof").files?.[0],reference=$("walletDepositReference").value.trim();
+ const currency=method==="USDT"?"USDT":method==="Transferencia CUP"?"CUP":"";
  if(!Number.isFinite(amount)||amount<=0){$("walletDepositMsg").textContent="Escribe un importe válido mayor que cero.";return}
- if(!paymentMethods.some(m=>m.name===method&&m.active&&m.instructions)){$("walletDepositMsg").textContent="Ese método de pago no está configurado.";return}
+ if(!["CUP","USDT"].includes(currency)||!isPaymentMethodReady(method)){$("walletDepositMsg").textContent="Ese método no está configurado correctamente. No realices el pago.";return}
+ if(currency==="USDT"&&Math.abs(amount-Math.round(amount*100)/100)>0.000001){$("walletDepositMsg").textContent="USDT admite hasta dos decimales en esta recarga.";return}
  const invalid=validateProofFile(file);if(invalid){$("walletDepositMsg").textContent=invalid;return}
- if(method==="Transferencia CUP"&&!reference){$("walletDepositMsg").textContent="Escribe el número de transferencia.";return}
- const button=document.querySelector('#profileView button[onclick="requestWalletDeposit()"]');if(button){button.disabled=true;button.textContent="Creando depósito…";}
+ if(method==="Transferencia CUP"&&(!reference||reference.length<3||reference.length>100)){$("walletDepositMsg").textContent="Escribe el número de transferencia.";return}
+ if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(reference)){$("walletDepositMsg").textContent="Escribe el hash/TxID de 64 caracteres hexadecimales.";return}
+ const button=document.querySelector('#profileView button[onclick="requestWalletDeposit()"]');if(button){button.disabled=true;button.textContent="Creando solicitud…";}
  try{
-  const created=await db.from("wallet_deposits").insert({user_id:currentUser.id,amount,currency:"CUP",payment_method:method,status:"pending"}).select("id").single();
+  const created=await db.from("wallet_deposits").insert({user_id:currentUser.id,amount,currency,payment_method:method,status:"pending"}).select("id,credit_usd,exchange_rate_snapshot").single();
   if(created.error)throw new Error(created.error.message);
   try{await uploadWalletDepositProof(created.data.id,method,file,reference);}
-  catch(e){$("walletDepositMsg").textContent="La solicitud se creó, pero falta adjuntar el comprobante: "+e.message+". No hagas otra solicitud; vuelve a «Mis depósitos» y reenvíalo.";await loadMyWalletDeposits();return}
-  $("walletDepositMsg").textContent="Solicitud enviada. Tu saldo se acreditará después de que verifiquemos el pago.";
+  catch(e){$("walletDepositMsg").textContent="La solicitud quedó creada, pero falta adjuntar el comprobante: "+e.message+". No crees otra solicitud; vuelve a «Mis solicitudes» y reintenta.";await loadMyWalletDeposits();return}
+  $("walletDepositMsg").textContent="Solicitud enviada. Se acreditarán "+Number(created.data.credit_usd||0).toFixed(2)+" USD solo después de verificar el pago y aprobarlo.";
   $("walletDepositAmount").value="";$("walletDepositReference").value="";$("walletDepositProof").value="";
-  await loadMyWalletDeposits();
+  updateWalletDepositInstructions();await loadMyWalletDeposits();
  }catch(e){$("walletDepositMsg").textContent="No se pudo crear la solicitud: "+(e.message||"error de conexión.");}
- finally{if(button){button.disabled=false;button.textContent="Enviar solicitud de depósito";}}
+ finally{if(button){button.disabled=false;button.textContent="Solicitar recarga de billetera";}}
 }
 async function attachWalletDepositProof(id,method){
  const file=$("wallet-retry-proof-"+id)?.files?.[0],reference=$("wallet-retry-reference-"+id)?.value||"",button=$("wallet-retry-button-"+id);
@@ -1602,22 +1619,23 @@ async function loadMyWalletDeposits(){
  if(!currentUser)return;
  const {data,error}=await db.from("wallet_deposits").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
  const list=$("walletDepositsMine");if(!list)return;
- if(error){list.textContent="No se pudieron cargar tus depósitos: "+error.message;return}
+ if(error){list.textContent="No se pudieron cargar tus solicitudes: "+error.message;return}
  list.innerHTML=(data||[]).length?(data||[]).map(d=>{
   const canUpload=!d.proof_path&&["pending","payment_review"].includes(d.status);
   const retry=canUpload?'<div class="field"><label for="wallet-retry-proof-'+clean(d.id)+'">Comprobante</label><input id="wallet-retry-proof-'+clean(d.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
-   (d.payment_method==="Transferencia CUP"?'<div class="field"><label for="wallet-retry-reference-'+clean(d.id)+'">Número de transferencia</label><input id="wallet-retry-reference-'+clean(d.id)+'" inputmode="numeric"></div>':'')+
+   '<div class="field"><label for="wallet-retry-reference-'+clean(d.id)+'">'+(d.currency==="USDT"?"Hash/TxID USDT":"Número de transferencia")+'</label><input id="wallet-retry-reference-'+clean(d.id)+'" inputmode="text" maxlength="100"></div>'+
    '<button id="wallet-retry-button-'+clean(d.id)+'" class="primary-btn" type="button" onclick="attachWalletDepositProof(\''+clean(d.id)+'\',\''+clean(d.payment_method)+'\')">Enviar comprobante</button><p id="wallet-retry-msg-'+clean(d.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(d.proof_path?"Comprobante recibido.":"")+'</p>';
-  return '<article class="order-card"><strong>Depósito de '+money(d.amount)+' CUP</strong><div class="order-detail">'+clean(d.payment_method)+' · '+new Date(d.created_at).toLocaleString("es-CU")+'</div><span class="status">'+clean(d.status==="payment_review"?"Verificando pago":d.status==="approved"?"Aprobado":d.status==="rejected"?"Rechazado":"Pendiente")+'</span>'+retry+(d.admin_notes?'<p class="track-note">'+clean(d.admin_notes)+'</p>':'')+'</article>';
- }).join(""):'<p class="empty-note">Todavía no has solicitado depósitos.</p>';
+  const rate=d.currency==="CUP"&&d.exchange_rate_snapshot?" · Tasa "+money(d.exchange_rate_snapshot)+" CUP/USD":"";
+  return '<article class="order-card"><strong>Recarga: '+Number(d.amount).toLocaleString("es-ES",{maximumFractionDigits:6})+' '+clean(d.currency)+'</strong><div class="order-detail">'+clean(d.payment_method)+' · '+new Date(d.created_at).toLocaleString("es-CU")+'<br>Crédito previsto: '+Number(d.credit_usd||0).toFixed(2)+' USD'+rate+'<br>Referencia/TxID: '+clean(d.payment_reference||"Pendiente de enviar")+'</div><span class="status">'+clean(d.status==="payment_review"?"Pago pendiente de revisión":d.status==="approved"?"Aprobado y acreditado":d.status==="rejected"?"Rechazado":"Pendiente de comprobante")+'</span>'+retry+(d.admin_notes?'<p class="track-note">'+clean(d.admin_notes)+'</p>':'')+'</article>';
+ }).join(""):'<p class="empty-note">Todavía no has solicitado recargas.</p>';
 }
 async function loadWalletDepositsAdmin(){
  if(currentProfile?.role!=="admin")return;
  const list=$("walletDepositsAdmin");if(!list)return;
- list.textContent="Cargando depósitos…";
+ list.textContent="Cargando solicitudes de billetera…";
  const {data,error}=await db.from("wallet_deposits").select("*").order("created_at",{ascending:false});
- if(error){list.textContent="No se pudieron cargar los depósitos: "+error.message;return}
- if(!(data||[]).length){list.textContent="No hay depósitos solicitados.";return}
+ if(error){list.textContent="No se pudieron cargar las solicitudes: "+error.message;return}
+ if(!(data||[]).length){list.textContent="No hay recargas de billetera solicitadas.";return}
  const ids=[...new Set(data.map(d=>d.user_id))];
  const profiles=await db.from("profiles").select("id,full_name,email").in("id",ids);
  const profileMap=new Map((profiles.data||[]).map(p=>[p.id,p]));
@@ -1626,7 +1644,9 @@ async function loadWalletDepositsAdmin(){
   if(d.proof_path){const signed=await db.storage.from("payment-proofs").createSignedUrl(d.proof_path,600);proof=signed.error?'<span class="subtle">No se pudo abrir la captura</span>':'<a href="'+clean(signed.data.signedUrl)+'" target="_blank" rel="noopener">Ver comprobante (10 min)</a>';}
   const profile=profileMap.get(d.user_id);
   const actions=d.status==="payment_review"?'<div class="order-actions"><button class="primary-btn" type="button" onclick="reviewWalletDeposit(\''+clean(d.id)+'\',true)">Aprobar y acreditar</button><button class="secondary-btn" type="button" onclick="reviewWalletDeposit(\''+clean(d.id)+'\',false)">Rechazar</button></div>':'';
-  return '<article class="order-card"><strong>'+money(d.amount)+' CUP · '+clean(d.payment_method)+'</strong><div class="order-detail">Cliente: '+clean(profile?.full_name||profile?.email||d.user_id)+'<br>Referencia: '+clean(d.payment_reference||"No indicada")+'<br>Comprobante: '+proof+'<br>Estado: <span class="status">'+clean(d.status)+'</span></div>'+actions+'</article>';
+  const rate=d.currency==="CUP"&&d.exchange_rate_snapshot?"<br>Tasa de cambio: "+money(d.exchange_rate_snapshot)+" CUP/USD":"";
+  const caution=d.currency==="USDT"?"<br>Comprueba la red, el TxID y que recibiste el importe neto completo antes de aprobar.":"";
+  return '<article class="order-card"><strong>'+Number(d.amount).toLocaleString("es-ES",{maximumFractionDigits:6})+' '+clean(d.currency)+' · '+clean(d.payment_method)+'</strong><div class="order-detail">Cliente: '+clean(profile?.full_name||profile?.email||d.user_id)+'<br>Crédito a acreditar: <strong>'+Number(d.credit_usd||0).toFixed(2)+' USD</strong>'+rate+'<br>Referencia/TxID: '+clean(d.payment_reference||"No indicada")+'<br>Comprobante: '+proof+caution+'<br>Estado: <span class="status">'+clean(d.status)+'</span></div>'+actions+'</article>';
  }));
  list.innerHTML=cards.join("");
 }
