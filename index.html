@@ -742,10 +742,12 @@ async function openStore(user){
  try{renderProductCatalogs();updateCheckoutSummary();}
  catch(renderError){console.error("Error al mostrar el catálogo:",renderError);const box=$("gamePaymentChoices");if(box)box.innerHTML='<p class="empty-note">Error al mostrar el catálogo: '+clean(renderError.message||renderError)+'</p>';}
  try{await loadMyOrders();}catch(orderError){const list=$("myorders");if(list)list.textContent="No se pudieron cargar tus pedidos: "+clean(orderError.message||orderError);}
+ try{await loadWalletUsdRate();await loadWalletData();await loadMyWalletDeposits();}catch(walletError){console.error("No se pudo cargar la billetera:",walletError);}
  startCustomerOrderRealtime();
  if(currentProfile.role==="admin"){
   startAdminPaymentPolling();
   try{await loadAllOrders();}catch(adminOrderError){const list=$("allorders");if(list)list.textContent="No se pudieron cargar los pedidos de administración: "+clean(adminOrderError.message||adminOrderError);}
+  try{await loadWalletDepositsAdmin();}catch(walletError){const list=$("walletDepositsAdmin");if(list)list.textContent="No se pudieron cargar las solicitudes de billetera: "+clean(walletError.message||walletError);}
   try{await loadPricingSettings();}catch(pricingError){const msg=$("pricingSettingsMsg");if(msg)msg.textContent="No se pudieron cargar las reglas: "+clean(pricingError.message||pricingError);}
   try{await loadLatestCentralOneCatalog();}catch(catalogError){const msg=$("centralOneCatalogMsg");if(msg)msg.textContent="No se pudo cargar el último catálogo: "+clean(catalogError.message||catalogError);}
  }else stopAdminPaymentPolling();
@@ -1372,7 +1374,7 @@ async function togglePaymentMethod(id,active){
 }
 async function loadProducts(){
  try{
-  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
+  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,price_wallet_usd,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
   if(error){
    products=[];
    const message="No se pudo cargar el catálogo: "+error.message;
@@ -1658,17 +1660,17 @@ async function reviewWalletDeposit(id,approve){
 }
 async function loadAdminProducts(){
  if(currentProfile?.role!=="admin")return;
- const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});
+ const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,price_wallet_usd,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});
  const list=$("adminProducts");if(!list)return;
  if(result.error){list.textContent="No se pudo cargar el catálogo de administración: "+result.error.message;return}
  const rows=result.data||[];productsForAdmin=rows;
- list.innerHTML=rows.length?rows.map(p=>"<article class=\"order-card\"><div class=\"order-code\">"+(p.active?"Activo":"Desactivado")+"</div><strong>"+clean(p.game)+" · "+clean(p.name)+"</strong><p class=\"order-detail\">Transferencia: "+money(p.price_transfer)+" CUP · Saldo: "+money(p.price_mobile)+" · USDT: "+money(p.price_usdt)+"</p><button class=\"secondary-btn\" type=\"button\" onclick=\"editProduct(\u0027"+clean(p.id)+"\u0027)\">Editar</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductActive(\u0027"+clean(p.id)+"\u0027,"+(!p.active)+")\">"+(p.active?"Desactivar":"Activar")+"</button></article>").join(""):"<p class=\"empty-note\">Todavía no hay productos cargados.</p>";
+ list.innerHTML=rows.length?rows.map(p=>"<article class=\"order-card\"><div class=\"order-code\">"+(p.active?"Activo":"Desactivado")+"</div><strong>"+clean(p.game)+" · "+clean(p.name)+"</strong><p class=\"order-detail\">Transferencia: "+money(p.price_transfer)+" CUP · Saldo móvil: "+money(p.price_mobile)+" · USDT: "+money(p.price_usdt)+" · Billetera: "+Number(p.price_wallet_usd||0).toFixed(2)+" USD</p><button class=\"secondary-btn\" type=\"button\" onclick=\"editProduct(\u0027"+clean(p.id)+"\u0027)\">Editar</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductActive(\u0027"+clean(p.id)+"\u0027,"+(!p.active)+")\">"+(p.active?"Desactivar":"Activar")+"</button></article>").join(""):"<p class=\"empty-note\">Todavía no hay productos cargados.</p>";
 }
 function editProduct(id){
  if(currentProfile?.role!=="admin")return;
  const product=productsForAdmin.find(p=>String(p.id)===String(id));if(!product)return;
  editingProductId=id;
- $("game").value=product.game||"";$("pname").value=product.name||"";$("description").value=product.description||"";$("amount").value=product.amount??"";$("transfer").value=product.price_transfer??0;$("mobile").value=product.price_mobile??0;$("usdt").value=product.price_usdt??0;
+ $("game").value=product.game||"";$("pname").value=product.name||"";$("description").value=product.description||"";$("amount").value=product.amount??"";$("transfer").value=product.price_transfer??0;$("mobile").value=product.price_mobile??0;$("usdt").value=product.price_usdt??0;$("walletUsdPrice").value=product.price_wallet_usd??0;
  $("adminProductSubmit").textContent="Actualizar producto";$("cancelProductEdit").classList.remove("hidden");$("adminmsg").textContent="Editando "+product.name+". Los cambios se guardarán en este producto.";
  document.getElementById("admin").scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -1682,15 +1684,15 @@ async function toggleProductActive(id,active){
 }
 function cancelProductEdit(){
  editingProductId=null;
- ["game","pname","description","amount","transfer","mobile","usdt"].forEach(id=>$(id).value="");
+ ["game","pname","description","amount","transfer","mobile","usdt","walletUsdPrice"].forEach(id=>$(id).value="");
  $("adminProductSubmit").textContent="Guardar producto";$("cancelProductEdit").classList.add("hidden");$("adminmsg").textContent="Edición cancelada.";
 }
 async function addProduct(){
  if(currentProfile?.role!=="admin")return;
  const name=$("pname").value.trim(),game=$("game").value.trim();
  if(!name||!game){$("adminmsg").textContent="Escribe el juego y el nombre del paquete.";return}
- const payload={game,name,description:$("description").value.trim(),amount:Number($("amount").value||0),price_transfer:Number($("transfer").value||0),price_mobile:Number($("mobile").value||0),price_usdt:Number($("usdt").value||0)};
- if(payload.price_transfer<0||payload.price_mobile<0||payload.price_usdt<0){$("adminmsg").textContent="Los precios no pueden ser negativos.";return}
+ const payload={game,name,description:$("description").value.trim(),amount:Number($("amount").value||0),price_transfer:Number($("transfer").value||0),price_mobile:Number($("mobile").value||0),price_usdt:Number($("usdt").value||0),price_wallet_usd:Number($("walletUsdPrice").value||0)};
+ if(payload.price_transfer<0||payload.price_mobile<0||payload.price_usdt<0||payload.price_wallet_usd<0){$("adminmsg").textContent="Los precios no pueden ser negativos.";return}
  const result=editingProductId?await db.from("products").update(payload).eq("id",editingProductId):await db.from("products").insert({...payload,active:true});
  $("adminmsg").textContent=result.error?"Error: "+result.error.message:(editingProductId?"Producto actualizado.":"Producto guardado.");
  if(!result.error){editingProductId=null;cancelProductEdit();$("adminmsg").textContent="Producto guardado correctamente.";await loadProducts();}
@@ -1951,24 +1953,29 @@ async function loadCentralOneBalance(){
 }
 async function loadPricingSettings(){
  if(currentProfile?.role!=="admin"||!db)return;
- const result=await db.from("pricing_settings").select("usdt_cup_rate,mobile_credit_units,mobile_cost_cup,markup_percent,rounding_cup,updated_at").eq("id",1).maybeSingle();
+ const result=await db.from("pricing_settings").select("usdt_cup_rate,usd_cup_rate,mobile_credit_units,mobile_cost_cup,markup_percent,rounding_cup,updated_at").eq("id",1).maybeSingle();
  if(result.error){$("pricingSettingsMsg").textContent="No se pudieron leer las reglas: "+result.error.message;return;}
  const p=result.data;
  if(p){
+  pricingSettingsCache=p;
+  walletUsdCupRate=Number(p.usd_cup_rate||0);
   $("pricingUsdtRate").value=p.usdt_cup_rate;
+  $("pricingUsdCupRate").value=p.usd_cup_rate;
   $("pricingMobileUnits").value=p.mobile_credit_units;
   $("pricingMobileCost").value=p.mobile_cost_cup;
   $("pricingMarkup").value=p.markup_percent;
   $("pricingRounding").value=p.rounding_cup;
  }
- const history=await db.from("pricing_rate_history").select("usdt_cup_rate,mobile_credit_units,mobile_cost_cup,markup_percent,rounding_cup,changed_at,note").order("changed_at",{ascending:false}).limit(8);
+ const history=await db.from("pricing_rate_history").select("usdt_cup_rate,usd_cup_rate,mobile_credit_units,mobile_cost_cup,markup_percent,rounding_cup,changed_at,note").order("changed_at",{ascending:false}).limit(8);
  if(history.error){$("pricingHistory").textContent="No se pudo cargar el historial: "+history.error.message;return;}
- $("pricingHistory").innerHTML='<h3>Historial de tasas y reglas</h3>'+(history.data||[]).map(h=>'<article class="order-card"><strong>'+new Date(h.changed_at).toLocaleString("es-ES")+'</strong><p class="order-detail">1 USDT = '+money(h.usdt_cup_rate)+' CUP · '+money(h.mobile_credit_units)+' saldo = '+money(h.mobile_cost_cup)+' CUP · Ganancia sobre coste: '+money(h.markup_percent)+'% · Redondeo: '+money(h.rounding_cup)+' CUP<br>'+clean(h.note||"Cambio guardado")+'</p></article>').join("")||'<p class="empty-note">Todavía no hay cambios registrados.</p>';
+ $("pricingHistory").innerHTML='<h3>Historial de tasas y reglas</h3>'+(history.data||[]).map(h=>'<article class="order-card"><strong>'+new Date(h.changed_at).toLocaleString("es-ES")+'</strong><p class="order-detail">Coste USDT: '+money(h.usdt_cup_rate)+' CUP · Cambio billetera: '+money(h.usd_cup_rate)+' CUP/USD · '+money(h.mobile_credit_units)+' saldo = '+money(h.mobile_cost_cup)+' CUP · Ganancia: '+money(h.markup_percent)+'% · Redondeo: '+money(h.rounding_cup)+' CUP<br>'+clean(h.note||"Cambio guardado")+'</p></article>').join("")||'<p class="empty-note">Todavía no hay cambios registrados.</p>';
+ updateWalletDepositInstructions();
 }
 async function savePricingSettings(){
  if(currentProfile?.role!=="admin")return;
  const values={
   usdt_cup_rate:Number($("pricingUsdtRate").value),
+  usd_cup_rate:Number($("pricingUsdCupRate").value),
   mobile_credit_units:Number($("pricingMobileUnits").value),
   mobile_cost_cup:Number($("pricingMobileCost").value),
   markup_percent:Number($("pricingMarkup").value),
@@ -1977,6 +1984,7 @@ async function savePricingSettings(){
   updated_by:currentUser.id
  };
  if(!Number.isFinite(values.usdt_cup_rate)||values.usdt_cup_rate<=0||
+    !Number.isFinite(values.usd_cup_rate)||values.usd_cup_rate<=0||
     !Number.isInteger(values.mobile_credit_units)||values.mobile_credit_units<=0||
     !Number.isFinite(values.mobile_cost_cup)||values.mobile_cost_cup<=0||
     !Number.isFinite(values.markup_percent)||values.markup_percent<0||
