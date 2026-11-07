@@ -327,13 +327,11 @@ window.addEventListener("DOMContentLoaded",function(){
  <div class="panel">
   <h2>Mi billetera El Castillo</h2>
   <div class="checkout-summary"><div><strong>Saldo disponible</strong><small>Crédito interno de la tienda</small></div><div class="checkout-total"><strong id="walletBalance">0,00</strong><small>USD</small></div></div>
-  <p class="subtle">Recarga mediante transferencia CUP o USDT. Tu saldo se acredita únicamente después de que revisemos y aprobemos el pago.</p>
+  <p class="subtle">Primero crea la solicitud. El servidor fijará el cambio del día y el crédito exacto en USD. Después haces el pago y envías el comprobante desde la solicitud creada. Solo acreditaremos el saldo cuando revisemos y aprobemos el pago.</p>
   <div class="field"><label for="walletDepositMethod">Método para recargar</label><select id="walletDepositMethod" onchange="updateWalletDepositInstructions()"><option value="Transferencia CUP">Transferencia CUP</option><option value="USDT">USDT</option></select></div>
-  <div class="field"><label for="walletDepositAmount" id="walletDepositAmountLabel">Cantidad que vas a ingresar (CUP)</label><input id="walletDepositAmount" type="number" min="1" step="1" inputmode="decimal" placeholder="Ej. 2400" oninput="updateWalletDepositInstructions()"><small id="walletDepositCreditPreview" class="field-hint">El crédito en USD se calculará con la tasa vigente al solicitar el depósito.</small></div>
+  <div class="field"><label for="walletDepositAmount" id="walletDepositAmountLabel">Cantidad que vas a ingresar (CUP)</label><input id="walletDepositAmount" type="number" min="1" step="1" inputmode="decimal" placeholder="Ej. 2400" oninput="updateWalletDepositInstructions()"><small id="walletDepositCreditPreview" class="field-hint">El crédito exacto en USD se fijará al crear la solicitud.</small></div>
   <div id="walletDepositInstructions" class="payment-data-panel">Selecciona un método configurado para ver los datos de pago.</div>
-  <div class="field" id="walletDepositReferenceWrap"><label for="walletDepositReference" id="walletDepositReferenceLabel">Número de transferencia</label><input id="walletDepositReference" type="text" inputmode="text" autocapitalize="characters" maxlength="100" placeholder="Código de la transferencia"></div>
-  <div class="field"><label for="walletDepositProof">Comprobante del pago</label><input id="walletDepositProof" class="proof-input" type="file" accept="image/jpeg,image/png,image/webp"><small class="field-hint">La captura se revisará manualmente. No se acreditará saldo solo por enviar una imagen.</small></div>
-  <button class="primary-btn block-btn" type="button" onclick="requestWalletDeposit()">Solicitar recarga de billetera</button>
+  <button class="primary-btn block-btn" type="button" onclick="requestWalletDeposit()">Crear solicitud de recarga</button>
   <p id="walletDepositMsg" class="msg" role="status"></p>
   <h3>Mis solicitudes de recarga</h3><div id="walletDepositsMine"><p class="empty-note">Cargando solicitudes…</p></div>
   <h3>Movimientos de mi billetera</h3><div id="walletTransactions"><p class="empty-note">Cargando movimientos…</p></div>
@@ -1630,46 +1628,52 @@ function updateWalletDepositInstructions(){
  const box=$("walletDepositInstructions"),amount=Number($("walletDepositAmount")?.value||0);
  if($("walletDepositAmountLabel"))$("walletDepositAmountLabel").textContent=method==="USDT"?"Cantidad USDT que quieres ingresar":"Cantidad que vas a ingresar (CUP)";
  if($("walletDepositAmount")){$("walletDepositAmount").min=method==="USDT"?"0.01":"1";$("walletDepositAmount").step=method==="USDT"?"0.01":"1";}
- if($("walletDepositReferenceLabel"))$("walletDepositReferenceLabel").textContent=method==="USDT"?"Hash/TxID USDT (64 caracteres)":"Número de transferencia";
- if($("walletDepositReference"))$("walletDepositReference").placeholder=method==="USDT"?"Hash de la transacción":"Código de transferencia";
- $("walletDepositReferenceWrap")?.classList.remove("hidden");
- const credit=method==="USDT"?amount:(walletUsdCupRate>0?Math.round((amount/walletUsdCupRate+Number.EPSILON)*100)/100:0);
- if($("walletDepositCreditPreview"))$("walletDepositCreditPreview").textContent=amount>0&&credit>0?"Crédito estimado: "+credit.toFixed(2)+" USD. Tasa: "+(method==="USDT"?"1 USDT = 1 USD":walletUsdCupRate.toLocaleString("es-ES")+" CUP/USD")+". Se fija al crear la solicitud.":"El crédito en USD se calcula con la tasa vigente al solicitar el depósito.";
- if(box)box.innerHTML=item?"<strong>Cómo realizar el pago</strong><br>"+clean(item.instructions).replace(/\n/g,"<br>")+(method==="USDT"?"<br><br><strong>Importante:</strong> la tienda debe recibir el importe neto completo. Asume cualquier comisión y comprueba la red y dirección.":""):"Este método no está configurado correctamente. No realices el pago.";
+ const estimated=method==="USDT"?amount:(walletUsdCupRate>0?Math.round((amount/walletUsdCupRate+Number.EPSILON)*100)/100:0);
+ if($("walletDepositCreditPreview"))$("walletDepositCreditPreview").textContent=amount>0&&estimated>0
+  ?"Estimación: "+estimated.toFixed(2)+" USD. "+(method==="USDT"?"1 USDT = 1 USD.":"Tasa mostrada: "+walletUsdCupRate.toLocaleString("es-ES")+" CUP/USD.")+" El importe definitivo lo fija el servidor al crear la solicitud."
+  :"El crédito exacto en USD se fijará en el servidor al crear la solicitud.";
+ if(box)box.innerHTML=item
+  ?"<strong>Datos de pago que aparecerán en tu solicitud</strong><br>"+clean(item.instructions).replace(/\n/g,"<br>")+(method==="USDT"?"<br><br><strong>Importante:</strong> deben llegar a la tienda los USDT netos completos. Cualquier comisión de envío corre por tu cuenta.":"")
+  :"Este método todavía no está configurado correctamente. No realices el pago.";
 }
 async function uploadWalletDepositProof(depositId,method,file,reference){
  const invalid=validateProofFile(file);if(invalid)throw new Error(invalid);
- if(method==="Transferencia CUP"&&!String(reference||"").trim())throw new Error("Escribe el número de transferencia.");
- if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(String(reference||"").trim()))throw new Error("Escribe el TxID USDT válido de 64 caracteres.");
+ const tx=String(reference||"").trim().toUpperCase().replace(/\s+/g,"");
+ if(method==="Transferencia CUP"&&(tx.length<3||tx.length>100))throw new Error("Escribe el número de transferencia completo.");
+ if(method==="USDT"&&!/^[A-F0-9]{64}$/.test(tx))throw new Error("Escribe el TxID USDT válido de 64 caracteres.");
+ if(!["Transferencia CUP","USDT"].includes(method))throw new Error("Método de recarga no válido.");
  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
- const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16)});
+ const token=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,k=>{const r=Math.random()*16|0;return (k==="x"?r:(r&3|8)).toString(16)});
  const path=currentUser.id+"/"+depositId+"/"+token+"."+ext;
- const upload=await db.storage.from("payment-proofs").upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
- if(upload.error)throw new Error("No se pudo subir la captura: "+upload.error.message);
- const result=await db.rpc("submit_wallet_deposit_proof",{p_deposit_id:depositId,p_proof_path:path,p_reference:String(reference||"").trim()||null});
- if(result.error)throw new Error(result.error.message);
+ const storage=db.storage.from("payment-proofs");
+ const upload=await storage.upload(path,file,{contentType:file.type,cacheControl:"3600",upsert:false});
+ if(upload.error)throw new Error("No se pudo subir el comprobante: "+upload.error.message);
+ const result=await db.rpc("submit_wallet_deposit_proof",{p_deposit_id:depositId,p_proof_path:path,p_reference:tx});
+ if(result.error){await storage.remove([path]);throw new Error(result.error.message);}
 }
 async function requestWalletDeposit(){
  if(!currentUser){openAccount();return}
- const amount=Number($("walletDepositAmount").value),method=$("walletDepositMethod").value,file=$("walletDepositProof").files?.[0],reference=$("walletDepositReference").value.trim();
+ const amount=Number($("walletDepositAmount").value),method=$("walletDepositMethod").value;
  const currency=method==="USDT"?"USDT":method==="Transferencia CUP"?"CUP":"";
  if(!Number.isFinite(amount)||amount<=0){$("walletDepositMsg").textContent="Escribe un importe válido mayor que cero.";return}
  if(!["CUP","USDT"].includes(currency)||!isPaymentMethodReady(method)){$("walletDepositMsg").textContent="Ese método no está configurado correctamente. No realices el pago.";return}
- if(currency==="USDT"&&Math.abs(amount-Math.round(amount*100)/100)>0.000001){$("walletDepositMsg").textContent="USDT admite hasta dos decimales en esta recarga.";return}
- const invalid=validateProofFile(file);if(invalid){$("walletDepositMsg").textContent=invalid;return}
- if(method==="Transferencia CUP"&&(!reference||reference.length<3||reference.length>100)){$("walletDepositMsg").textContent="Escribe el número de transferencia.";return}
- if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(reference)){$("walletDepositMsg").textContent="Escribe el hash/TxID de 64 caracteres hexadecimales.";return}
- const button=document.querySelector('#profileView button[onclick="requestWalletDeposit()"]');if(button){button.disabled=true;button.textContent="Creando solicitud…";}
+ if(currency==="USDT"&&Math.abs(amount-Math.round(amount*100)/100)>0.000001){$("walletDepositMsg").textContent="USDT admite como máximo dos decimales.";return}
+ if(currency==="CUP"&&walletUsdCupRate<=0){await loadWalletUsdRate();if(walletUsdCupRate<=0){$("walletDepositMsg").textContent="No se pudo confirmar la tasa diaria. No crees ni pagues la solicitud todavía.";return}}
+ const button=document.querySelector('#profileView button[onclick="requestWalletDeposit()"]');
+ if(button){button.disabled=true;button.textContent="Fijando tasa y crédito…";}
  try{
-  const created=await db.from("wallet_deposits").insert({user_id:currentUser.id,amount,currency,payment_method:method,status:"pending"}).select("id,credit_usd,exchange_rate_snapshot").single();
+  const created=await db.from("wallet_deposits")
+   .insert({user_id:currentUser.id,amount,currency,payment_method:method,status:"pending"})
+   .select("id,amount,currency,payment_method,credit_usd,exchange_rate_snapshot,status,created_at").single();
   if(created.error)throw new Error(created.error.message);
-  try{await uploadWalletDepositProof(created.data.id,method,file,reference);}
-  catch(e){$("walletDepositMsg").textContent="La solicitud quedó creada, pero falta adjuntar el comprobante: "+e.message+". No crees otra solicitud; vuelve a «Mis solicitudes» y reintenta.";await loadMyWalletDeposits();return}
-  $("walletDepositMsg").textContent="Solicitud enviada. Se acreditarán "+Number(created.data.credit_usd||0).toFixed(2)+" USD solo después de verificar el pago y aprobarlo.";
-  $("walletDepositAmount").value="";$("walletDepositReference").value="";$("walletDepositProof").value="";
-  updateWalletDepositInstructions();await loadMyWalletDeposits();
+  const credit=Number(created.data.credit_usd||0),rate=Number(created.data.exchange_rate_snapshot||0);
+  if(!created.data.id||!Number.isFinite(credit)||credit<=0)throw new Error("El servidor no devolvió un crédito válido. No realices el pago; contacta con la tienda.");
+  $("walletDepositMsg").textContent="Solicitud creada correctamente. Crédito fijado: "+credit.toFixed(2)+" USD"+(currency==="CUP"?" con tasa "+rate.toLocaleString("es-ES")+" CUP/USD.":" (1 USDT = 1 USD).")+" Ahora realiza el pago y adjunta el comprobante en la tarjeta de esta solicitud. Todavía no se ha acreditado saldo.";
+  $("walletDepositAmount").value="";
+  await loadMyWalletDeposits();
+  updateWalletDepositInstructions();
  }catch(e){$("walletDepositMsg").textContent="No se pudo crear la solicitud: "+(e.message||"error de conexión.");}
- finally{if(button){button.disabled=false;button.textContent="Solicitar recarga de billetera";}}
+ finally{if(button){button.disabled=false;button.textContent="Crear solicitud de recarga";}}
 }
 async function attachWalletDepositProof(id,method){
  const file=$("wallet-retry-proof-"+id)?.files?.[0],reference=$("wallet-retry-reference-"+id)?.value||"",button=$("wallet-retry-button-"+id);
@@ -1684,12 +1688,19 @@ async function loadMyWalletDeposits(){
  const list=$("walletDepositsMine");if(!list)return;
  if(error){list.textContent="No se pudieron cargar tus solicitudes: "+error.message;return}
  list.innerHTML=(data||[]).length?(data||[]).map(d=>{
-  const canUpload=!d.proof_path&&["pending","payment_review"].includes(d.status);
-  const retry=canUpload?'<div class="field"><label for="wallet-retry-proof-'+clean(d.id)+'">Comprobante</label><input id="wallet-retry-proof-'+clean(d.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
-   '<div class="field"><label for="wallet-retry-reference-'+clean(d.id)+'">'+(d.currency==="USDT"?"Hash/TxID USDT":"Número de transferencia")+'</label><input id="wallet-retry-reference-'+clean(d.id)+'" inputmode="text" maxlength="100"></div>'+
-   '<button id="wallet-retry-button-'+clean(d.id)+'" class="primary-btn" type="button" onclick="attachWalletDepositProof(\''+clean(d.id)+'\',\''+clean(d.payment_method)+'\')">Enviar comprobante</button><p id="wallet-retry-msg-'+clean(d.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(d.proof_path?"Comprobante recibido.":"")+'</p>';
-  const rate=d.currency==="CUP"&&d.exchange_rate_snapshot?" · Tasa "+money(d.exchange_rate_snapshot)+" CUP/USD":"";
-  return '<article class="order-card"><strong>Recarga: '+Number(d.amount).toLocaleString("es-ES",{maximumFractionDigits:6})+' '+clean(d.currency)+'</strong><div class="order-detail">'+clean(d.payment_method)+' · '+new Date(d.created_at).toLocaleString("es-CU")+'<br>Crédito previsto: '+Number(d.credit_usd||0).toFixed(2)+' USD'+rate+'<br>Referencia/TxID: '+clean(d.payment_reference||"Pendiente de enviar")+'</div><span class="status">'+clean(d.status==="payment_review"?"Pago pendiente de revisión":d.status==="approved"?"Aprobado y acreditado":d.status==="rejected"?"Rechazado":"Pendiente de comprobante")+'</span>'+retry+(d.admin_notes?'<p class="track-note">'+clean(d.admin_notes)+'</p>':'')+'</article>';
+  const canUpload=!d.proof_path&&d.status==="pending";
+  const retry=canUpload
+   ?'<div class="field"><label for="wallet-retry-proof-'+clean(d.id)+'">Comprobante del pago</label><input id="wallet-retry-proof-'+clean(d.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
+    '<div class="field"><label for="wallet-retry-reference-'+clean(d.id)+'">'+(d.currency==="USDT"?"Hash/TxID USDT (64 caracteres)":"Número de transferencia")+'</label><input id="wallet-retry-reference-'+clean(d.id)+'" inputmode="text" maxlength="100"></div>'+
+    '<button id="wallet-retry-button-'+clean(d.id)+'" class="primary-btn" type="button" onclick="attachWalletDepositProof(\''+clean(d.id)+'\',\''+clean(d.payment_method)+'\')">Enviar comprobante para revisión</button><p id="wallet-retry-msg-'+clean(d.id)+'" class="msg" role="status"></p>'
+   :'<p class="track-note">'+(d.proof_path?"Comprobante recibido y bloqueado para revisión.":"No se ha enviado comprobante.")+'</p>';
+  const rate=d.currency==="CUP"&&d.exchange_rate_snapshot?" · Tasa fijada: "+money(d.exchange_rate_snapshot)+" CUP/USD":"";
+  const instructions=paymentMethods.find(m=>m.name===d.payment_method)?.instructions||"";
+  const payInfo=canUpload&&instructions
+   ?'<p class="track-note"><strong>Datos para pagar:</strong><br>'+clean(instructions).replace(/\n/g,"<br>")+(d.currency==="USDT"?"<br>La tienda debe recibir el importe neto completo; tú asumes la comisión de envío.":"")+'</p>'
+   :"";
+  const status=d.status==="payment_review"?"Pago pendiente de revisión":d.status==="approved"?"Aprobado y acreditado":d.status==="rejected"?"Rechazado":"Solicitud creada · pendiente de pago";
+  return '<article class="order-card"><strong>Recarga: '+Number(d.amount).toLocaleString("es-ES",{maximumFractionDigits:6})+' '+clean(d.currency)+'</strong><div class="order-detail">'+clean(d.payment_method)+' · '+new Date(d.created_at).toLocaleString("es-CU")+'<br>Crédito fijado: '+Number(d.credit_usd||0).toFixed(2)+' USD'+rate+'<br>Referencia/TxID: '+clean(d.payment_reference||"Pendiente de enviar")+'</div><span class="status">'+clean(status)+'</span>'+payInfo+retry+(d.admin_notes?'<p class="track-note">'+clean(d.admin_notes)+'</p>':'')+'</article>';
  }).join(""):'<p class="empty-note">Todavía no has solicitado recargas.</p>';
 }
 async function loadWalletDepositsAdmin(){
