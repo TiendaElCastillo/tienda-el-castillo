@@ -402,7 +402,7 @@ $function$;
 
 drop function if exists public.create_wallet_order(uuid,text,text);
 drop function if exists public.create_wallet_order(uuid,text,text,uuid);
-create function public.create_wallet_order(
+create or replace function public.create_wallet_order(
   p_product_id uuid,
   p_player_id text,
   p_player_name text default '',
