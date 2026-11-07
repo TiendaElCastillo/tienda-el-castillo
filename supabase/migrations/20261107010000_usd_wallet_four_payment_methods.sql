@@ -119,11 +119,15 @@ create unique index if not exists wallet_transactions_one_deposit_credit_idx
 create unique index if not exists wallet_transactions_one_refund_per_order_idx
   on public.wallet_transactions(order_id)
   where order_id is not null and kind = 'refund';
+create unique index if not exists orders_user_wallet_request_id_idx
+  on public.orders(user_id,wallet_request_id)
+  where wallet_request_id is not null;
 
 -- Snapshot the refund value at order creation, so later price changes never change a refund.
 alter table public.orders
   add column if not exists wallet_refund_usd numeric(18,2) not null default 0,
-  add column if not exists wallet_refunded_at timestamptz;
+  add column if not exists wallet_refunded_at timestamptz,
+  add column if not exists wallet_request_id uuid;
 alter table public.orders
   drop constraint if exists orders_wallet_refund_usd_check;
 alter table public.orders
@@ -449,8 +453,12 @@ begin
     if new.payment_method <> 'Billetera USD' then
       raise exception 'Método de billetera no válido.';
     end if;
+    if new.wallet_request_id is null then
+      raise exception 'Falta la clave de seguridad de la compra con billetera.';
+    end if;
     final_price := selected_product.price_wallet_usd;
   elsif coalesce(new.payment_source,'direct') = 'direct' then
+    new.wallet_request_id := null;
     if not exists (
       select 1 from public.payment_methods pm
       where pm.name = new.payment_method and pm.active = true
@@ -500,12 +508,16 @@ begin
 end;
 $function$;
 
+drop function if exists public.create_wallet_order(uuid,text,text);
+drop function if exists public.create_wallet_order(uuid,text,text,uuid,text);
+
 create or replace function public.create_wallet_order(
   p_product_id uuid,
   p_player_id text,
-  p_player_name text default '',
-  p_player_validation_token uuid default null,
-  p_privacy_policy_version text default '2026-11-07-v1'
+  p_player_name text,
+  p_player_validation_token uuid,
+  p_privacy_policy_version text,
+  p_request_id uuid
 )
 returns jsonb
 language plpgsql
@@ -521,10 +533,36 @@ begin
   if v_uid is null then
     raise exception 'Debes iniciar sesión.';
   end if;
+  if p_request_id is null then
+    raise exception 'No se pudo identificar de forma segura esta compra. Vuelve a intentarlo.';
+  end if;
   if length(trim(coalesce(p_player_id,''))) < 3 or length(trim(p_player_id)) > 64 then
     raise exception 'ID de jugador no válido.';
   end if;
 
+  -- A retry after a timeout reuses the same request ID and returns the original order.
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text || ':wallet-request:' || p_request_id::text,0));
+  select * into v_order
+  from public.orders
+  where user_id = v_uid and wallet_request_id = p_request_id
+  for update;
+  if found then
+    if v_order.product_id is distinct from p_product_id
+       or v_order.player_id is distinct from btrim(p_player_id) then
+      raise exception 'La clave de esta compra ya se utilizó con otro paquete o ID de jugador.';
+    end if;
+    return jsonb_build_object(
+      'order_id',v_order.id,
+      'order_code',v_order.order_code,
+      'price',v_order.price,
+      'currency','USD',
+      'balance',round(private.wallet_balance(v_uid,'USD'),2),
+      'status',v_order.status,
+      'reused_existing_order',true
+    );
+  end if;
+
+  -- Serialize separate purchases from the same wallet to prevent overspending.
   perform pg_advisory_xact_lock(hashtextextended(v_uid::text,0));
 
   select * into v_product
@@ -544,12 +582,12 @@ begin
     user_id, product_id, player_id, player_name, payment_method,
     payment_reference, status, payment_source, provider_product_id,
     provider_region, player_id_validation_token, privacy_consent_at,
-    privacy_policy_version
+    privacy_policy_version, wallet_request_id
   ) values (
     v_uid, v_product.id, trim(p_player_id), trim(coalesce(p_player_name,'')),
     'Billetera USD', '', 'pending', 'wallet', v_product.provider_product_id,
     v_product.provider_region, p_player_validation_token, now(),
-    p_privacy_policy_version
+    p_privacy_policy_version, p_request_id
   )
   returning * into v_order;
 
@@ -570,13 +608,14 @@ begin
     'price',v_order.price,
     'currency','USD',
     'balance',round(private.wallet_balance(v_uid,'USD'),2),
-    'status','processing'
+    'status','processing',
+    'reused_existing_order',false
   );
 end;
 $function$;
 
-revoke all on function public.create_wallet_order(uuid,text,text,uuid,text) from public;
-grant execute on function public.create_wallet_order(uuid,text,text,uuid,text) to authenticated;
+revoke all on function public.create_wallet_order(uuid,text,text,uuid,text,uuid) from public;
+grant execute on function public.create_wallet_order(uuid,text,text,uuid,text,uuid) to authenticated;
 
 -- A verified terminal failure/cancellation returns the saved wallet-equivalent value
 -- exactly once. Unknown, retryable, processing, and partial completion are not refunded.
