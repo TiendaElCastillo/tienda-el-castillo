@@ -802,7 +802,6 @@ $function$;
 
 revoke all on function public.submit_payment_proof(uuid,text,text,text,numeric) from public;
 grant execute on function public.submit_payment_proof(uuid,text,text,text,numeric) to authenticated;
-  end if;
 
   if p_proof_path !~ (
     '^' || v_uid::text || '/' || p_deposit_id::text ||
