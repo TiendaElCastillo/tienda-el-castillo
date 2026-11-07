@@ -607,6 +607,8 @@ async function openStore(user){
  $("auth").classList.add("hidden");
  $("store").classList.remove("hidden");
  showView("home");
+ // Pintar el catálogo estático antes de esperar a Supabase: así el juego aparece incluso con una conexión lenta.
+ try{renderProductCatalogs();}catch(catalogShellError){console.error("No se pudo pintar el catálogo inicial:",catalogShellError);}
 
  let result=await db.from("profiles").select("*").eq("id",user.id).maybeSingle();
  if(result.error){alert("Error al consultar el perfil: "+result.error.message);return}
