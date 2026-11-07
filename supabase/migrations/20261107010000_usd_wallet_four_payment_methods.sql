@@ -97,7 +97,8 @@ set price_wallet_usd = case
   else 0
 end
 from public.pricing_settings s
-where s.id = 1;
+where s.id = 1
+  and coalesce(p.price_wallet_usd,0) <= 0;
 
 -- The wallet ledger is denominated in USD. Existing currencies remain accepted for
 -- backwards-compatible history, but all new wallet operations use USD.
