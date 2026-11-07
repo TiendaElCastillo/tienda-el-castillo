@@ -170,6 +170,7 @@ with check (
 create or replace function public.validate_wallet_deposit_request()
 returns trigger
 language plpgsql
+security definer
 set search_path to ''
 as $function$
 declare
