@@ -1731,9 +1731,18 @@ function updateWalletDepositInstructions(){
  if(method==="Transferencia CUP"){
   const item=paymentMethods.find(m=>m.name==="Transferencia CUP"&&m.active&&m.instructions);
   if(!item){box.innerHTML="<strong>Datos bancarios no disponibles.</strong> No realices ninguna transferencia hasta que la tienda configure el método.";return;}
-  box.innerHTML="<strong>Cómo depositar mediante CUP</strong><br>"+clean(item.instructions).replace(/\n/g,"<br>")+"<br><br>Escribe tu número de origen y el Nro. de Transacción. Los datos son los mismos que se muestran para pagar recargas directamente.";
+  const raw=String(item.instructions||"").replace(/\s+/g," ");
+  const card=raw.match(/tarjeta\s*:?\s*([0-9][0-9\s-]{8,})/i)?.[1]?.trim()||"";
+  const confirm=raw.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
+  const amount=money($("walletDepositAmount")?.value||0);
+  let warning=(!card||confirm.replace(/\D/g,"").length<8)?'<div class="wallet-warning">Los datos bancarios están incompletos. No envíes dinero hasta que la tienda los configure.</div>':"";
+  const rows=paymentCopyCard("Tarjeta bancaria para transferir",card,"payment-card-number")
+   +paymentCopyCard("Importe exacto que debes enviar",amount+" CUP","payment-card-amount")
+   +paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en «Móvil a confirmar». El teléfono de origen se escribe aparte en el formulario.");
+  box.innerHTML='<strong>Transferencia CUP · datos para pagar</strong><p class="wallet-field-hint">Usamos la misma tarjeta y el mismo número de confirmación que en las recargas directas. Envía exactamente el importe indicado.</p>'+warning+'<div class="payment-copy-grid">'+rows+'</div><p class="wallet-field-hint">Después adjunta el comprobante, tu número de origen y el Nro. de Transacción. La captura no acredita el saldo por sí sola.</p>';
  }else{
-  box.innerHTML='<strong>Cómo depositar USDT</strong><br><div class="payment-copy-grid">'+paymentCopyCard("Red obligatoria",walletSettings.usdt_network||"BNB Smart Chain (BEP20)")+paymentCopyCard("Dirección de la wallet de la tienda",walletSettings.usdt_address||"0x30d000d6B30f241986186BfFeCa8A449E5790C1D","payment-card-number","No uses otra red. Comprueba la dirección completa antes de confirmar.")+'</div><p class="wallet-field-hint">El saldo se acredita 1:1 en USD únicamente después de verificar la transacción y sus confirmaciones. Comprueba cuánto llegará a la dirección antes de enviar; la comisión de red no forma parte del saldo que se acredita.</p>';
+  const amount=moneyUSD($("walletDepositAmount")?.value||0);
+  box.innerHTML='<strong>Depósito USDT · red y destino</strong><div class="payment-copy-grid">'+paymentCopyCard("Importe exacto a enviar",amount+" USDT","payment-card-amount")+paymentCopyCard("Red obligatoria",walletSettings.usdt_network||"BNB Smart Chain (BEP20)")+paymentCopyCard("Dirección de la wallet de la tienda",walletSettings.usdt_address||"0x30d000d6B30f241986186BfFeCa8A449E5790C1D","payment-card-number","No uses otra red. Comprueba la dirección completa antes de confirmar.")+'</div><p class="wallet-field-hint">La conversión es 1 USDT = 1 USD. Solo se acredita tras comprobar la transacción en la blockchain. Revisa cuánto llegará al destino; la comisión de red no forma parte del saldo acreditado.</p>';
  }
 }
 async function uploadWalletDepositProofs(depositId,method,files,reference,senderPhone,txid){
