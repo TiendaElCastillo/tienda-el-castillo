@@ -259,8 +259,8 @@ begin
   if not found then
     raise exception 'No encontramos el depósito en tu cuenta.';
   end if;
-  if v_deposit.status not in ('pending','payment_review') then
-    raise exception 'Este depósito ya no admite cambios.';
+  if v_deposit.status <> 'pending' or v_deposit.proof_path is not null then
+    raise exception 'Este depósito ya tiene comprobante o dejó de estar pendiente.';
   end if;
   if not exists (
     select 1 from public.payment_methods pm
@@ -720,8 +720,8 @@ begin
   if v_order.payment_source <> 'direct' then
     raise exception 'Este pedido no admite comprobantes externos.';
   end if;
-  if v_order.status not in ('pending','payment_review') then
-    raise exception 'Este pedido ya no admite cambios de comprobante.';
+  if v_order.status <> 'pending' or v_order.proof_path is not null then
+    raise exception 'Este pedido ya tiene comprobante o dejó de estar pendiente.';
   end if;
   if not exists (
     select 1 from public.payment_methods pm
