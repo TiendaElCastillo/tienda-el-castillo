@@ -2004,6 +2004,9 @@ async function loadMyOrders(){
  orderList?.querySelectorAll("[data-cancel-unsubmitted]").forEach(button=>{
   button.addEventListener("click",()=>cancelUnsubmittedOrder(button.dataset.orderId,button.dataset.orderCode,button));
  });
+ orderList?.querySelectorAll("[data-retry-order-proof]").forEach(button=>{
+  button.addEventListener("click",()=>retryMissingOrderProof(button.dataset.orderId,button));
+ });
 }
 
 
@@ -2429,10 +2432,7 @@ async function sendAdminOrderNotice(button){
    p_user_id:userId,p_order_id:orderId,
    p_title:"Aviso sobre el pedido "+orderCode,
    p_message:message
-  })
-  orderList?.querySelectorAll("[data-retry-order-proof]").forEach(button=>{
-   button.addEventListener("click",()=>retryMissingOrderProof(button.dataset.orderId,button));
-  });;
+  });
   if(error)throw new Error(error.message);
   if(!data)throw new Error("Supabase no confirmó el envío.");
   input.value="";
