@@ -84,6 +84,7 @@ function providerError(data: any) {
 }
 
 function parseBalanceAmount(candidate: any): number | null {
+  if (candidate === null || candidate === undefined || typeof candidate === "boolean") return null;
   let value = candidate;
   if (value && typeof value === "object" && !Array.isArray(value)) {
     for (const key of ["amount", "value", "available_amount", "availableAmount", "balance_amount"]) {
@@ -91,7 +92,7 @@ function parseBalanceAmount(candidate: any): number | null {
     }
   }
   if (typeof value === "string") {
-    value = value.trim().replace(/,/g, "").replace(/[^0-9.\\-]/g, "");
+    value = value.trim().replace(/,/g, "").replace(/[^0-9.-]/g, "");
     if (!value) return null;
   }
   const amount = typeof value === "number" ? value : Number(value);
