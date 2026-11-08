@@ -185,18 +185,42 @@ Deno.serve(async (req: Request) => {
         && ["LATAM", "ID"].includes(region);
     });
 
-    const productsSync = await rpc("sync_free_fire_provider_products", {
+    const mobileLegendsItems = items.filter((item: any) => {
+      const searchable = [
+        item?.product_family_id, item?.product_family_name, item?.game,
+        item?.category, item?.name, item?.sku,
+      ].filter(Boolean).join(" ").toLowerCase();
+      return /mobile[\\s_-]*legends?|mlbb/.test(searchable)
+        && String(item?.product_type || "").toLowerCase() === "game_topup"
+        && String(item?.region || "").toUpperCase() === "GLOBAL";
+    });
+
+    const freeFireSync = await rpc("sync_free_fire_provider_products", {
       p_token: token,
       p_items: freeFireItems,
       p_coverage_products: coverageProducts,
     });
 
-    // Only Free Fire LATAM/Indonesia products are stored in the working snapshot.
-    // This keeps the saved payload small and prevents request timeouts on the large full catalog.
-    const signatureRows = makeSignatureRows(freeFireItems);
+    // Publish MLBB only when the account catalog actually returns products.
+    // The database independently checks validation coverage and the required ID/server fields.
+    const mobileLegendsSync = mobileLegendsItems.length
+      ? await rpc("sync_mobile_legends_provider_products", {
+          p_token: token,
+          p_items: mobileLegendsItems,
+          p_coverage_products: coverageProducts,
+        })
+      : {
+          ok: false,
+          synced: 0,
+          published_active: 0,
+          message: "Central One todavía no devolvió productos de Mobile Legends GLOBAL para esta cuenta; no se publica ningún paquete.",
+        };
+
+    // Store compact game-specific catalogs; keep the whole provider response out of the database.
+    const signatureRows = makeSignatureRows([...freeFireItems, ...mobileLegendsItems]);
     const priceSignature = {
       sha256: await sha256Hex(signatureRows),
-      count: freeFireItems.length,
+      count: signatureRows.length,
     };
     const shouldSave = await rpc("check_central_one_catalog_refresh", {
       p_token: token,
@@ -210,13 +234,15 @@ Deno.serve(async (req: Request) => {
         checked_at: new Date().toISOString(),
         product_count: items.length,
         free_fire_product_count: freeFireItems.length,
-        published_products: productsSync,
+        mobile_legends_product_count: mobileLegendsItems.length,
+        published_products: { free_fire: freeFireSync, mobile_legends: mobileLegendsSync },
         message: "Catálogo revisado; las tarifas públicas se recalcularon con las reglas vigentes. No cambió el catálogo mayorista.",
       });
     }
 
     const compactPayload = {
       items: freeFireItems,
+      mobile_legends_items: mobileLegendsItems,
       coverage: coverageProducts,
       catalog_total_count: items.length,
       synced_at: new Date().toISOString(),
@@ -234,6 +260,7 @@ Deno.serve(async (req: Request) => {
       checked_at: new Date().toISOString(),
       product_count: items.length,
       free_fire_product_count: freeFireItems.length,
+      mobile_legends_product_count: mobileLegendsItems.length,
       published_products: productsSync,
       sync: saveResult,
     });
