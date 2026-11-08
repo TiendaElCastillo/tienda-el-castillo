@@ -186,6 +186,7 @@ async function preflightPriceAndStock(claim: any) {
 
   const wholesaleCup = wholesale * rate;
   const grossProfitCup = retailCup - wholesaleCup;
+  const roundedProfitCup = Number(grossProfitCup.toFixed(2));
   const actualMarkup = (grossProfitCup / wholesaleCup) * 100;
   const requiredRetailCup = wholesaleCup * (1 + markup / 100);
   const priceCheck = {
@@ -194,25 +195,27 @@ async function preflightPriceAndStock(claim: any) {
     provider_wholesale_usd: Number(wholesale.toFixed(4)),
     usdt_cup_rate: Number(rate.toFixed(2)),
     provider_cost_cup: Number(wholesaleCup.toFixed(2)),
-    gross_profit_cup: Number(grossProfitCup.toFixed(2)),
+    gross_profit_cup: roundedProfitCup,
     margin_percent: Number(actualMarkup.toFixed(2)),
     target_markup_percent: Number(markup.toFixed(2)),
     target_retail_cup: Number(requiredRetailCup.toFixed(2)),
-    is_profitable: grossProfitCup > 0,
+    is_profitable: roundedProfitCup > 0,
     below_target_margin: actualMarkup < markup,
   };
 
-  // Hard stop only at zero or negative gross profit. A positive result can proceed,
-  // but a margin below the configured target is explicitly surfaced to the admin.
-  if (grossProfitCup <= 0) {
+  // Hard stop at zero or negative profit after rounding to the smallest CUP precision.
+  // A positive result can proceed, but a margin below the configured target is surfaced.
+  if (roundedProfitCup <= 0) {
+    const resultMessage = roundedProfitCup < 0
+      ? "Resultado: pérdida de " + Math.abs(roundedProfitCup).toFixed(2) + " CUP."
+      : "Resultado: el cliente pagó exactamente lo que cuesta la recarga; no hay beneficio (0.00 CUP).";
     return {
       ok:false,
       code:"provider_cost_not_covered",
-      message:"ALERTA DE PÉRDIDA: el cliente pagó " + retailCup.toFixed(2) +
+      message:"ALERTA: operación no rentable. El cliente pagó " + retailCup.toFixed(2) +
         " CUP y Central One cobra " + wholesaleCup.toFixed(2) +
-        " CUP al cambio de " + rate.toFixed(2) + " CUP/USDT. Resultado: " +
-        Math.abs(grossProfitCup).toFixed(2) +
-        " CUP de pérdida. La recarga NO se enviará a Central One.",
+        " CUP al cambio de " + rate.toFixed(2) + " CUP/USDT. " +
+        resultMessage + " La recarga NO se enviará a Central One.",
       wholesale_price: String(item.reseller_price),
       required_retail_cup: Number(requiredRetailCup.toFixed(2)),
       actual_retail_cup: Number(retailCup.toFixed(2)),
