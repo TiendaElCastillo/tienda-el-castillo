@@ -3254,7 +3254,7 @@ async function loadAllOrders(options={}){
   }else if(providerStatus==="submitting"&&staleSubmitting){
    providerInfo='<p class="track-note">La solicitud lleva más de 90 segundos sin respuesta. Reintenta solo con la misma clave segura y comprueba el historial de Central One.</p>';
   }
-  const canCancelPreflight=o.status==="processing"&&!o.central_one_order_id&&!o.central_one_reference_code&&!o.central_one_request_id&&providerStatus==="retryable"&&o.central_one_response?.preflight==="blocked";
+  const canCancelPreflight=o.status==="processing"&&o.payment_source==="direct"&&!o.payment_confirmed_at&&!o.paid_at&&!o.central_one_order_id&&!o.central_one_reference_code&&!o.central_one_request_id&&providerStatus==="retryable"&&o.central_one_response?.preflight==="blocked";
   const safeCancelAction=canCancelPreflight?'<div class="order-actions order-safe-cancel"><button type="button" data-cancel-preflight-order data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">Anular pedido bloqueado</button><small>Fallo anterior al envío; no se descontó saldo. Sin devolución automática.</small></div>':"";
   const providerAction=canAuthorize
    ?'<div class="order-actions"><button type="button" data-provider-submit data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">'+(providerStatus==="not_submitted"?"Autorizar recarga (usa saldo real)":"Reintentar con la misma clave segura")+'</button></div>'
