@@ -1291,12 +1291,12 @@ function requiresPlayerValidation(product){
  return Boolean(product?.provider_product_id)||game==="free fire";
 }
 function cubaMobileNational(value){
- let digits=String(value??"").replace(/\\D/g,"");
+ let digits=String(value??"").replace(/\D/g,"");
  if(digits.length===10&&digits.startsWith("53"))digits=digits.slice(2);
  return /^5[0-9]{7}$/.test(digits)?digits:"";
 }
 function cubaMobileInputValue(value){
- let digits=String(value??"").replace(/\\D/g,"");
+ let digits=String(value??"").replace(/\D/g,"");
  if(digits.length===10&&digits.startsWith("53"))digits=digits.slice(2);
  return digits.slice(0,8);
 }
