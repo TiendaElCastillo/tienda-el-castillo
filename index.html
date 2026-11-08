@@ -2392,6 +2392,26 @@ async function requestCentralOneOrder(action,orderId){
  if(!response.ok)throw new Error(result?.message||result?.error||("Error HTTP "+response.status));
  return result;
 }
+async function cancelPreflightBlockedOrder(orderId,orderCode){
+ if(currentProfile?.role!=="admin"||!currentUser||!orderId)return;
+ const accepted=window.confirm("ANULAR PEDIDO BLOQUEADO\\n\\nPedido "+(orderCode||orderId)+"\\n\\nEl fallo ocurrió antes de enviar la compra a Central One. No existe una orden del proveedor y no se descontó saldo. Esta acción cancela la recarga en nuestra tienda; NO realiza una devolución automática al cliente.\\n\\n¿Quieres anularlo?");
+ if(!accepted)return;
+ const button=document.querySelector('[data-cancel-preflight-order][data-order-id="'+CSS.escape(orderId)+'"]');
+ if(button){button.disabled=true;button.textContent="Anulando pedido…";}
+ try{
+  const {data,error}=await db.rpc("admin_cancel_preflight_blocked_order",{p_order_id:orderId});
+  if(error)throw error;
+  $("orderadminmsg").textContent="Pedido "+(data?.order_code||orderCode||"")+" anulado. No se envió a Central One ni se descontó saldo; no se realizó una devolución automática.";
+  await loadAllOrders();
+  await loadMyOrders();
+ }catch(error){
+  $("orderadminmsg").textContent="No se pudo anular el pedido: "+(error?.message||"error desconocido");
+  await loadAllOrders();
+ }finally{
+  const current=document.querySelector('[data-cancel-preflight-order][data-order-id="'+CSS.escape(orderId)+'"]');
+  if(current){current.disabled=false;current.textContent="Anular pedido bloqueado";}
+ }
+}
 async function authorizeCentralOneOrder(orderId,orderCode){
  if(currentProfile?.role!=="admin"||!currentUser||!orderId)return;
  const accepted=window.confirm(
@@ -2847,6 +2867,8 @@ async function loadAllOrders(options={}){
   }else if(providerStatus==="submitting"&&staleSubmitting){
    providerInfo='<p class="track-note">La solicitud lleva más de 90 segundos sin respuesta. Puedes reintentar con la misma clave segura; Central One indica que una repetición con esa clave no genera un segundo cobro. Comprueba también el historial del proveedor.</p>';
   }
+  const canCancelPreflight=o.status==="processing"&&!o.central_one_order_id&&providerStatus==="retryable"&&o.central_one_error_code==="local_order_read_failed"&&o.central_one_response?.preflight==="blocked";
+  const safeCancelAction=canCancelPreflight?'<div class="order-actions order-safe-cancel"><button type="button" data-cancel-preflight-order data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">Anular pedido bloqueado</button><small>Fallo anterior al envío; no se descontó saldo. Sin devolución automática.</small></div>':"";
   const providerAction=canAuthorize
    ?'<div class="order-actions"><button type="button" data-provider-submit data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">'+(providerStatus==="not_submitted"?"Autorizar recarga (usa saldo real)":"Reintentar con la misma clave segura")+'</button></div>'
    :canRefresh
@@ -2865,7 +2887,7 @@ async function loadAllOrders(options={}){
    'Estado actual: <span class="status">'+statusText(o.status)+'</span></div>'+
    providerInfo+
    (allowed.length?'<div class="order-actions"><select id="'+selectId+'" aria-label="Acción para pedido '+clean(o.order_code)+'">'+options+'</select><button type="button" data-update-order data-order-id="'+clean(o.id)+'" data-select-id="'+selectId+'">'+actionLabel+'</button></div>':"")+
-   providerAction+noticeComposer+
+   providerAction+safeCancelAction+noticeComposer+
    (o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':"")+
   '</div>';
  }))).join("");
@@ -2904,6 +2926,9 @@ async function loadAllOrders(options={}){
  });
  container.querySelectorAll("[data-provider-refresh]").forEach(button=>{
   button.addEventListener("click",()=>refreshCentralOneOrder(button.dataset.orderId));
+ });
+ container.querySelectorAll("[data-cancel-preflight-order]").forEach(button=>{
+  button.addEventListener("click",()=>cancelPreflightBlockedOrder(button.dataset.orderId,button.dataset.orderCode));
  });
  container.querySelectorAll("[data-send-user-notice]").forEach(button=>{
   button.addEventListener("click",()=>sendAdminOrderNotice(button));
