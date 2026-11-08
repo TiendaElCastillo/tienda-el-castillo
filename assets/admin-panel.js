@@ -97,7 +97,7 @@ function refreshCheckoutButton(){
  const senderDigits=senderPhone.replace(/\D/g,"");
  const reportedAmount=Number(document.getElementById("reportedAmount")?.value||0);
  const consent=document.getElementById("privacyConsent")?.checked===true;
- const verified=!product?.provider_product_id||(typeof validatedPlayerCheckout!=="undefined"&&validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(product.id)&&validatedPlayerCheckout.playerId===player);
+ const verified=!product?.provider_product_id||(typeof isPlayerValidationCurrent==="function"?isPlayerValidationCurrent(product.id,player):(typeof validatedPlayerCheckout!=="undefined"&&validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(product.id)&&validatedPlayerCheckout.playerId===player));
  const validFile=isWallet||(Boolean(proof)&&typeof validateProofFile==="function"&&!validateProofFile(proof));
  const needsReference=method==="Transferencia CUP"||method==="USDT";
  const needsSender=method==="Transferencia CUP"||method==="Saldo móvil";
