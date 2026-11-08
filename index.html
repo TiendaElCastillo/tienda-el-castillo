@@ -1087,7 +1087,7 @@ function updateCheckoutStage(stage){
  });
  if(current==="payment"){updateCheckoutSummary();window.updateCheckoutSubmitState?.();}
 }
-async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000){
+async async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000){
  const requestKey=String(productId)+"::"+String(playerId);
  const started=Date.now();
  while(Date.now()-started<timeoutMs){
@@ -2801,6 +2801,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=12" async></script>
+<script src="./assets/admin-panel.js?v=13" async></script>
 </body>
 </html>
