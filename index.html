@@ -1225,7 +1225,7 @@ async function isPlayerValidationCurrent(productId,playerId){
  if(!Number.isFinite(expiry))return false;
  return Date.now()<expiry-20000;
 }
-function validatePlayerId(){
+async function validatePlayerId(){
  const playerField=$("player"),nameField=$("playername");
  if(!playerField||!nameField)return;
  const p=products.find(item=>String(item.id)===$("product")?.value);
