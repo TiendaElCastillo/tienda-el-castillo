@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v74";
+const CACHE_NAME = "el-castillo-shell-v75";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -80,8 +80,10 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   const isLocal = url.origin === self.location.origin;
   const isSupabaseLibrary =
-    url.hostname === "cdn.jsdelivr.net" &&
-    url.pathname.includes("/npm/@supabase/supabase-js");
+    (url.hostname === "cdn.jsdelivr.net" &&
+      url.pathname.includes("/npm/@supabase/supabase-js")) ||
+    (url.hostname === "unpkg.com" &&
+      url.pathname.startsWith("/@supabase/supabase-js@"));
 
   // Auth, database reads, orders, payment proofs and provider calls are network-only.
   if (!isLocal && !isSupabaseLibrary) return;
