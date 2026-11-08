@@ -355,3 +355,12 @@
  #gameDetailPlans .plan-price strong{font-size:17px}
 }
 
+/* Teléfonos cubanos: prefijo internacional separado del número copiable */
+.cuba-phone-control{display:flex;align-items:stretch;max-width:100%;overflow:hidden;border:1px solid #dce3ef;border-radius:13px;background:#fff;min-width:0}
+.cuba-phone-prefix{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;padding:0 13px;background:#f0f5fc;border-right:1px solid #e1e8f2;color:#24436f;font-size:14px;font-weight:900;white-space:nowrap}
+.cuba-phone-control input{flex:1 1 auto;min-width:0;width:100%;border:0!important;border-radius:0!important;outline-offset:-3px;background:#fff!important;box-shadow:none!important;padding:13px 12px!important}
+.cuba-phone-display{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:7px 0 10px}
+.cuba-phone-country{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;background:#edf3fb;border:1px solid #e1eaf6;color:#24436f;font-size:13px;font-weight:900;white-space:nowrap}
+.cuba-phone-display>strong{font-size:20px;letter-spacing:.055em;color:#17345e;overflow-wrap:anywhere}
+@media(max-width:360px){.cuba-phone-prefix{padding:0 10px;font-size:13px}.cuba-phone-control input{padding:12px 9px!important}.cuba-phone-display{gap:7px}.cuba-phone-display>strong{font-size:18px}}
+
