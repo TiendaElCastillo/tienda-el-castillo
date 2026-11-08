@@ -999,6 +999,7 @@ function packageSortValue(p){
  const amount=Number(p.amount||0);if(Number.isFinite(amount)&&amount>0)return amount;
  const label=fold(String(p.name||"")+" "+String(p.description||""));
  if(/booyah/.test(label))return 100003;
+ if(/twilight/.test(label))return 100004;
  if(/mensual|monthly/.test(label))return 100002;
  if(/semanal|weekly/.test(label)&&/basico|basic/.test(label))return 100000;
  if(/semanal|weekly/.test(label))return 100001;
