@@ -2,7 +2,7 @@
 <html lang="es-CU"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1b35">
-<meta name="description" content="Tienda El Castillo: solicita recargas de Free Fire desde Cuba. Consulta tus paquetes, paga por transferencia CUP o saldo móvil y sigue tu pedido desde tu cuenta.">
+<meta name="description" content="Tienda El Castillo: recargas de Free Fire y Mobile Legends desde Cuba. Consulta paquetes, paga por transferencia CUP o saldo móvil y sigue tu pedido desde tu cuenta.">
 <meta name="keywords" content="recargar Free Fire Cuba, diamantes Free Fire Cuba, recargas Free Fire, saldo móvil, transferencia CUP">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://tiendaelcastillo.github.io/tienda-el-castillo/">
@@ -10,7 +10,7 @@
 <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/webp" href="./assets/castle-logo.webp">
 <meta property="og:type" content="website"><meta property="og:title" content="Tienda El Castillo | Recargas de Free Fire en Cuba">
 <meta property="og:description" content="Recargas de Free Fire desde Cuba. Paga por transferencia CUP o saldo móvil y consulta el estado de tu pedido.">
-<meta property="og:url" content="https://tiendaelcastillo.github.io/tienda-el-castillo/"><meta property="og:site_name" content="Tienda El Castillo"><meta property="og:locale" content="es_CU"><meta property="og:image" content="https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp"><meta property="og:image:alt" content="Emblema de Tienda El Castillo"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp"><title>Tienda El Castillo | Recargas de Free Fire en Cuba</title>
+<meta property="og:url" content="https://tiendaelcastillo.github.io/tienda-el-castillo/"><meta property="og:site_name" content="Tienda El Castillo"><meta property="og:locale" content="es_CU"><meta property="og:image" content="https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp"><meta property="og:image:alt" content="Emblema de Tienda El Castillo"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp"><title>Tienda El Castillo | Recargas de Free Fire y Mobile Legends en Cuba</title>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Tienda El Castillo","url":"https://tiendaelcastillo.github.io/tienda-el-castillo/","logo":"https://tiendaelcastillo.github.io/tienda-el-castillo/assets/castle-logo.webp","description":"Tienda independiente de recargas digitales para jugadores en Cuba."},{"@type":"WebSite","name":"Tienda El Castillo","url":"https://tiendaelcastillo.github.io/tienda-el-castillo/","inLanguage":"es-CU"}]}</script>
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="dns-prefetch" href="//challenges.cloudflare.com"><link rel="preconnect" href="https://challenges.cloudflare.com" crossorigin>
 <style>
@@ -438,7 +438,8 @@ window.addEventListener("DOMContentLoaded",function(){
    <div class="checkout-product-lock-copy"><small>PAQUETE SELECCIONADO</small><strong id="selectedProductText">El paquete que elijas aparecerá aquí</strong><p>Este paquete queda fijado durante la compra. Para elegir otro, sal de esta pantalla y vuelve al catálogo.</p></div>
   </div>
   <select id="product" class="hidden" disabled aria-hidden="true" tabindex="-1"></select>
-  <div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div>
+  <div class="field"><label id="playerFieldLabel" for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div>
+  <div class="field hidden" id="playerZoneWrap"><label id="playerZoneLabel" for="playerZone">Zone ID / ID del servidor</label><input id="playerZone" inputmode="numeric" autocomplete="off" placeholder="Escribe el Zone ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div>
   <div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div>
   <div id="playerValidationWrap" class="player-validation-wrap hidden"><p id="playerValidationMsg" class="player-validation-message" role="status" aria-live="polite">La comprobación comenzará automáticamente al salir del campo del ID.</p></div>
   <div class="field"><label for="playername">Nombre de la cuenta</label><div class="player-name-wrap" id="playerNameWrap"><span class="player-validation-icon" id="playerValidationIcon" aria-hidden="true">•</span><input id="playername" autocomplete="off" placeholder="Se mostrará al verificar el ID" readonly></div></div>
@@ -542,7 +543,7 @@ window.addEventListener("DOMContentLoaded",function(){
  <section id="admin" class="store-view hidden">
  <div class="panel"><h2>Conexión con Central One</h2><p class="subtle">Prueba segura de lectura. No crea pedidos ni utiliza saldo.</p><button id="centralOneTestBtn" class="secondary-btn block-btn" type="button" onclick="testCentralOneConnection()">Probar conexión (ping)</button><p id="centralOneTestMsg" class="msg" role="status">La clave se lee desde los secretos de Supabase; nunca se muestra aquí.</p></div>
  <div class="panel"><h2>Catálogo mayorista de Central One</h2><p class="subtle">Consulta los productos y costes reales habilitados para tu cuenta. Esta acción solo lee datos; no crea pedidos ni descuenta saldo.</p><div class="field-row"><button id="centralOneCatalogBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneCatalog()">Cargar catálogo</button><button id="centralOneBalanceBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneBalance()">Consultar saldo</button></div><p id="centralOneCatalogMsg" class="msg" role="status">Todavía no se ha consultado el catálogo.</p><p id="centralOneAutoSyncMsg" class="msg" role="status">Sincronización automática cada 15 minutos: preparando primera consulta.</p><div id="centralOnePriceProposals" class="order-card"><h3>Precios sugeridos de Free Fire</h3><p class="track-note">Se calculan con el coste más reciente de Central One y tus reglas guardadas. El catálogo publicado se recalcula automáticamente cada 15 minutos con la tasa USDT/CUP y la relación de saldo móvil configuradas. Las propuestas manuales de esta tabla no se aplican por sí solas.</p><div id="centralOnePriceTable" style="overflow:auto"><p class="empty-note">Esperando el primer catálogo sincronizado.</p></div><p class="track-note">Cobertura comprobada: LATAM admite verificación para los 16 paquetes publicados. Indonesia tiene productos en el catálogo, pero Central One aún no los enumera en su cobertura de verificación. No se publican para pedidos. No aparece una región USA/EEUU en el catálogo ni en la cobertura. La imagen de Free Fire que enviaste ya está instalada en su tarjeta. Las otras siete imágenes quedaron guardadas en Recursos para incorporarlas al activar esas categorías. El catálogo API no incluye fotografías.</p></div><div class="field"><label>Catálogo y precios más recientes recibidos del proveedor (datos originales del proveedor)</label><pre id="centralOneCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f5f8fd;border:1px solid #e2eaf5;border-radius:12px;padding:12px;font-size:11px;color:#263957">Aún no hay datos guardados.</pre></div><p id="centralOneBalanceMsg" class="msg" role="status"></p></div>
- <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estas son las reglas activas del catálogo: cada 15 minutos Central One se consulta de nuevo y el sistema recalcula y publica automáticamente los precios de los paquetes compatibles, con esta tasa, coste de saldo móvil y margen. Si cambia el coste mayorista o estas reglas, el precio público se ajusta en la siguiente sincronización.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1160"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Valor recuperable de esas unidades en transferencia (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="1800"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
+ <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estas son las reglas activas del catálogo: cada 15 minutos Central One se consulta de nuevo y el sistema recalcula y publica automáticamente los precios de los paquetes compatibles, con esta tasa, coste de saldo móvil y margen. Si cambia el coste mayorista o estas reglas, el precio público se ajusta en la siguiente sincronización.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1160"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Precio de venta de 360 unidades de saldo móvil (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="1200"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
  <div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button id="adminProductSubmit" class="primary-btn block-btn" type="button" onclick="addProduct()">Guardar producto</button><button id="cancelProductEdit" class="secondary-btn block-btn hidden" type="button" onclick="cancelProductEdit()">Cancelar edición</button><p id="adminmsg" class="msg" role="status"></p><div id="adminProducts"></div></div>
  <div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div><div class="wallet-panel" style="margin-top:16px"><h3>Configuración de la wallet</h3><p>La tasa se utiliza solo para convertir depósitos por Transferencia CUP a USD. Cada cambio aplica a las nuevas solicitudes; los depósitos anteriores conservan la tasa con la que se crearon.</p><div class="wallet-rate-row"><div class="field"><label for="walletCupRate">CUP por cada 1 USD de saldo</label><input id="walletCupRate" type="number" min="1" step="0.01" value="1160"></div><button class="primary-btn" type="button" onclick="saveWalletSettings()">Guardar tasa</button></div><p id="walletSettingsMsg" class="msg" role="status"></p><p class="wallet-field-hint">El sistema redondea siempre hacia abajo a dos decimales. El mínimo de cada depósito es 1 USD.</p></div><div class="wallet-panel" style="margin-top:16px"><div class="order-toolbar"><h3>Depósitos por revisar</h3><button class="secondary-btn" type="button" onclick="loadWalletDepositsAdmin()">Actualizar</button></div><p class="subtle">Comprueba la recepción real en la tarjeta o en la red BNB Smart Chain antes de aprobar. Una captura no demuestra por sí sola que el dinero llegó.</p><div id="walletAdminMsg" class="msg" role="status"></div><div id="walletDepositsAdmin">Cargando depósitos…</div></div></div>
  <div class="panel"><div class="order-toolbar"><h2>Pedidos de clientes</h2><div class="field-row"><button class="secondary-btn" type="button" onclick="loadAllOrders()">Actualizar</button><button class="secondary-btn" type="button" onclick="enablePaymentNotifications()">Activar avisos</button></div></div><p id="paymentNotifyStatus" class="track-note">Activa los avisos de este teléfono y mantén la tienda abierta para recibir alertas automáticas.</p><p class="track-note">Flujo de recarga: primero revisa y confirma el pago del cliente. Después aparecerá el botón <strong>«Autorizar recarga y reservar saldo»</strong>; ese segundo botón envía el pedido a Central One y es el único que usa saldo del proveedor. La solicitud queda protegida contra duplicados y podrás consultar aquí el estado real de la entrega. No marques la recarga como completada hasta que Central One informe «completed».</p><p id="orderadminmsg" class="msg" role="status"></p><div id="allorders">Cargando...</div></div>
@@ -976,7 +977,7 @@ async function openStore(user){
 const gameCatalog=[
  {name:"Free Fire",icon:"🔥",art:"fire",tag:"Battle Royale",image:"./assets/games/free-fire-tienda.webp",match:["free fire"]},
  {name:"Blood Strike",icon:"🎯",art:"strike",tag:"Shooter",match:["blood strike"]},
- {name:"Mobile Legends",icon:"⚔️",art:"mobile",tag:"MOBA",match:["mobile legends"]},
+ {name:"Mobile Legends: Bang Bang",icon:"⚔️",art:"mobile",tag:"MOBA",image:"./assets/games/mobile-legends-bang-bang.webp",match:["mobile legends"]},
  {name:"Arena Breakout",icon:"🛡️",art:"arena",tag:"Shooter",match:["arena breakout"]},
  {name:"Honor of Kings",icon:"👑",art:"honor",tag:"MOBA",match:["honor of kings"]},
  {name:"Genshin Impact",icon:"✨",art:"genshin",tag:"RPG",match:["genshin impact"]},
@@ -1109,6 +1110,7 @@ function productArtwork(p){
  const fallback="this.onerror=null;this.src='./assets/free-fire-hero.svg'";
  const isFreeFire=fold(p.game||"").includes("free fire");
  if(!isFreeFire&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Producto digital")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
+ if(fold(p.game||"").includes("mobile legends"))return '<div class="product-art product-art-mobile-legends"><img src="./assets/games/mobile-legends-bang-bang.webp" alt="Mobile Legends: Bang Bang" loading="lazy" decoding="async" width="560" height="180"></div>';
  const group=freeFirePackageGroup(p);
  const label=fold(String(p.name||"")+" "+String(p.description||""));
  const amount=Number(p.amount||0);
@@ -1140,7 +1142,7 @@ function availableFor(item){const words=item.match||[fold(item.name)];return pro
 function gameTile(item){const matches=availableFor(item);const image=item.image?'<img class="game-art-image" src="'+clean(item.image)+'" alt="" loading="lazy" decoding="async" width="180" height="235" onerror="this.onerror=null;this.src=\'./assets/free-fire-hero.svg\'"><span class="game-art-image-shade" aria-hidden="true"></span>':"";return '<button class="game-tile" type="button" onclick="chooseGame(&quot;'+clean(item.name)+'&quot;)"><div class="game-art art-'+item.art+'" role="img" aria-label="Imagen de '+clean(item.name)+'">'+image+'<span class="art-tag">'+item.tag+'</span></div><div class="tile-info"><div class="tile-title">'+clean(item.name)+'</div><div class="tile-meta">'+(matches.length?matches.length+' paquete(s)':'Planes en preparación')+'</div><span class="tile-status '+(matches.length?'':'off')+'">'+(matches.length?'Ver paquetes':'Próximamente')+'</span></div></button>'}
 function giftTile(item){const matches=availableFor({...item,kind:"gift"});return '<button class="gift-tile" type="button" onclick="chooseGift(\''+clean(item.name)+'\')"><div class="gift-art gift-'+item.art+'">'+item.icon+'</div><div class="gift-info">'+clean(item.name)+'<small>'+(matches.length?'Disponible':'Próximamente')+'</small></div></button>'}
 function renderProductCatalogs(){
- const currentGames=gameCatalog.filter(game=>game.name==="Free Fire");$("homeGames").innerHTML=currentGames.map(gameTile).join("");$("gamesTiles").innerHTML=currentGames.map(gameTile).join("");$("homeGifts").innerHTML="";$("giftTiles").innerHTML="";$("homeGifts").parentElement.classList.add("hidden");$("giftcardsView").classList.add("hidden");
+ const currentGames=gameCatalog.filter(game=>["Free Fire","Mobile Legends: Bang Bang"].includes(game.name));$("homeGames").innerHTML=currentGames.map(gameTile).join("");$("gamesTiles").innerHTML=currentGames.map(gameTile).join("");$("homeGifts").innerHTML="";$("giftTiles").innerHTML="";$("homeGifts").parentElement.classList.add("hidden");$("giftcardsView").classList.add("hidden");
  const featured=sortPackages(products.filter(p=>!isGiftCard(p)&&!isLevelUpPackage(p)&&Number(p.active===undefined?1:p.active)!==0)).slice(0,6);$("homeFeaturedProducts").innerHTML=featured.length?featured.map(productCard).join(''):'<div class="featured-empty"><span aria-hidden="true">✦</span><strong>Estamos preparando el catálogo</strong><p>Pronto publicaremos los paquetes disponibles. Vuelve a consultar más adelante.</p></div>';
  const gameList=sortPackages(products.filter(p=>!isGiftCard(p)&&!isLevelUpPackage(p)));const visibleGames=sortPackages(activeGameFilter?gameList.filter(p=>fold(String(p.game||"")+" "+String(p.name||"")).includes(fold(activeGameFilter))):gameList);
  $("gamesProductsTitle").textContent=activeGameFilter?"Paquetes de "+activeGameFilter:"Paquetes disponibles";$("gamesProducts").innerHTML=visibleGames.length?visibleGames.map(productCard).join(""):'<p class="empty-note">Todavía no hay paquetes disponibles en esta categoría. Pronto añadiremos más opciones.</p>';
@@ -1194,7 +1196,8 @@ async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000
  const started=Date.now();
  while(Date.now()-started<timeoutMs){
   if(isPlayerValidationCurrent(productId,playerId))return true;
-  if($("player")?.value.trim()!==playerId||String($("product")?.value||"")!==String(productId))return false;
+  const p=products.find(item=>String(item.id)===String(productId));
+  if(currentPlayerTarget(p)!==playerId||String($("product")?.value||"")!==String(productId))return false;
   if(playerValidationInFlightKey!==requestKey)return false;
   await new Promise(resolve=>setTimeout(resolve,250));
  }
@@ -1203,22 +1206,27 @@ async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000
 async function continueToPayment(){
  const message=$("checkoutPlayerMsg"),button=$("continueToPaymentBtn");
  const p=products.find(item=>String(item.id)===$("product").value);
- const player=$("player").value.trim();
+ const playerId=$("player")?.value.trim()||"";
+ const target=providerPlayerTargetConfig(p);
+ const zoneId=target.zoneKey?($("playerZone")?.value.trim()||""):"";
+ const player=currentPlayerTarget(p);
  if(!p){if(message)message.textContent="Selecciona un paquete disponible.";return}
- if(player.length<3||player.length>64){if(message)message.textContent="Escribe un ID válido de entre 3 y 64 caracteres.";return}
+ if(playerId.length<3||playerId.length>64){if(message)message.textContent="Escribe un ID válido de entre 3 y 64 caracteres.";return}
+ if(requiresPlayerValidation(p)&&!target.ok){if(message)message.textContent="El paquete no tiene una estructura de verificación compatible. No realices el pago.";return}
+ if(target.zoneKey&&(!zoneId||zoneId.length>24)){if(message)message.textContent="Escribe el Zone ID del servidor antes de continuar."; $("playerZone")?.focus();return}
  if(requiresPlayerValidation(p)){
   if(!p.provider_product_id){if(message)message.textContent="Este paquete no está vinculado correctamente con Central One. No realices ninguna transferencia.";return}
   if(p.provider_validation_supported!==true){if(message)message.textContent="La verificación de ID no está disponible para esta región. No realices ninguna transferencia.";return}
   if(!isPlayerValidationCurrent(p.id,player)){
-   if(message)message.textContent="El ID todavía no está verificado. Estamos comprobándolo; no realices el pago hasta ver la confirmación.";
-   if(button){button.disabled=true;button.textContent="Comprobando ID…";}
+   if(message)message.textContent="Los datos de la cuenta todavía no están verificados. Estamos comprobándolos; no realices el pago hasta ver la confirmación.";
+   if(button){button.disabled=true;button.textContent="Comprobando cuenta…";}
    try{
     const requestKey=String(p.id)+"::"+player;
     if(playerValidationInFlightKey===requestKey)await waitForCurrentPlayerValidation(p.id,player);
     else await validatePlayerId();
    }catch(e){}
    if(!isPlayerValidationCurrent(p.id,player)){
-    if(message&&!message.textContent.includes("Central One no confirmó"))message.textContent="No se pudo verificar el ID. Comprueba el número y la conexión; no hagas ninguna transferencia.";
+    if(message&&!message.textContent.includes("Central One no confirmó"))message.textContent="No se pudo verificar la cuenta. Comprueba el ID, el Zone ID y la conexión; no hagas ninguna transferencia.";
     if(button){button.disabled=false;button.textContent="Continuar al pago →";}
     return;
    }
@@ -1303,14 +1311,46 @@ function cubaMobileInputValue(value){
  if(digits.length===10&&digits.startsWith("53"))digits=digits.slice(2);
  return digits.slice(0,8);
 }
+function providerPlayerTargetConfig(product){
+ const fields=Array.isArray(product?.provider_target_fields)?product.provider_target_fields.filter(x=>typeof x==="string"):[];
+ const schema=Array.isArray(product?.provider_target_schema)?product.provider_target_schema:[];
+ if(fields.length===1&&fields[0]==="player_id")return {ok:true,playerKey:"player_id",zoneKey:null};
+ if(fold(product?.game)==="mobile legends: bang bang"&&fields.length===2&&schema.length===2){
+  const descriptors=fields.map(key=>schema.find(item=>item&&item.key===key));
+  if(descriptors.some(item=>!item||String(item.type||"text").toLowerCase()!=="text"))return {ok:false,playerKey:null,zoneKey:null};
+  let playerKey=null,zoneKey=null;
+  fields.forEach((key,index)=>{
+   const semantic=fold(key+" "+String(descriptors[index]?.label||""));
+   if(/zone|server/.test(semantic))zoneKey=key;
+   else if(/player|user|account|game.?id|uid/.test(semantic))playerKey=key;
+  });
+  if(playerKey&&zoneKey&&playerKey!==zoneKey)return {ok:true,playerKey,zoneKey};
+ }
+ return {ok:false,playerKey:null,zoneKey:null};
+}
+function currentPlayerTarget(product){
+ const config=providerPlayerTargetConfig(product);
+ const playerId=$("player")?.value.trim()||"";
+ if(!config.ok)return "";
+ if(!config.zoneKey)return playerId;
+ const zoneId=$("playerZone")?.value.trim()||"";
+ return playerId&&zoneId?playerId+"::"+zoneId:"";
+}
+function displayPlayerTarget(value){
+ const parts=String(value||"").split("::");
+ return parts.length===2?parts[0]+" · Zone "+parts[1]:String(value||"");
+}
 function resetPlayerValidation(){
  playerValidationRequest++;
  playerValidationInFlightKey="";
  validatedPlayerCheckout=null;
  if($("playername")){$("playername").value="";$("playername").placeholder="Se mostrará al verificar el ID";}
  const p=products.find(item=>String(item.id)===$("product")?.value);
- if(requiresPlayerValidation(p)&&p?.provider_product_id&&p.provider_validation_supported===true){
-  setPlayerValidationDisplay("","•","La comprobación comenzará automáticamente cuando salgas del campo del ID.","Esperando ID…");
+ const target=providerPlayerTargetConfig(p);
+ if(requiresPlayerValidation(p)&&!target.ok){
+  setPlayerValidationDisplay("is-error","!","El proveedor no ha definido un formato compatible de ID y servidor para este paquete. No pagues ni continúes.","Datos de cuenta no compatibles");
+ }else if(requiresPlayerValidation(p)&&p?.provider_product_id&&p.provider_validation_supported===true){
+  setPlayerValidationDisplay("","•",target.zoneKey?"La comprobación comenzará cuando completes el ID del jugador y el Zone ID.":"La comprobación comenzará automáticamente cuando salgas del campo del ID.","Esperando ID…");
  }else if(requiresPlayerValidation(p)){
   setPlayerValidationDisplay("is-error","!","Este paquete no tiene una validación de jugador disponible. No realices el pago.","Validación no disponible");
  }else{
@@ -1321,15 +1361,24 @@ function syncPlayerRegionUI(){
  const p=products.find(item=>String(item.id)===$("product")?.value);
  const needsValidation=requiresPlayerValidation(p);
  const providerProduct=Boolean(p?.provider_product_id);
+ const target=providerPlayerTargetConfig(p);
  $("playerValidationWrap")?.classList.toggle("hidden",!needsValidation);
+ $("playerZoneWrap")?.classList.toggle("hidden",!needsValidation||!target.ok||!target.zoneKey);
+ if($("playerFieldLabel"))$("playerFieldLabel").textContent=target.zoneKey?"ID del jugador":"ID del jugador de la cuenta";
+ if($("playerZoneLabel"))$("playerZoneLabel").textContent="Zone ID / ID del servidor";
  if($("playerRegionNote")){
   if(needsValidation&&!providerProduct){
-   $("playerRegionNote").textContent="Este paquete de Free Fire no está correctamente vinculado con Central One. No pagues ni continúes; avisa a la tienda.";
-   setPlayerValidationDisplay("is-error","!","No podemos comprobar este ID porque falta la vinculación del paquete con Central One.","Validación no disponible");
+   $("playerRegionNote").textContent="Este paquete no está correctamente vinculado con Central One. No pagues ni continúes; avisa a la tienda.";
+   setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete porque falta la vinculación con Central One.","Validación no disponible");
+  }else if(needsValidation&&!target.ok){
+   $("playerRegionNote").textContent="El proveedor no ha definido un formato compatible para verificar los datos de esta cuenta.";
+   setPlayerValidationDisplay("is-error","!","La estructura de ID/servidor de este paquete no está soportada. No realices el pago.","Formato no compatible");
   }else if(providerProduct){
    const supported=p.provider_validation_supported===true;
+   const region=String(p.provider_region||"").toUpperCase();
    $("playerRegionNote").textContent=supported
-    ?"Servidor "+String(p.provider_region||"").toUpperCase()+". El ID debe quedar verificado antes de mostrar los datos de pago."
+    ?(target.zoneKey?"Región "+region+". Introduce el ID del jugador y el Zone ID. Ambos se verificarán antes de mostrar el pago."
+      :"Servidor "+region+". El ID debe quedar verificado antes de mostrar los datos de pago.")
     :"La verificación automática no está disponible para esta región. No se pueden crear pedidos de este paquete.";
    if(!supported)setPlayerValidationDisplay("is-error","!","La verificación automática no está disponible para esta región.","Validación no disponible");
   }else{
@@ -1346,10 +1395,12 @@ function isPlayerValidationCurrent(productId,playerId){
  return Date.now()<expiry-20000;
 }
 async function validatePlayerId(){
- const playerField=$("player"),nameField=$("playername");
+ const playerField=$("player"),zoneField=$("playerZone"),nameField=$("playername");
  if(!playerField||!nameField)return;
  const p=products.find(item=>String(item.id)===$("product")?.value);
  const playerId=playerField.value.trim();
+ const target=providerPlayerTargetConfig(p);
+ const zoneId=target.zoneKey?(zoneField?.value.trim()||""):"";
  if(!p)return;
  if(!p.provider_product_id){
   if(requiresPlayerValidation(p)){
@@ -1358,28 +1409,42 @@ async function validatePlayerId(){
   }
   return;
  }
+ if(!target.ok){
+  validatedPlayerCheckout=null;
+  setPlayerValidationDisplay("is-error","!","El proveedor no ha definido campos compatibles de ID y servidor para este paquete. No realices el pago.","Datos no compatibles");
+  return;
+ }
  if(p.provider_validation_supported!==true){
   setPlayerValidationDisplay("is-error","!","La verificación de ID no está disponible para esta región.","Validación no disponible");
   return;
  }
  if(playerId.length<3||playerId.length>64){
-  setPlayerValidationDisplay(playerId.length?"is-invalid":"",playerId.length?"×":"•",playerId.length?"Usuario incorrecto. El ID está incompleto; revísalo.":"Escribe tu ID y sal del campo para comprobarlo automáticamente.",playerId.length?"ID incompleto":"Esperando ID…");
+  setPlayerValidationDisplay(playerId.length?"is-invalid":"",playerId.length?"×":"•",playerId.length?"ID de jugador incompleto. Revísalo.":"Escribe tu ID y sal del campo para comprobarlo.",playerId.length?"ID incompleto":"Esperando ID…");
+  validatedPlayerCheckout=null;return;
+ }
+ if(target.zoneKey&&(!zoneId||zoneId.length>24)){
   validatedPlayerCheckout=null;
+  setPlayerValidationDisplay(zoneId?"is-invalid":"",zoneId?"×":"•",zoneId?"El Zone ID no tiene un formato válido. Revísalo.":"Escribe el Zone ID del servidor para poder verificar la cuenta.",zoneId?"Zone ID incorrecto":"Esperando Zone ID…");
   return;
  }
- if(isPlayerValidationCurrent(p.id,playerId))return;
+ const canonicalPlayerId=target.zoneKey?playerId+"::"+zoneId:playerId;
+ if(canonicalPlayerId.length>64){
+  setPlayerValidationDisplay("is-invalid","×","La combinación de ID y Zone ID es demasiado larga. Revisa ambos datos.","Datos demasiado largos");
+  return;
+ }
+ if(isPlayerValidationCurrent(p.id,canonicalPlayerId))return;
  if(!currentUser||!db){
   setPlayerValidationDisplay("is-error","!","Inicia sesión para comprobar el usuario automáticamente.","Inicia sesión para verificar");
   return;
  }
- const requestKey=String(p.id)+"::"+playerId;
+ const requestKey=String(p.id)+"::"+canonicalPlayerId;
  if(playerValidationInFlightKey===requestKey)return;
  const requestId=++playerValidationRequest;
  playerValidationInFlightKey=requestKey;
  validatedPlayerCheckout=null;
  nameField.value="";
- setPlayerValidationDisplay("is-loading","…","Comprobando usuario…","Comprobando ID…");
- const isCurrent=()=>requestId===playerValidationRequest&&playerField.value.trim()===playerId&&String($("product")?.value||"")===String(p.id);
+ setPlayerValidationDisplay("is-loading","…",target.zoneKey?"Comprobando ID y Zone ID…":"Comprobando usuario…","Comprobando ID…");
+ const isCurrent=()=>requestId===playerValidationRequest&&currentPlayerTarget(p)===canonicalPlayerId&&String($("product")?.value||"")===String(p.id);
  let response=null,result={};
  try{
   const {data:sessionData,error:sessionError}=await db.auth.getSession();
@@ -1389,23 +1454,23 @@ async function validatePlayerId(){
   response=await fetch(STORE_SUPABASE_URL+"/functions/v1/central-one-player-validate",{
    method:"POST",
    headers:{"Content-Type":"application/json","Authorization":"Bearer "+accessToken,"apikey":STORE_SUPABASE_KEY},
-   body:JSON.stringify({product_id:p.id,player_id:playerId})
+   body:JSON.stringify({product_id:p.id,player_id:playerId,zone_id:zoneId||null})
   });
   result=await response.json().catch(()=>({}));
   if(!isCurrent())return;
   if(!response.ok||result?.valid!==true){
    if(response.status===422||result?.error==="player_id_not_confirmed"||result?.error==="invalid_player_id"){
     const providerMessage=String(result?.message||"").trim().slice(0,220);
-    setPlayerValidationDisplay("is-invalid","×",providerMessage?"Central One no confirmó este ID: "+providerMessage:"Central One no confirmó el ID. Revisa el número y la región del paquete e inténtalo de nuevo.","ID no confirmado");
+    setPlayerValidationDisplay("is-invalid","×",providerMessage?"Central One no confirmó los datos: "+providerMessage:"Central One no confirmó los datos de esta cuenta. Revísalos e inténtalo de nuevo.","Datos no confirmados");
     return;
    }
    throw new Error("No se pudo comprobar el usuario en este momento.");
   }
   if(typeof result.validation_token!=="string"||!result.validation_token)throw new Error("No se pudo guardar la verificación. Vuelve a comprobar el ID.");
   const expiresIn=Math.max(30,Math.min(600,Number(result.expires_in_seconds)||600));
-  validatedPlayerCheckout={productId:String(p.id),playerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,token:result.validation_token,validatedAt:new Date().toISOString(),expiresAt:Date.now()+expiresIn*1000};
+  validatedPlayerCheckout={productId:String(p.id),playerId:canonicalPlayerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,token:result.validation_token,validatedAt:new Date().toISOString(),expiresAt:Date.now()+expiresIn*1000};
   nameField.value=result.player_name||"";
-  setPlayerValidationDisplay("is-valid","✓",result.player_name?"Usuario válido. El ID corresponde a esta cuenta.":"Usuario válido. No se recibió el nombre del jugador.","ID verificado");
+  setPlayerValidationDisplay("is-valid","✓",result.player_name?"Cuenta válida. El ID y el Zone ID corresponden a esta cuenta.":"Cuenta verificada por Central One. El proveedor no devolvió nombre de jugador.","ID verificado");
  }catch(e){
   if(!isCurrent())return;
   setPlayerValidationDisplay("is-error","!","No se pudo comprobar ahora. "+(e?.message||"Revisa tu conexión e inténtalo de nuevo."),"No se pudo comprobar");
@@ -1429,6 +1494,7 @@ function openCheckout(productId,preferredMethod){
  productField.innerHTML='<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>';
  productField.value=String(p.id);
  productField.disabled=true;
+ if($("playerZone"))$("playerZone").value="";
  $("player").value="";$("playername").value="";
  $("reference").value="";$("senderPhone").value="";$("reportedAmount").value="";
  $("paymentProof").value="";previewPaymentProof();
@@ -1647,7 +1713,7 @@ async function togglePaymentMethod(id,active){
 }
 async function loadProducts(){
  try{
-  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
+  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_target_schema,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
   if(error){
    products=[];
    const message="No se pudo cargar el catálogo: "+error.message;
@@ -1751,8 +1817,13 @@ async function placeOrder(){
  if(!currentUser){pendingCheckoutAfterLogin=true;openAccount();$("authmsg").textContent="Inicia sesión o crea tu cuenta para enviar y seguir este pedido.";return;}
  const product=products.find(p=>p.id===$("product").value);
  if(!product){$("ordermsg").textContent="No hay productos disponibles.";return;}
- const player=$("player").value.trim();
- if(player.length<3||player.length>64){$("ordermsg").textContent="Revisa el ID del jugador (debe tener entre 3 y 64 caracteres).";return;}
+ const target=providerPlayerTargetConfig(product);
+ const playerId=$("player").value.trim();
+ const zoneId=target.zoneKey?($("playerZone")?.value.trim()||""):"";
+ const player=currentPlayerTarget(product);
+ if(playerId.length<3||playerId.length>64){$("ordermsg").textContent="Revisa el ID del jugador (debe tener entre 3 y 64 caracteres).";return;}
+ if(requiresPlayerValidation(product)&&!target.ok){$("ordermsg").textContent="El formato de datos de este paquete no está soportado. No se creó ningún pedido.";updateCheckoutStage("player");return;}
+ if(target.zoneKey&&(!zoneId||zoneId.length>24)){ $("checkoutPlayerMsg").textContent="Completa el Zone ID del servidor antes de comprar.";updateCheckoutStage("player");$("playerZone")?.focus();return; }
  if($("payment").value!=="Saldo de Tienda El Castillo"){
   const pendingCheck=await db.from("orders").select("id,order_code")
    .eq("user_id",currentUser.id).eq("product_id",product.id).eq("player_id",player)
