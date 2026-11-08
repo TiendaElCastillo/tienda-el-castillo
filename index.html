@@ -1682,7 +1682,10 @@ async function loadNotifications(){
   if(list)list.textContent="No se pudieron cargar los mensajes. Comprueba tu conexión y vuelve a intentarlo.";
   return;
  }
- const rows=data||[],unread=rows.filter(item=>!item.read_at).length;
+ const rows=data||[];
+ const unreadResult=await db.from("user_notifications").select("id",{count:"exact",head:true})
+  .eq("user_id",currentUser.id).is("read_at",null);
+ const unread=unreadResult.error?rows.filter(item=>!item.read_at).length:Number(unreadResult.count||0);
  badge?.classList.toggle("hidden",unread===0);
  button?.setAttribute("aria-label",unread?"Mensajes y notificaciones: "+unread+" sin leer":"Mensajes y notificaciones");
  $("markAllNotificationsRead")?.classList.toggle("hidden",unread===0);
