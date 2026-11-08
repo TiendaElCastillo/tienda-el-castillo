@@ -1087,7 +1087,7 @@ function updateCheckoutStage(stage){
  });
  if(current==="payment"){updateCheckoutSummary();window.updateCheckoutSubmitState?.();}
 }
-async async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000){
+async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000){
  const requestKey=String(productId)+"::"+String(playerId);
  const started=Date.now();
  while(Date.now()-started<timeoutMs){
