@@ -280,6 +280,8 @@ window.addEventListener("DOMContentLoaded",function(){
 .wallet-deposit-stage .checkout-stage-actions button{width:100%;min-width:0}
 .wallet-deposit-stage .checkout-stage-actions span{display:block}
 .wallet-deposit-wizard .wallet-instructions{margin:10px 0 14px}
+.wallet-proof-field .proof-dropzone{min-height:100px;margin-top:8px}
+.wallet-proof-selection{display:block;margin:9px 2px 0;padding:10px 12px;border:1px solid #dfe8f4;border-radius:12px;background:#f7f9fc;color:#536782;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:390px){.wallet-deposit-stepper{gap:4px}.wallet-deposit-stepper li{font-size:9px;gap:4px;padding:8px 3px}.wallet-deposit-stepper li b{flex-basis:20px;width:20px;height:20px}.wallet-deposit-stage .checkout-stage-actions{grid-template-columns:1fr}}
 </style>
 </head>
@@ -414,7 +416,15 @@ window.addEventListener("DOMContentLoaded",function(){
     </div>
     <div id="walletDepositStep3" class="wallet-deposit-stage hidden">
      <div class="checkout-stage-title"><strong>3. Adjunta las pruebas y envía tu solicitud</strong><small>Sube capturas claras donde se puedan comprobar los datos del pago.</small></div>
-     <div class="field proof-field"><label for="walletDepositProof">Comprobantes (de 1 a 5 imágenes)</label><input id="walletDepositProof" type="file" accept="image/jpeg,image/png,image/webp" multiple><small class="wallet-field-hint">JPG, PNG o WEBP, máximo 5 MB cada una. Puedes adjuntar hasta 5 imágenes.</small></div>
+     <div class="field proof-field wallet-proof-field">
+      <label for="walletDepositProof">Capturas del comprobante (obligatorio)</label>
+      <input class="proof-input" id="walletDepositProof" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby="walletDepositProofHelp walletDepositProofSelection" onchange="previewWalletDepositProof()">
+      <label class="proof-dropzone" for="walletDepositProof">
+       <span class="proof-icon" aria-hidden="true">↑</span>
+       <span class="proof-copy"><strong id="walletDepositProofTitle">Toca aquí para seleccionar tus capturas</strong><small id="walletDepositProofHelp">Selecciona la captura de Transfermóvil o del pago USDT. Puedes elegir de 1 a 5 imágenes JPG, PNG o WEBP, de hasta 5 MB cada una.</small></span>
+      </label>
+      <small id="walletDepositProofSelection" class="wallet-proof-selection" role="status" aria-live="polite">Todavía no has adjuntado capturas. Pulsa el recuadro azul para elegirlas.</small>
+     </div>
      <div id="walletDepositFinalSummary" class="wallet-preview"><small>Resumen de tu solicitud</small><strong>Revisa los datos antes de enviarla.</strong></div>
      <div class="wallet-warning"><strong>Importante:</strong> enviar la solicitud no acredita dinero. Quedará pendiente hasta que la administración compruebe la recepción real. Si todo está correcto, aprobará y acreditará el saldo; si no, la rechazará indicando el motivo.</div>
      <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="goWalletDepositStep(2)">← Volver</button><button id="walletDepositSubmit" class="primary-btn" type="button" onclick="requestWalletDeposit()">Enviar solicitud para revisión</button></div>
@@ -517,7 +527,7 @@ function loadCastleTurnstile(){
    if(!ok){script.remove();castleTurnstilePromise=null;}
    resolve(Boolean(ok&&castleTurnstileWidgetId));
   };
-  const timeout=setTimeout(()=>finish(false),45000);
+  const timeout=setTimeout(()=>finish(false),20000);
   script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
   script.async=true;
   script.onload=()=>{
@@ -542,21 +552,22 @@ function loadCastleSupabaseSdk(){
  if(window.supabase&&window.supabase.createClient)return Promise.resolve(true);
  if(castleSupabaseSdkPromise)return castleSupabaseSdkPromise;
  castleSupabaseSdkPromise=new Promise(resolve=>{
-  const script=document.createElement("script");
-  let finished=false;
-  const finish=ok=>{
-   if(finished)return;
-   finished=true;clearTimeout(timeout);
-   if(!ok){script.remove();castleSupabaseSdkPromise=null;}
-   resolve(Boolean(ok&&window.supabase&&window.supabase.createClient));
+  const sources=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2","https://unpkg.com/@supabase/supabase-js@2"];
+  let index=0;
+  const trySource=()=>{
+   if(index>=sources.length){castleSupabaseSdkPromise=null;resolve(false);return;}
+   const script=document.createElement("script");let finished=false;
+   const finish=ok=>{
+    if(finished)return;finished=true;clearTimeout(timeout);
+    if(ok&&window.supabase&&window.supabase.createClient){resolve(true);return;}
+    script.remove();trySource();
+   };
+   const timeout=setTimeout(()=>finish(false),15000);
+   script.src=sources[index++];script.async=true;script.crossOrigin="anonymous";
+   script.onload=()=>finish(true);script.onerror=()=>finish(false);
+   document.head.appendChild(script);
   };
-  const timeout=setTimeout(()=>finish(false),45000);
-  script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-  script.async=true;
-  script.crossOrigin="anonymous";
-  script.onload=()=>finish(true);
-  script.onerror=()=>finish(false);
-  document.head.appendChild(script);
+  trySource();
  });
  return castleSupabaseSdkPromise;
 }
@@ -1552,24 +1563,7 @@ async function uploadProofForOrder(orderId,method,file,reference,senderPhone,rep
  if(result.error)throw new Error("La imagen se subió, pero no se pudo asociar al pedido: "+result.error.message);
  return result.data;
 }
-async function attachProofToOrder(orderId,method){
- if(!currentUser)return;
- const file=$("retry-proof-"+orderId)?.files?.[0];
- const reference=$("retry-reference-"+orderId)?.value||"";
- const senderPhone=$("retry-sender-phone-"+orderId)?.value||"";
- const reportedAmount=$("retry-reported-amount-"+orderId)?.value||null;
- const button=$("retry-proof-button-"+orderId);
- if(button){button.disabled=true;button.textContent="Enviando…";}
- try{
-  await uploadProofForOrder(orderId,method,file,reference,senderPhone,reportedAmount);
-  await loadMyOrders();
-  if(currentProfile?.role==="admin")await loadAllOrders();
- }catch(e){
-  const msg=$("retry-proof-msg-"+orderId);if(msg)msg.textContent=e.message||"No se pudo enviar el comprobante.";
- }finally{
-  const current=$("retry-proof-button-"+orderId);if(current){current.disabled=false;current.textContent="Enviar comprobante";}
- }
-}
+
 
 function getWalletRequestIdentity(productId,playerId){
  const identity=String(currentUser?.id||"")+"|"+String(productId)+"|"+String(playerId);
@@ -1667,12 +1661,12 @@ async function loadMyOrders(){
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
  $("myorders").innerHTML=error?"Error: "+clean(error.message):
  (data||[]).length?(data||[]).map(o=>{
-  const canUpload=o.payment_source==="direct"&&!o.proof_path&&o.status==="pending";
-  const retry=canUpload?'<div class="field"><label for="retry-proof-'+clean(o.id)+'">Comprobante obligatorio</label><input id="retry-proof-'+clean(o.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></div>'+
-   (o.payment_method!=="USDT"?'<div class="field"><label for="retry-sender-phone-'+clean(o.id)+'">Móvil desde el que realizaste el pago</label><input id="retry-sender-phone-'+clean(o.id)+'" type="tel" inputmode="tel" placeholder="+535XXXXXXXX"></div>':'')+
-   ((o.payment_method==="Transferencia CUP"||o.payment_method==="USDT")?'<div class="field"><label for="retry-reference-'+clean(o.id)+'">'+(o.payment_method==="USDT"?"Hash/TxID USDT":"Nro. Transacción")+'</label><input id="retry-reference-'+clean(o.id)+'" inputmode="text" autocapitalize="characters" maxlength="100" placeholder="'+(o.payment_method==="USDT"?"Hash de 64 caracteres":"Ej. AY600UJ716R999")+'"><small class="field-hint">'+(o.payment_method==="USDT"?"Copia el hash/TxID de la red indicada.":"Copia el código «Nro. Transacción» del comprobante.")+'</small></div>':'')+
-   ((o.payment_method==="Saldo móvil"||o.payment_method==="USDT")?'<div class="field"><label for="retry-reported-amount-'+clean(o.id)+'">'+(o.payment_method==="USDT"?"Cantidad exacta de USDT enviada":"Cantidad de saldo móvil enviada")+'</label><input id="retry-reported-amount-'+clean(o.id)+'" type="number" min="0.000001" step="0.000001" inputmode="decimal" placeholder="Importe exacto"></div>':'')+
-   '<button id="retry-proof-button-'+clean(o.id)+'" class="primary-btn" type="button" onclick="attachProofToOrder(\''+clean(o.id)+'\',\''+clean(o.payment_method)+'\')">Enviar comprobante</button><p id="retry-proof-msg-'+clean(o.id)+'" class="msg" role="status"></p>':'<p class="track-note">'+(o.proof_path?'Comprobante recibido y guardado de forma privada.':'')+'</p>';
+  const proofNote=o.payment_source==="wallet"
+   ?'<p class="track-note">El pago se realizó con el saldo de tu wallet.</p>'
+   :o.proof_path
+    ?'<p class="track-note">Comprobante recibido y guardado de forma privada.</p>'
+    :["pending","payment_review"].includes(o.status)
+     ?'<p class="track-note">El pedido está pendiente de revisión. Los datos del pago no se pueden modificar desde esta pantalla. Si necesitas ayuda, contacta con soporte.</p>':"";
   const providerInfo=o.central_one_reference_code
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
@@ -1682,9 +1676,10 @@ async function loadMyOrders(){
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+(o.payment_source==="wallet"?" · USD":"")+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
-   '<span class=\"status\">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+providerInfo+'<a class=\"order-support-link\" href=\"'+supportUrl+'\" target=\"_blank\" rel=\"noopener noreferrer\">Contactar por WhatsApp sobre este pedido</a>'+retry+'</article>';
+   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+proofNote+providerInfo+'<a class="order-support-link" href="'+supportUrl+'" target="_blank" rel="noopener noreferrer">Contactar por WhatsApp sobre este pedido</a></article>';
  }).join(""):"Todavía no tienes pedidos.";
 }
+
 
 async function loadWalletSettings(){
  if(!db)return;
@@ -1752,6 +1747,7 @@ function updateWalletDepositMethod(){
   walletDepositMethodPrevious=method;
   ["walletDepositAmount","walletDepositSenderPhone","walletDepositReference","walletDepositTxid"].forEach(id=>{const field=$(id);if(field)field.value="";});
   const proof=$("walletDepositProof");if(proof)proof.value="";
+  previewWalletDepositProof();
  }
  const amount=$("walletDepositAmount");
  $("walletDepositAmountLabel").textContent=isCup?"Cantidad exacta que enviarás (CUP)":"Cantidad exacta que enviarás (USDT)";
@@ -1806,6 +1802,17 @@ async function uploadWalletDepositProofs(depositId,method,files,reference,sender
  if(result.error)throw new Error(result.error.message);
  return result.data;
 }
+function previewWalletDepositProof(){
+ const input=$("walletDepositProof"),title=$("walletDepositProofTitle"),status=$("walletDepositProofSelection");
+ if(!input||!title||!status)return false;
+ const files=Array.from(input.files||[]);
+ if(!files.length){title.textContent="Toca aquí para seleccionar tus capturas";status.textContent="Todavía no has adjuntado capturas. Pulsa el recuadro azul para elegirlas.";return false;}
+ if(files.length>5){title.textContent="Has seleccionado demasiadas imágenes";status.textContent="El máximo permitido son 5 imágenes. Quita las adicionales y vuelve a elegir.";return false;}
+ for(const file of files){const invalid=validateProofFile(file);if(invalid){title.textContent="Revisa las imágenes seleccionadas";status.textContent=invalid;return false;}}
+ title.textContent=files.length===1?"1 captura seleccionada":files.length+" capturas seleccionadas";
+ status.textContent=files.map(file=>file.name).join(" · ");
+ return true;
+}
 function goWalletDepositStep(step){
  const target=Math.max(1,Math.min(3,Number(step)||1));
  const method=$("walletDepositMethod")?.value||"Transferencia CUP";
@@ -1827,11 +1834,11 @@ function goWalletDepositStep(step){
  }
  if(target===3){
   const files=Array.from($("walletDepositProof")?.files||[]);
-  if(files.length<1||files.length>5){if(msg)msg.textContent="Adjunta entre 1 y 5 comprobantes para continuar.";return;}
-  for(const file of files){const invalid=validateProofFile(file);if(invalid){if(msg)msg.textContent=invalid;return;}}
   const credited=isCup?Math.floor((amount/Number(walletSettings.cup_per_usd||1160))*100)/100:amount;
   const details=isCup?("Transferencia: "+money(amount)+" CUP · "+moneyUSD(credited)+" USD estimados"):("USDT: "+amount+" · "+moneyUSD(amount)+" USD estimados");
-  $("walletDepositFinalSummary").innerHTML="<small>Resumen de tu solicitud</small><strong>"+details+"</strong><small>Método: "+(isCup?"Transferencia CUP":"USDT · BNB Smart Chain (BEP20)")+" · Comprobantes: "+files.length+"</small>";
+  const proofLabel=files.length?files.length+" imagen(es) seleccionada(s)":"pendiente de adjuntar";
+  $("walletDepositFinalSummary").innerHTML="<small>Resumen de tu solicitud</small><strong>"+details+"</strong><small>Método: "+(isCup?"Transferencia CUP":"USDT · BNB Smart Chain (BEP20)")+" · Comprobantes: "+proofLabel+". Adjunta las capturas en el recuadro inferior.</small>";
+  previewWalletDepositProof();
  }
  [1,2,3].forEach(n=>{
   const panel=$("walletDepositStep"+n);if(panel)panel.classList.toggle("hidden",n!==target);
@@ -1871,7 +1878,7 @@ async function requestWalletDeposit(){
   }
   $("walletDepositMsg").textContent="Solicitud enviada a revisión. El saldo no aparecerá en tu wallet hasta que comprobemos la recepción real.";
   $("walletDepositAmount").value="";$("walletDepositSenderPhone").value="";$("walletDepositReference").value="";$("walletDepositTxid").value="";$("walletDepositProof").value="";
-  previewWalletDeposit();await loadMyWalletDeposits();
+  previewWalletDepositProof();previewWalletDeposit();await loadMyWalletDeposits();
  }catch(e){$("walletDepositMsg").textContent="No se pudo crear la solicitud: "+(e.message||"error de conexión.");}
  finally{if(button){button.disabled=false;button.textContent="Enviar solicitud de depósito";}}
 }
