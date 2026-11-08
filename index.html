@@ -287,6 +287,22 @@ window.addEventListener("DOMContentLoaded",function(){
 .wallet-proof-field .proof-dropzone{min-height:100px;margin-top:8px}
 .wallet-proof-selection{display:block;margin:9px 2px 0;padding:10px 12px;border:1px solid #dfe8f4;border-radius:12px;background:#f7f9fc;color:#536782;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:390px){.wallet-deposit-stepper{gap:4px}.wallet-deposit-stepper li{font-size:9px;gap:4px;padding:8px 3px}.wallet-deposit-stepper li b{flex-basis:20px;width:20px;height:20px}.wallet-deposit-stage .checkout-stage-actions{grid-template-columns:1fr}}
+/* Seguimiento de pedidos: pasos claros, legibles y adaptables a móvil */
+.order-progress-wrap{margin:13px 0 10px}
+.order-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;list-style:none;margin:0;padding:0}
+.order-progress-step{display:grid;justify-items:center;align-content:start;gap:7px;min-width:0;text-align:center;color:#7a879a;font-size:10px;font-weight:750;line-height:1.3}
+.order-progress-dot{display:grid;place-items:center;width:27px;height:27px;border:2px solid #dce5f2;border-radius:50%;background:#fff;color:#8190a5;font-size:11px;font-weight:900}
+.order-progress-step.is-current{color:#1d5fcb}
+.order-progress-step.is-current .order-progress-dot{border-color:#2468f2;background:#edf4ff;color:#1e5fc8;box-shadow:0 0 0 4px rgba(36,104,242,.08)}
+.order-progress-step.is-done{color:#257449}
+.order-progress-step.is-done .order-progress-dot{border-color:#2a9b60;background:#eaf8f0;color:#21784a}
+.order-progress-label{max-width:100%;overflow-wrap:anywhere}
+.order-progress-wrap>.track-note{margin-top:12px}
+.order-progress-exception{margin:12px 0;padding:14px;border:1px solid #f0d8b7;border-radius:15px;background:#fffaf3}
+.order-progress-exception>strong{display:block;color:#8a4d12;font-size:13px}
+.order-progress-exception .track-note{margin:7px 0;color:#70563c}
+.order-progress-exception .text-link{margin-top:3px}
+@media(max-width:390px){.order-progress{gap:3px}.order-progress-step{font-size:9px}.order-progress-dot{width:24px;height:24px}.order-progress-wrap>.track-note{font-size:11px}}
 </style>
 </head>
 <body>
@@ -470,6 +486,9 @@ window.addEventListener("DOMContentLoaded",function(){
   <article class="faq-item"><h3>¿Qué hago si el pedido se demora o falla?</h3><p>No vuelvas a pagar ni crees otro pedido para la misma compra. Guarda el folio del pedido y la captura, revisa su estado en «Mis pedidos» y contacta con el canal oficial de atención de Tienda El Castillo.</p></article>
   <article class="faq-item"><h3>¿Cómo contacto con Tienda El Castillo?</h3><p>Escríbenos por WhatsApp al <a href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">+53 51884050</a> únicamente para incidencias importantes que no puedas resolver desde tu cuenta, como un pago cobrado que no se refleja o un pedido bloqueado. Para consultar el progreso normal del pedido, revisa «Mis pedidos» y «Mensajes». La atención depende de la disponibilidad del administrador; no hay un horario fijo ni respuesta inmediata garantizada. Ten a mano el folio de tu pedido y nunca compartas la contraseña del juego.</p></article>
   <article class="faq-item"><h3>¿Dónde veo mis pedidos?</h3><p>Inicia sesión y abre «Pedidos» en la navegación inferior. Allí verás el folio, el estado y el avance de cada solicitud.</p></article>
+  <article class="faq-item"><h3>¿Qué hago si hice el mismo pago dos veces?</h3><p>No crees un segundo pedido para justificar el pago duplicado. Guarda el folio y los dos comprobantes o referencias de transacción y contacta con soporte. La tienda debe comprobar ambas operaciones antes de registrar una devolución o compensación.</p></article>
+  <article class="faq-item"><h3>¿Cómo funciona la wallet?</h3><p>La wallet es saldo interno para comprar dentro de Tienda El Castillo; no es una cuenta bancaria ni un servicio de retiro de efectivo. Los depósitos se revisan manualmente y el saldo solo está disponible después de que la administración confirme el pago. Un depósito pendiente no puede utilizarse para comprar.</p></article>
+  <article class="faq-item"><h3>¿Qué información debo enviar al reclamar?</h3><p>Indica el folio del pedido, el método de pago, la referencia de la operación cuando exista y una captura legible del comprobante. No envíes contraseñas del juego, códigos de acceso, claves bancarias ni frases de recuperación de billeteras.</p></article>
  </div></section>
  <section id="privacyView" class="store-view hidden"><div class="panel policy-panel">
   <button class="text-link" type="button" onclick="showView('home')">← Volver a la tienda</button><span class="policy-kicker">INFORMACIÓN Y TRANSPARENCIA</span><h1>Política de privacidad</h1><p class="subtle">Versión informativa · 6 de noviembre de 2026</p>
@@ -489,7 +508,11 @@ window.addEventListener("DOMContentLoaded",function(){
   <article class="faq-item"><h3>4. Revisión y entrega</h3><p>El envío del comprobante crea una solicitud pendiente de revisión; no significa que el pago esté confirmado ni que la recarga se haya completado. La tienda comprueba la recepción del dinero o saldo y solo entonces autoriza la recarga. El estado final se refleja en «Mis pedidos».</p></article>
   <article class="faq-item"><h3>5. Errores, demoras y duplicados</h3><p>Si el estado no cambia o la recarga falla, no repitas el pago ni generes otro pedido para la misma operación. Conserva el folio y el comprobante para que la tienda revise el caso. La disponibilidad y los tiempos de entrega pueden variar.</p></article>
   <article class="faq-item"><h3>6. Comprobantes</h3><p>La captura debe ser legible y corresponder al pago realizado. La tienda puede rechazar comprobantes incompletos, alterados, repetidos o que no coincidan con los datos de la solicitud.</p></article>
-  <p class="policy-note">Si una operación pagada no puede completarse, la tienda revisará la incidencia y comunicará la solución correspondiente antes de solicitar un nuevo pago. No pagues dos veces por el mismo pedido.</p>
+  <article class="faq-item"><h3>7. Pedidos no entregados y pagos duplicados</h3><p>Si el pago se confirma pero la recarga no llega o el proveedor informa un fallo, no debes volver a pagar por el mismo pedido. La tienda revisará el comprobante, el estado de la operación y la respuesta del servicio de distribución. Primero se intentará completar o corregir la entrega cuando sea técnicamente posible. Si no se puede completar, la administración comunicará la solución disponible y, cuando corresponda, coordinará la devolución por el medio original. Un abono a la wallet solo se utilizará como alternativa con la aceptación del cliente. Los pagos duplicados requieren comprobar las dos operaciones y no se acreditan automáticamente.</p></article>
+  <article class="faq-item"><h3>8. Recargas entregadas y datos del jugador</h3><p>Antes de pagar, el cliente debe comprobar que el nombre mostrado al validar el ID corresponde a la cuenta correcta. Si el nombre no coincide, no continúes y solicita ayuda. Una recarga digital confirmada como entregada a la cuenta indicada normalmente no puede revertirse; no se aceptan cambios por arrepentimiento después de la entrega. Los errores atribuibles al proceso de la tienda o a la entrega serán revisados con el folio y las pruebas del caso.</p></article>
+  <article class="faq-item"><h3>9. Wallet y depósitos</h3><p>La wallet contiene saldo interno para comprar productos dentro de Tienda El Castillo y no funciona como una cuenta bancaria ni como un servicio de retiro de efectivo. Los depósitos se revisan manualmente y no forman parte del saldo disponible hasta que la administración los apruebe. Revisa siempre el importe, la moneda, la red y los datos de destino que muestra tu cuenta antes de enviar fondos.</p></article>
+  <article class="faq-item"><h3>10. Cómo solicitar una revisión</h3><p>Para solicitar ayuda, facilita el folio del pedido, el método de pago, la referencia de la transacción y una captura legible. Los canales de atención se indican en Preguntas frecuentes. Nunca envíes contraseñas, códigos de acceso ni frases de recuperación. La tienda no garantiza entrega instantánea ni una respuesta inmediata, pero mantendrá el estado y la comunicación de la incidencia en los canales disponibles.</p></article>
+  <p class="policy-note">Estas condiciones describen el procedimiento operativo actual de la tienda y no sustituyen una revisión jurídica. Ningún estado de «comprobante recibido» equivale a pago confirmado. La tienda no debe solicitar un segundo pago para intentar resolver una incidencia del mismo pedido.</p>
  </div></section>
 <footer class="site-footer"><div class="footer-brand"><img src="./assets/castle-logo.webp" alt="" width="42" height="42"><div><strong>Tienda El Castillo</strong><span>Recargas digitales con atención personalizada</span></div></div><div class="footer-columns"><div><strong>Tu compra</strong><a href="#catalogo" onclick="showView('games');return false">Catálogo Free Fire</a><span>Transferencia CUP y saldo móvil</span><a href="#pedidos" onclick="currentUser?showView('orders'):openAccount();return false">Seguimiento de pedidos</a></div><div><strong>Ayuda e información</strong><a href="#ayuda" onclick="showView('faq');return false">Preguntas frecuentes</a><a href="#privacidad" onclick="showView('privacy');return false">Política de privacidad</a><a href="#condiciones" onclick="showView('terms');return false">Términos de compra</a><a href="./recargar-free-fire-cuba.html">Guía de recarga</a><a class="footer-whatsapp" href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">Soporte WhatsApp · solo cuando sea necesario: +53 51884050</a></div></div><p class="footer-legal">Tienda El Castillo es un servicio independiente. No está afiliada ni respaldada por Garena. Las marcas y juegos pertenecen a sus respectivos propietarios.</p></footer>
 </section>
@@ -2174,14 +2197,33 @@ const orderStatuses=[
  {value:"cancelled",label:"Cancelado"}
 ];
 function customerOrderProgress(status){
- if(status==="rejected") return '<p class="track-note">Pedido rechazado. Contacta con la tienda por tu canal habitual antes de volver a pagar.</p>';
- if(status==="failed") return '<p class="track-note">La recarga no pudo completarse. No envíes otro pago ni crees otro pedido todavía. Guarda el folio y contacta con Tienda El Castillo para revisar la solución.</p>';
- if(status==="cancelled") return '<p class="track-note">La orden de recarga fue cancelada. Contacta con Tienda El Castillo para revisar tu pago.</p>';
- const steps=[["pending","Recibido"],["payment_review","Pago"],["processing","Recarga"],["completed","Listo"]];
- const pos=Math.max(0,steps.findIndex(s=>s[0]===status));
- const bar=steps.map((s,i)=>'<span style="display:inline-block;width:24%;padding:8px 2px;margin:1px 0;text-align:center;border-top:4px solid '+(i<=pos?'#2468f2':'#d9e3f4')+';font-size:11px">'+s[1]+'</span>').join("");
- const notes={pending:"Pedido recibido; falta revisar el pago.",payment_review:"Estamos comprobando que el pago haya llegado correctamente.",processing:"Pago confirmado. Estamos realizando la recarga y esperando la confirmación de entrega.",completed:"Tu recarga fue entregada correctamente. ¡Gracias por comprar!"};
- return '<div style="margin:12px 0">'+bar+'</div><p class="track-note">'+(notes[status]||"Estamos revisando tu pedido.")+'</p>';
+ const exceptions={
+  rejected:'<div class="order-progress-exception"><strong>No se pudo aceptar el pedido</strong><p class="track-note">No realices otro pago por esta misma compra. Revisa «Mensajes» y conserva el folio y el comprobante para solicitar una revisión.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
+  failed:'<div class="order-progress-exception"><strong>La recarga no se completó</strong><p class="track-note">No vuelvas a pagar ni crees un pedido duplicado. La incidencia debe revisarse con el folio y el comprobante. Revisa «Mensajes» o consulta cómo contactar con soporte.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
+  cancelled:'<div class="order-progress-exception"><strong>Pedido cancelado</strong><p class="track-note">Si ya habías enviado el pago, no hagas otra transferencia. Conserva el folio y el comprobante y contacta con la tienda para revisar el caso.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>'
+ };
+ if(exceptions[status])return exceptions[status];
+ const steps=[
+  {value:"pending",label:"Recibido"},
+  {value:"payment_review",label:"Pago en revisión"},
+  {value:"processing",label:"Recarga en curso"},
+  {value:"completed",label:"Entregado"}
+ ];
+ const currentIndex=Math.max(0,steps.findIndex(step=>step.value===status));
+ const progress=steps.map((step,index)=>{
+  const done=status==="completed"||index<currentIndex;
+  const active=index===currentIndex&&status!=="completed";
+  const state=done?"is-done":active?"is-current":"";
+  const marker=done?"✓":String(index+1);
+  return '<li class="order-progress-step '+state+'"'+(active?' aria-current="step"':'')+'><span class="order-progress-dot" aria-hidden="true">'+marker+'</span><span class="order-progress-label">'+step.label+'</span></li>';
+ }).join("");
+ const notes={
+  pending:"El pedido está creado, pero el pago todavía no aparece como confirmado. Comprueba que el comprobante se haya enviado. Si ya pagaste y no aparece, pide ayuda antes de transferir otra vez.",
+  payment_review:"Recibimos el comprobante y estamos comprobando que el dinero o saldo haya llegado. La captura por sí sola no confirma el pago.",
+  processing:"El pago está confirmado. La recarga está en curso y esperamos la confirmación de entrega. No necesitas crear otro pedido.",
+  completed:"La entrega fue confirmada. Comprueba que los diamantes o el producto aparezcan en la cuenta indicada."
+ };
+ return '<div class="order-progress-wrap"><ol class="order-progress" aria-label="Progreso del pedido">'+progress+'</ol><p class="track-note">'+(notes[status]||"Estamos revisando el estado de tu pedido.")+'</p></div>';
 }
 function statusText(value){
  const status=orderStatuses.find(s=>s.value===value);
