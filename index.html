@@ -213,7 +213,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Centro de notificaciones y buzón privado */
 .notification-header-btn{position:relative;display:inline-flex;align-items:center;gap:7px;padding-right:14px}.notification-header-btn>span:first-child{font-size:18px;line-height:1}.notification-badge{position:absolute;top:4px;right:5px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}.notification-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.notification-panel-head h2{margin:0}.notification-panel-head button{width:auto;margin:0}.notification-item{padding:15px;border:1px solid var(--line);border-radius:15px;margin:10px 0;background:#fff}.notification-item.unread{border-color:#c9dafc;background:#f7faff;box-shadow:inset 3px 0 #2468f2}.notification-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.notification-item-head strong{font-size:14px}.notification-item p{font-size:13px;line-height:1.55;margin:9px 0;color:#40516d;white-space:pre-wrap;overflow-wrap:anywhere}.notification-item small{font-size:10px;color:#7a879a}.notification-type,.notification-read-label{font-size:10px;color:#6f7f98;font-weight:750}.notification-read-btn{margin:10px 0 0;padding:8px 11px;font-size:11px}.notification-read-label{display:inline-block;margin-top:9px}.notification-header-btn .notification-label{display:inline}
 @media(max-width:420px){.notification-header-btn{padding:8px 10px}.notification-header-btn .notification-label{display:none}.header-actions{gap:5px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=18">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=19">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -2744,7 +2744,26 @@ function showOrderProofPreview(url,details={}){
  close.type="button";
  close.className="proof-viewer-close";
  close.textContent="Cerrar ✕";
- header.append(title,close);
+ const actions=document.createElement("div");
+ actions.className="proof-viewer-actions";
+ const download=document.createElement("a");
+ download.className="proof-viewer-download";
+ download.href=url;
+ download.target="_blank";
+ download.rel="noopener noreferrer";
+ download.textContent="Abrir / descargar";
+ const zoom=document.createElement("button");
+ zoom.type="button";
+ zoom.className="proof-viewer-zoom";
+ zoom.textContent="Ampliar";
+ zoom.setAttribute("aria-label","Ampliar comprobante");
+ zoom.addEventListener("click",()=>{
+  const enlarged=image.classList.toggle("is-zoomed");
+  zoom.textContent=enlarged?"Reducir":"Ampliar";
+  zoom.setAttribute("aria-label",enlarged?"Reducir comprobante":"Ampliar comprobante");
+ });
+ actions.append(download,zoom,close);
+ header.append(title,actions);
  const info=document.createElement("div");
  info.className="proof-viewer-info";
  const addInfo=(label,value,extraClass="")=>{
@@ -2923,6 +2942,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=13" async></script>
+<script src="./assets/admin-panel.js?v=14" async></script>
 </body>
 </html>
