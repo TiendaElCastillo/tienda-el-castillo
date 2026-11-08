@@ -364,3 +364,43 @@
 .cuba-phone-display>strong{font-size:20px;letter-spacing:.055em;color:#17345e;overflow-wrap:anywhere}
 @media(max-width:360px){.cuba-phone-prefix{padding:0 10px;font-size:13px}.cuba-phone-control input{padding:12px 9px!important}.cuba-phone-display{gap:7px}.cuba-phone-display>strong{font-size:18px}}
 
+
+/* Free Fire: tarjetas horizontales, una por fila, sin solapamientos */
+#gameDetailPlans .ff-package-list{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:11px!important;width:100%;max-width:820px;margin:0 auto}
+#gameDetailPlans .game-plan-card{display:grid!important;grid-template-columns:58px minmax(0,1fr) minmax(82px,auto)!important;grid-template-rows:auto auto!important;gap:9px 12px!important;align-items:center!important;min-width:0;padding:13px!important;border-radius:17px!important}
+#gameDetailPlans .plan-currency{grid-column:1!important;grid-row:1/3!important;width:54px!important;height:54px!important;align-self:center}
+#gameDetailPlans .plan-info{grid-column:2!important;grid-row:1!important;min-width:0;align-self:center}
+#gameDetailPlans .plan-info strong{font-size:15px!important;line-height:1.25!important;overflow-wrap:normal!important;word-break:normal!important}
+#gameDetailPlans .plan-info small{display:block;margin-top:4px;font-size:10px!important;line-height:1.35!important}
+#gameDetailPlans .plan-price{grid-column:3!important;grid-row:1!important;align-self:center;text-align:right!important;white-space:nowrap!important;padding:0!important;border:0!important}
+#gameDetailPlans .plan-price strong{display:block;font-size:18px!important;line-height:1.2!important;white-space:nowrap!important}
+#gameDetailPlans .plan-price small{font-size:10px!important}
+#gameDetailPlans .plan-buy{grid-column:2/4!important;grid-row:2!important;width:100%!important;min-height:41px;margin:0!important;border-radius:12px!important}
+#gameDetailPlans .plan-currency img,#gameDetailPlans .plan-currency .plan-icon-official{display:block;width:100%;height:100%;object-fit:contain!important;object-position:center!important}
+@media(max-width:420px){
+ #gameDetailPlans .game-plan-card{grid-template-columns:50px minmax(0,1fr) minmax(72px,auto)!important;gap:8px 9px!important;padding:11px!important}
+ #gameDetailPlans .plan-currency{width:48px!important;height:48px!important}
+ #gameDetailPlans .plan-info strong{font-size:14px!important}
+ #gameDetailPlans .plan-price strong{font-size:16px!important}
+ #gameDetailPlans .plan-buy{min-height:39px}
+}
+@media(max-width:350px){
+ #gameDetailPlans .game-plan-card{grid-template-columns:43px minmax(0,1fr) minmax(64px,auto)!important;gap:7px!important;padding:9px!important}
+ #gameDetailPlans .plan-currency{width:41px!important;height:41px!important}
+ #gameDetailPlans .plan-info strong{font-size:13px!important}
+ #gameDetailPlans .plan-price strong{font-size:15px!important}
+}
+/* Imagen promocional Free Fire en las zonas principales */
+.hero-visual{background-image:url("./assets/free-fire-hero.svg?v=23")!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;background-color:#07172e!important}
+.hero-visual:before{content:none!important}
+.auth-game-art{background:#07172e}
+.auth-game-art img{object-fit:contain!important;object-position:center!important;background:#07172e}
+.game-detail-art.art-fire{background-color:#07172e!important}
+.game-detail-art.art-fire img{display:block;width:100%;height:100%;object-fit:contain!important;object-position:center!important}
+/* Paquete fijado mientras el cliente completa el pedido */
+.checkout-product-lock{display:flex;align-items:center;gap:12px;margin:8px 0 17px;padding:14px;border:1px solid #d9e5f5;border-radius:16px;background:linear-gradient(130deg,#f8fbff,#edf4ff)}
+.checkout-product-lock-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:13px;background:#e2edff;font-size:19px}
+.checkout-product-lock-copy{min-width:0}
+.checkout-product-lock-copy small{display:block;margin-bottom:4px;color:#52719f;font-size:9px;font-weight:900;letter-spacing:.12em}
+.checkout-product-lock-copy strong{display:block;color:#1b3153;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.checkout-product-lock-copy p{margin:5px 0 0;color:#71809a;font-size:10px;line-height:1.45}

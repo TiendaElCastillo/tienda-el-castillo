@@ -213,7 +213,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Centro de notificaciones y buzón privado */
 .notification-header-btn{position:relative;display:inline-flex;align-items:center;gap:7px;padding-right:14px}.notification-header-btn>span:first-child{font-size:18px;line-height:1}.notification-badge{position:absolute;top:4px;right:5px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}.notification-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.notification-panel-head h2{margin:0}.notification-panel-head button{width:auto;margin:0}.notification-item{padding:15px;border:1px solid var(--line);border-radius:15px;margin:10px 0;background:#fff}.notification-item.unread{border-color:#c9dafc;background:#f7faff;box-shadow:inset 3px 0 #2468f2}.notification-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.notification-item-head strong{font-size:14px}.notification-item p{font-size:13px;line-height:1.55;margin:9px 0;color:#40516d;white-space:pre-wrap;overflow-wrap:anywhere}.notification-item small{font-size:10px;color:#7a879a}.notification-type,.notification-read-label{font-size:10px;color:#6f7f98;font-weight:750}.notification-read-btn{margin:10px 0 0;padding:8px 11px;font-size:11px}.notification-read-label{display:inline-block;margin-top:9px}.notification-header-btn .notification-label{display:inline}
 @media(max-width:420px){.notification-header-btn{padding:8px 10px}.notification-header-btn .notification-label{display:none}.header-actions{gap:5px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=22">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=23">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -426,15 +426,18 @@ window.addEventListener("DOMContentLoaded",function(){
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
  <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel">
- <div class="section-head"><div><h2>Completa tu pedido</h2><p>Comprueba tu cuenta y luego realiza el pago</p></div><button class="text-link" type="button" onclick="showView('games')">← Volver</button></div>
+ <div class="section-head"><div><h2>Completa tu pedido</h2><p>Comprueba tu cuenta y luego realiza el pago</p></div><button class="text-link" type="button" onclick="showView('games')">← Salir y elegir otro</button></div>
  <ol class="checkout-stepper" id="checkoutStepper" aria-label="Pasos de compra">
   <li class="active" data-checkout-step="player"><b>1</b><span>Cuenta</span></li>
   <li data-checkout-step="payment"><b>2</b><span>Pago</span></li>
   <li data-checkout-step="review"><b>3</b><span>Listo</span></li>
  </ol>
  <div id="checkoutStagePlayer" class="checkout-stage-panel">
-  <p id="selectedProductText" class="status"></p>
-  <div class="field"><label for="product">Paquete seleccionado</label><select id="product" onchange="resetPlayerValidation();updateCheckoutSummary();syncPlayerRegionUI()"></select></div>
+  <div class="checkout-product-lock" aria-live="polite">
+   <span class="checkout-product-lock-icon" aria-hidden="true">🔒</span>
+   <div class="checkout-product-lock-copy"><small>PAQUETE SELECCIONADO</small><strong id="selectedProductText">El paquete que elijas aparecerá aquí</strong><p>Este paquete queda fijado durante la compra. Para elegir otro, sal de esta pantalla y vuelve al catálogo.</p></div>
+  </div>
+  <select id="product" class="hidden" disabled aria-hidden="true" tabindex="-1"></select>
   <div class="field"><label for="player">ID del jugador de la cuenta</label><input id="player" inputmode="numeric" autocomplete="off" placeholder="Escribe tu ID" oninput="resetPlayerValidation()" onblur="validatePlayerId()" aria-describedby="playerValidationMsg"></div>
   <div id="playerRegionNote" class="notice">Selecciona un paquete para ver la región y los datos que exige el proveedor.</div>
   <div id="playerValidationWrap" class="player-validation-wrap hidden"><p id="playerValidationMsg" class="player-validation-message" role="status" aria-live="polite">La comprobación comenzará automáticamente al salir del campo del ID.</p></div>
@@ -1423,7 +1426,9 @@ function openCheckout(productId,preferredMethod){
  resetPlayerValidation();
  updateCheckoutStage("player");
  if($("checkoutPlayerMsg"))$("checkoutPlayerMsg").textContent="";
+ productField.innerHTML='<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>';
  productField.value=String(p.id);
+ productField.disabled=true;
  $("player").value="";$("playername").value="";
  $("reference").value="";$("senderPhone").value="";$("reportedAmount").value="";
  $("paymentProof").value="";previewPaymentProof();
