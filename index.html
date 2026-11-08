@@ -447,7 +447,7 @@ window.addEventListener("DOMContentLoaded",function(){
   <div class="checkout-stage-title"><strong>Completa los datos de pago</strong><small>Envía la cantidad exacta y conserva el comprobante original.</small></div>
   <div class="field"><label>Selecciona el método de pago</label><div id="checkoutPaymentMethods" class="checkout-payment-methods" role="group" aria-label="Método de pago"></div><select id="payment" class="hidden" aria-hidden="true" tabindex="-1" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option><option value="Saldo de Tienda El Castillo">Saldo de Tienda El Castillo</option></select></div>
   <div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><p id="walletCheckoutNote" class="track-note" aria-live="polite"></p>
-  <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">¿Desde qué número haces el pago? (obligatorio)</label><div class="cuba-phone-control"><span class="cuba-phone-prefix">🇨🇺 +53</span><input id="senderPhone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="51884050" maxlength="20" aria-label="Ocho dígitos del móvil cubano desde el que pagaste"></div><small class="field-hint" id="senderPhoneHelp">Escribe los 8 dígitos de la línea desde la que realizaste el pago.</small></div>
+  <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">¿Desde qué número haces el pago? (obligatorio)</label><div class="cuba-phone-control"><span class="cuba-phone-prefix">🇨🇺 +53</span><input id="senderPhone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="xxxxxxxx" maxlength="20" aria-label="Ocho dígitos del móvil cubano desde el que pagaste"></div><small class="field-hint" id="senderPhoneHelp">Escribe los 8 dígitos de la línea desde la que realizaste el pago.</small></div>
   <div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div>
   <div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Nro. Transacción (obligatorio)</label><input id="reference" inputmode="text" autocapitalize="characters" autocomplete="off" minlength="3" maxlength="100" placeholder="Ej. AY600UJ716R999" oninput="this.value=this.value.toUpperCase().replace(/\\s/g,'')"><small id="referenceHelp" class="field-hint">Copia el código que aparece junto a «Nro. Transacción» en el comprobante del banco. Es único para cada pago.</small></div>
   <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Cantidad exacta de saldo móvil enviada</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe exacto"></div>
@@ -501,7 +501,7 @@ window.addEventListener("DOMContentLoaded",function(){
     <div id="walletDepositStep2" class="wallet-deposit-stage hidden">
      <div class="checkout-stage-title"><strong>2. Realiza el pago y registra sus datos</strong><small>Revisa las instrucciones. Después de pagar, completa los datos de la operación.</small></div>
      <div id="walletDepositInstructions" class="wallet-instructions">Cargando las instrucciones de pago…</div>
-     <div class="field hidden" id="walletDepositSenderPhoneWrap"><label for="walletDepositSenderPhone">Teléfono desde el que haces la transferencia</label><div class="cuba-phone-control"><span class="cuba-phone-prefix">🇨🇺 +53</span><input id="walletDepositSenderPhone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="20" placeholder="51884050" aria-label="Ocho dígitos del móvil cubano desde el que pagaste"></div><small class="wallet-field-hint">Escribe solo los 8 dígitos de tu línea de origen; el +53 ya aparece separado.</small></div>
+     <div class="field hidden" id="walletDepositSenderPhoneWrap"><label for="walletDepositSenderPhone">Teléfono desde el que haces la transferencia</label><div class="cuba-phone-control"><span class="cuba-phone-prefix">🇨🇺 +53</span><input id="walletDepositSenderPhone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="20" placeholder="xxxxxxxx" aria-label="Ocho dígitos del móvil cubano desde el que pagaste"></div><small class="wallet-field-hint">Escribe solo los 8 dígitos de tu línea de origen; el +53 ya aparece separado.</small></div>
      <div class="field" id="walletDepositReferenceWrap"><label for="walletDepositReference">Número de transacción bancaria</label><input id="walletDepositReference" inputmode="text" maxlength="100" placeholder="Copia el Nro. de Transacción"></div>
      <div class="field hidden" id="walletDepositTxidWrap"><label for="walletDepositTxid">Hash / TxID de la transacción</label><input id="walletDepositTxid" inputmode="text" autocapitalize="off" maxlength="64" placeholder="64 caracteres hexadecimales"><small class="wallet-field-hint">Copia el hash de la transacción confirmada en BNB Smart Chain.</small></div>
      <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="goWalletDepositStep(1)">← Volver</button><button class="primary-btn" type="button" onclick="goWalletDepositStep(3)">Continuar a los comprobantes →</button></div>
@@ -1583,7 +1583,7 @@ function updatePaymentFields(){
  const copyBox=$("paymentInstructions");if(copyBox&&!copyBox.dataset.copyHandler){copyBox.dataset.copyHandler="1";copyBox.addEventListener("click",event=>{const button=event.target.closest("[data-copy]");if(button)copyPaymentButton(button);});}
  const senderField=$("senderPhone");
  if(senderField&&!senderField.dataset.cubaMobileHandler){senderField.dataset.cubaMobileHandler="1";senderField.addEventListener("input",()=>{senderField.value=cubaMobileInputValue(senderField.value);});}
- if(senderField){senderField.inputMode="numeric";senderField.placeholder="51884050";}
+ if(senderField){senderField.inputMode="numeric";senderField.placeholder="xxxxxxxx";}
  const method=$("payment")?.value||"";
  const isWallet=method==="Saldo de Tienda El Castillo",isTransfer=method==="Transferencia CUP",isMobile=method==="Saldo móvil",isUsdt=method==="USDT";
  $("referenceWrap")?.classList.toggle("hidden",isWallet||(!isTransfer&&!isUsdt));
@@ -1602,7 +1602,7 @@ function updatePaymentFields(){
  $("referenceHelp").textContent=isUsdt?"Copia el hash/TxID de la operación en BNB Smart Chain. Debe tener 64 caracteres hexadecimales.":"Copia el código que aparece junto a «Nro. Transacción» en el comprobante del banco. Es único para cada pago.";
  $("senderPhoneLabel").textContent=isMobile?"¿Desde qué número enviaste el saldo? (obligatorio)":"¿Desde qué número haces la transferencia? (obligatorio)";
  $("senderPhoneHelp").textContent=isTransfer?"Tiene que ser la misma línea con la que entras a Transfermóvil. No escribas el número receptor de la tienda.":"Escribe la línea desde la que enviaste el saldo móvil.";
- $("senderPhone").placeholder="51884050";
+ $("senderPhone").placeholder="xxxxxxxx";
  if($("reportedAmount").previousElementSibling)$("reportedAmount").previousElementSibling.textContent=isUsdt?"Cantidad exacta de USDT enviada":"Cantidad exacta de saldo móvil enviada";
  $("proofLabel").textContent=isUsdt?"Captura del envío USDT (obligatoria)":isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura completa de Transfermóvil (obligatoria)";
  $("proofHelp").textContent=isUsdt?"La captura debe mostrar la red, la dirección receptora, el importe y el hash de la transacción. La tienda comprobará el pago manualmente. JPG, PNG o WEBP; máximo 5 MB.":isMobile?"La captura debe mostrar el envío, el número receptor, la fecha y el importe. JPG, PNG o WEBP; máximo 5 MB.":"La captura debe mostrar el importe, la fecha, la tarjeta destinataria y el Nro. de transacción. JPG, PNG o WEBP; máximo 5 MB.";
@@ -2027,7 +2027,7 @@ function updateWalletDepositMethod(){
  const method=$("walletDepositMethod")?.value||"Transferencia CUP",isCup=method==="Transferencia CUP";
  const walletSender=$("walletDepositSenderPhone");
  if(walletSender&&!walletSender.dataset.cubaMobileHandler){walletSender.dataset.cubaMobileHandler="1";walletSender.addEventListener("input",()=>{walletSender.value=cubaMobileInputValue(walletSender.value);});}
- if(walletSender){walletSender.inputMode="numeric";walletSender.placeholder="51884050";}
+ if(walletSender){walletSender.inputMode="numeric";walletSender.placeholder="xxxxxxxx";}
  if(method!==walletDepositMethodPrevious){
   walletDepositMethodPrevious=method;
   ["walletDepositAmount","walletDepositSenderPhone","walletDepositReference","walletDepositTxid"].forEach(id=>{const field=$(id);if(field)field.value="";});
