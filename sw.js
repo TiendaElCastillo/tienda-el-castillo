@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v95";
+const CACHE_NAME = "el-castillo-shell-v96";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,10 +16,6 @@ const APP_SHELL = [
   "./assets/games/free-fire.webp",
   "./assets/games/free-fire-tienda.webp",
   "./assets/games/mobile-legends-bang-bang.webp",
-  "./assets/games/mlbb-diamonds.svg",
-  "./assets/games/mlbb-weekly.svg",
-  "./assets/games/mlbb-monthly.svg",
-  "./assets/games/mlbb-twilight.svg",
   "./assets/admin-panel.css?v=26",
   "./assets/admin-panel.js?v=16",
   "./assets/diamond-pile.svg",
@@ -91,9 +87,14 @@ self.addEventListener("fetch", event => {
       url.pathname.includes("/npm/@supabase/supabase-js")) ||
     (url.hostname === "unpkg.com" &&
       url.pathname.startsWith("/@supabase/supabase-js@"));
+  const isProductArtwork =
+    url.hostname === "seagm-media.seagmcdn.com" ||
+    url.hostname === "cdn.prod.website-files.com" ||
+    url.hostname === "assets.nuuvem.com";
 
   // Auth, database reads, orders, payment proofs and provider calls are network-only.
-  if (!isLocal && !isSupabaseLibrary) return;
+  // Product artwork may be cached after its first successful load for later visits/offline use.
+  if (!isLocal && !isSupabaseLibrary && !isProductArtwork) return;
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
@@ -120,7 +121,8 @@ self.addEventListener("fetch", event => {
 
     try {
       const response = await fetch(request);
-      if (response && response.ok && response.type !== "opaque") {
+      if (response && ((response.ok && response.type !== "opaque") ||
+          (isProductArtwork && response.type === "opaque"))) {
         await cache.put(request, response.clone()).catch(() => {});
       }
       return response;
