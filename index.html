@@ -1091,12 +1091,12 @@ async function waitForCurrentPlayerValidation(productId,playerId,timeoutMs=30000
  const requestKey=String(productId)+"::"+String(playerId);
  const started=Date.now();
  while(Date.now()-started<timeoutMs){
-  if(validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(productId)&&validatedPlayerCheckout.playerId===playerId)return true;
+  if(isPlayerValidationCurrent(productId,playerId))return true;
   if($("player")?.value.trim()!==playerId||String($("product")?.value||"")!==String(productId))return false;
   if(playerValidationInFlightKey!==requestKey)return false;
   await new Promise(resolve=>setTimeout(resolve,250));
  }
- return Boolean(validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(productId)&&validatedPlayerCheckout.playerId===playerId);
+ return Boolean(isPlayerValidationCurrent(productId,playerId));
 }
 async function continueToPayment(){
  const message=$("checkoutPlayerMsg"),button=$("continueToPaymentBtn");
@@ -1106,7 +1106,7 @@ async function continueToPayment(){
  if(player.length<3||player.length>64){if(message)message.textContent="Escribe un ID válido de entre 3 y 64 caracteres.";return}
  if(p.provider_product_id){
   if(p.provider_validation_supported!==true){if(message)message.textContent="Este paquete no tiene verificación de ID disponible y no puede continuar.";return}
-  if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
+  if(!isPlayerValidationCurrent(p.id,player)){
    if(message)message.textContent="Estamos comprobando el ID. Espera el resultado y confirma que el nombre sea correcto.";
    if(button){button.disabled=true;button.textContent="Comprobando ID…";}
    try{
@@ -1114,12 +1114,12 @@ async function continueToPayment(){
     if(playerValidationInFlightKey===requestKey)await waitForCurrentPlayerValidation(p.id,player);
     else{
      await validatePlayerId();
-     if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
+     if(!isPlayerValidationCurrent(p.id,player)){
       await waitForCurrentPlayerValidation(p.id,player);
      }
     }
    }catch(e){}
-   if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(p.id)||validatedPlayerCheckout.playerId!==player){
+   if(!isPlayerValidationCurrent(p.id,player)){
     if(message)message.textContent="No se pudo validar este ID. Comprueba los números y vuelve a intentarlo.";
     if(button){button.disabled=false;button.textContent="Continuar al pago →";}
     return;
@@ -1218,7 +1218,14 @@ function syncPlayerRegionUI(){
  }
  if($("playername"))$("playername").readOnly=providerProduct;
 }
-async function validatePlayerId(){
+async function isPlayerValidationCurrent(productId,playerId){
+ const validation=validatedPlayerCheckout;
+ if(!validation||validation.productId!==String(productId)||validation.playerId!==String(playerId)||!validation.token)return false;
+ const expiry=Number(validation.expiresAt)||Date.parse(validation.validatedAt||"");
+ if(!Number.isFinite(expiry))return false;
+ return Date.now()<expiry-20000;
+}
+function validatePlayerId(){
  const playerField=$("player"),nameField=$("playername");
  if(!playerField||!nameField)return;
  const p=products.find(item=>String(item.id)===$("product")?.value);
@@ -1233,7 +1240,7 @@ async function validatePlayerId(){
   validatedPlayerCheckout=null;
   return;
  }
- if(validatedPlayerCheckout&&validatedPlayerCheckout.productId===String(p.id)&&validatedPlayerCheckout.playerId===playerId)return;
+ if(isPlayerValidationCurrent(p.id,playerId))return;
  if(!currentUser||!db){
   setPlayerValidationDisplay("is-error","!","Inicia sesión para comprobar el usuario automáticamente.","Inicia sesión para verificar");
   return;
@@ -1267,7 +1274,8 @@ async function validatePlayerId(){
    throw new Error("No se pudo comprobar el usuario en este momento.");
   }
   if(typeof result.validation_token!=="string"||!result.validation_token)throw new Error("No se pudo guardar la verificación. Vuelve a comprobar el ID.");
-  validatedPlayerCheckout={productId:String(p.id),playerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,token:result.validation_token,validatedAt:new Date().toISOString()};
+  const expiresIn=Math.max(30,Math.min(600,Number(result.expires_in_seconds)||600));
+  validatedPlayerCheckout={productId:String(p.id),playerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,token:result.validation_token,validatedAt:new Date().toISOString(),expiresAt:Date.now()+expiresIn*1000};
   nameField.value=result.player_name||"";
   setPlayerValidationDisplay("is-valid","✓",result.player_name?"Usuario válido. El ID corresponde a esta cuenta.":"Usuario válido. No se recibió el nombre del jugador.","ID verificado");
  }catch(e){
@@ -1598,10 +1606,32 @@ async function placeOrder(){
  if(!product){$("ordermsg").textContent="No hay productos disponibles.";return;}
  const player=$("player").value.trim();
  if(player.length<3||player.length>64){$("ordermsg").textContent="Revisa el ID del jugador (debe tener entre 3 y 64 caracteres).";return;}
+ if($("payment").value!=="Saldo de Tienda El Castillo"){
+  const pendingCheck=await db.from("orders").select("id,order_code")
+   .eq("user_id",currentUser.id).eq("product_id",product.id).eq("player_id",player)
+   .eq("payment_source","direct").eq("status","pending").is("proof_path",null)
+   .limit(1).maybeSingle();
+  if(pendingCheck.error){
+   $("ordermsg").textContent="No pudimos comprobar si ya tienes un pedido incompleto. Comprueba tu conexión antes de volver a intentarlo.";
+   return;
+  }
+  if(pendingCheck.data){
+   $("ordermsg").textContent="Ya existe el pedido "+pendingCheck.data.order_code+" sin comprobante. Abre «Mis pedidos» y cancélalo allí antes de crear otro.";
+   await loadMyOrders();showView("orders");return;
+  }
+ }
  if(product.provider_product_id){
   if(product.provider_validation_supported!==true){$("ordermsg").textContent="La comprobación automática no está disponible para esta región. No se puede continuar con este paquete.";return;}
-  if(!validatedPlayerCheckout||validatedPlayerCheckout.productId!==String(product.id)||validatedPlayerCheckout.playerId!==player){
-   $("ordermsg").textContent="Primero espera a que el ID quede marcado como usuario válido y comprueba que el nombre sea el correcto.";return;
+  if(!isPlayerValidationCurrent(product.id,player)){
+   $("ordermsg").textContent="La verificación del ID caducó. Estamos comprobando de nuevo tu jugador…";
+   await validatePlayerId();
+   if(!isPlayerValidationCurrent(product.id,player)&&playerValidationInFlightKey===String(product.id)+"::"+player){
+    await waitForCurrentPlayerValidation(product.id,player);
+   }
+   if(!isPlayerValidationCurrent(product.id,player)){
+    $("ordermsg").textContent="No se pudo renovar la verificación del ID. Comprueba la conexión y vuelve a intentarlo.";
+    return;
+   }
   }
  }
  if(!$("privacyConsent")?.checked){$("ordermsg").textContent="Lee y acepta la Política de privacidad y los Términos de compra para enviar tu solicitud.";return;}
@@ -1623,6 +1653,7 @@ async function placeOrder(){
    });
    if(result.error)throw new Error(result.error.message);
    clearWalletRequestIdentity(requestInfo);
+   resetPlayerValidation();
    $("ordermsg").textContent=result.data.already_processed?"Este pedido ya se había creado. No se descontó saldo otra vez. Pedido "+result.data.order_code+".":"Compra creada correctamente. Pedido "+result.data.order_code+". Se descontaron "+moneyUSD(result.data.price)+" USD de tu wallet.";
    $("checkoutDoneMessage").textContent="Tu pedido "+result.data.order_code+" fue pagado con el saldo de tu wallet. Puedes consultar su progreso en «Mis pedidos».";
    await Promise.all([loadWalletData(),loadMyOrders()]);
@@ -1651,6 +1682,7 @@ async function placeOrder(){
   const result=await db.from("orders").insert({user_id:currentUser.id,product_id:product.id,player_id:player,player_name:validatedPlayerCheckout?.playerName||$("playername").value.trim(),payment_method:method,status:"pending",provider_product_id:product.provider_product_id||null,provider_region:product.provider_region||null,player_id_validation_token:product.provider_product_id?validatedPlayerCheckout?.token||null:null,privacy_consent_at:new Date().toISOString(),privacy_policy_version:"2026-11-06-v1"}).select("id,order_code,price,payment_method").single();
   if(result.error){$("ordermsg").textContent="No pudimos crear el pedido: "+result.error.message;return;}
   const data=result.data;
+  resetPlayerValidation();
   if(button)button.textContent="Subiendo comprobante…";
   try{await uploadProofForOrder(data.id,method,file,reference,senderPhone,reportedAmount);}
   catch(uploadError){
@@ -1770,7 +1802,7 @@ async function loadMyOrders(){
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
     ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
-  const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id;
+  const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id&&(!o.central_one_status||o.central_one_status==="not_submitted");
   const wasCancelledBeforeProof=o.status==="cancelled"&&o.payment_source==="direct"&&!o.proof_path&&!o.central_one_order_id;
   const progress=wasCancelledBeforeProof
    ?'<p class="track-note">Este pedido se canceló antes de enviar el comprobante. No se autorizó ninguna recarga. Puedes crear un pedido nuevo desde la tienda si todavía necesitas el paquete.</p>'
