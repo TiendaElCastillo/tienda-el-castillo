@@ -15,6 +15,33 @@ const corsHeaders = {
 function reply(status: number, payload: unknown) {
   return new Response(JSON.stringify(payload), { status, headers: corsHeaders });
 }
+function providerTargetConfig(fields: unknown, schema: unknown): {ok:boolean;playerKey:string|null;zoneKey:string|null} {
+  if (!Array.isArray(fields) || !Array.isArray(schema)) return {ok:false,playerKey:null,zoneKey:null};
+  if (fields.length === 1 && fields[0] === "player_id" &&
+      (schema.length === 0 || (schema.length === 1 && schema[0]?.key === "player_id" && schema[0]?.type === "text"))) {
+    return {ok:true,playerKey:"player_id",zoneKey:null};
+  }
+  if (fields.length !== 2 || schema.length !== 2) return {ok:false,playerKey:null,zoneKey:null};
+  let playerKey: string | null = null;
+  let zoneKey: string | null = null;
+  for (const rawKey of fields) {
+    if (typeof rawKey !== "string" || !/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(rawKey)) {
+      return {ok:false,playerKey:null,zoneKey:null};
+    }
+    const descriptor = schema.find((item: any) => item && item.key === rawKey);
+    if (!descriptor || String(descriptor.type || "text").toLowerCase() !== "text") {
+      return {ok:false,playerKey:null,zoneKey:null};
+    }
+    const semantic = (rawKey + " " + String(descriptor.label || "")).toLowerCase();
+    if (/zone|server/.test(semantic)) zoneKey = rawKey;
+    else if (/player|user|account|game.?id|uid/.test(semantic)) playerKey = rawKey;
+    else return {ok:false,playerKey:null,zoneKey:null};
+  }
+  return playerKey && zoneKey && playerKey !== zoneKey
+    ? {ok:true,playerKey,zoneKey}
+    : {ok:false,playerKey:null,zoneKey:null};
+}
+
 function safeProviderSnapshot(order: any) {
   const items = Array.isArray(order?.items) ? order.items.map((item: any) => ({
     status: typeof item?.status === "string" ? item.status : null,
@@ -258,17 +285,23 @@ async function submitOrder(orderId: string, adminId: string) {
   }
   const fields = claim.provider_target_fields;
   const schema = claim.provider_target_schema;
-  const schemaAllowed = Array.isArray(schema) &&
-    (schema.length === 0 || (schema.length === 1 && schema[0]?.key === "player_id" && schema[0]?.type === "text"));
-  if (!Array.isArray(fields) || fields.length !== 1 || fields[0] !== "player_id" || !schemaAllowed) {
+  const target = providerTargetConfig(fields, schema);
+  if (!target.ok || !target.playerKey) {
     await finishOrder({orderId,status:"rejected",errorCode:"unsupported_target_schema",errorMessage:"El proveedor cambió los datos obligatorios del producto. La compra fue bloqueada."});
     return reply(409, {error:"unsupported_target_schema",message:"Los datos requeridos del paquete cambiaron. La recarga fue bloqueada para evitar un envío incorrecto."});
   }
   const targetId = String(claim.player_id || "").trim();
-  if (targetId.length < 3 || targetId.length > 64) {
-    await finishOrder({orderId,status:"rejected",errorCode:"invalid_player_id",errorMessage:"El ID de jugador no cumple el formato esperado."});
-    return reply(400, {error:"invalid_player_id",message:"El ID del jugador no es válido."});
+  const targetParts = target.zoneKey ? targetId.split("::") : [targetId];
+  const playerId = String(targetParts[0] || "").trim();
+  const zoneId = target.zoneKey ? String(targetParts[1] || "").trim() : "";
+  if (targetParts.length !== (target.zoneKey ? 2 : 1) ||
+      playerId.length < 3 || playerId.length > 64 ||
+      (target.zoneKey && (!zoneId || zoneId.length > 24))) {
+    await finishOrder({orderId,status:"rejected",errorCode:"invalid_player_target",errorMessage:"El ID y el Zone ID no cumplen el formato esperado."});
+    return reply(400, {error:"invalid_player_target",message:"El ID del jugador o el Zone ID no son válidos."});
   }
+  const targetPayload: Record<string,string> = { [target.playerKey]: playerId };
+  if (target.zoneKey) targetPayload[target.zoneKey] = zoneId;
   let preflight: any;
   try {
     preflight = await preflightPriceAndStock(claim);
@@ -299,7 +332,7 @@ async function submitOrder(orderId: string, adminId: string) {
     items: [{
       catalog_item_id: claim.provider_product_id,
       quantity: 1,
-      target_payload: { player_id: targetId },
+      target_payload: targetPayload,
     }],
     note: "Tienda El Castillo " + String(claim.order_code || orderId),
   };
