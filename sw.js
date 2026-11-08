@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v87";
+const CACHE_NAME = "el-castillo-shell-v88";
 const APP_SHELL = [
   "./",
   "./index.html",
