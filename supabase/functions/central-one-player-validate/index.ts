@@ -140,6 +140,13 @@ Deno.serve(async (req: Request) => {
     }
 
     const region = String(product.provider_region || "").toUpperCase();
+    if (String(product.game || "").trim().toLowerCase() === "mobile legends: bang bang" && region !== "GLOBAL") {
+      return reply(409, {
+        error: "mobile_legends_global_only",
+        region,
+        message: "Tienda El Castillo solo ofrece Mobile Legends en la región GLOBAL. Selecciona un paquete GLOBAL.",
+      });
+    }
     const target = providerTargetConfig(product.game, product.provider_target_fields, product.provider_target_schema);
     if (!target.ok || !target.playerKey || product.provider_requires_target !== true) {
       return reply(409, { error: "player_id_not_supported", message: "El proveedor no ha definido campos compatibles de ID de jugador y servidor para este paquete." });
