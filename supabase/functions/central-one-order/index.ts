@@ -182,10 +182,13 @@ async function preflightPriceAndStock(claim: any) {
   }
   const liveFields = item.target_fields;
   const liveSchema = item.target_schema;
-  const liveSchemaAllowed = Array.isArray(liveSchema) &&
-    (liveSchema.length === 0 || (liveSchema.length === 1 && liveSchema[0]?.key === "player_id" && liveSchema[0]?.type === "text"));
-  if (item.requires_target !== true || !Array.isArray(liveFields) || liveFields.length !== 1 ||
-      liveFields[0] !== "player_id" || !liveSchemaAllowed) {
+  const liveTarget = providerTargetConfig(liveFields, liveSchema);
+  const storedTarget = providerTargetConfig(claim.provider_target_fields, claim.provider_target_schema);
+  // Validate the live provider schema against the saved product schema.
+  // Mobile Legends requires both player ID and Zone ID; Free Fire keeps player_id only.
+  if (item.requires_target !== true || !liveTarget.ok || !storedTarget.ok ||
+      liveTarget.playerKey !== storedTarget.playerKey ||
+      liveTarget.zoneKey !== storedTarget.zoneKey) {
     return { ok:false, code:"provider_target_schema_changed", message:"Los datos obligatorios del paquete cambiaron en Central One. La compra quedó bloqueada para evitar una recarga equivocada." };
   }
 
