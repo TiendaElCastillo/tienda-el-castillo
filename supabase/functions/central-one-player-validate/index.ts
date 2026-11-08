@@ -59,6 +59,34 @@ function providerValidationFlag(data: any): boolean | null {
   return null;
 }
 
+function providerTargetConfig(game: string, fields: unknown, schema: unknown): {ok:boolean;playerKey:string|null;zoneKey:string|null} {
+  if (!Array.isArray(fields) || !Array.isArray(schema)) return {ok:false,playerKey:null,zoneKey:null};
+  if (fields.length === 1 && fields[0] === "player_id") {
+    return {ok:true,playerKey:"player_id",zoneKey:null};
+  }
+  if (String(game || "").trim().toLowerCase() !== "mobile legends: bang bang" || fields.length !== 2 || schema.length !== 2) {
+    return {ok:false,playerKey:null,zoneKey:null};
+  }
+  let playerKey: string | null = null;
+  let zoneKey: string | null = null;
+  for (const rawKey of fields) {
+    if (typeof rawKey !== "string" || !/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(rawKey)) {
+      return {ok:false,playerKey:null,zoneKey:null};
+    }
+    const descriptor = schema.find((item: any) => item && item.key === rawKey);
+    if (!descriptor || String(descriptor.type || "text").toLowerCase() !== "text") {
+      return {ok:false,playerKey:null,zoneKey:null};
+    }
+    const semantic = (rawKey + " " + String(descriptor.label || "")).toLowerCase();
+    if (/zone|server/.test(semantic)) zoneKey = rawKey;
+    else if (/player|user|account|game.?id|uid/.test(semantic)) playerKey = rawKey;
+    else return {ok:false,playerKey:null,zoneKey:null};
+  }
+  return playerKey && zoneKey && playerKey !== zoneKey
+    ? {ok:true,playerKey,zoneKey}
+    : {ok:false,playerKey:null,zoneKey:null};
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return reply(405, { error: "method_not_allowed" });
@@ -82,12 +110,13 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}));
     const productId = typeof body?.product_id === "string" ? body.product_id.trim() : "";
     const playerId = typeof body?.player_id === "string" ? body.player_id.trim() : "";
+    const zoneId = typeof body?.zone_id === "string" ? body.zone_id.trim() : "";
     if (!/^[0-9a-f-]{36}$/i.test(productId)) return reply(400, { error: "invalid_product" });
     if (playerId.length < 3 || playerId.length > 64) return reply(400, { error: "invalid_player_id" });
 
     const productUrl = new URL(`${SUPABASE_URL}/rest/v1/products`);
     productUrl.searchParams.set("id", `eq.${productId}`);
-    productUrl.searchParams.set("select", "id,game,name,active,provider_product_id,provider_region,provider_status,provider_in_stock,provider_requires_target,provider_target_fields,provider_validation_supported");
+    productUrl.searchParams.set("select", "id,game,name,active,provider_product_id,provider_region,provider_status,provider_in_stock,provider_requires_target,provider_target_fields,provider_target_schema,provider_validation_supported");
     productUrl.searchParams.set("limit", "1");
     const productResponse = await fetch(productUrl, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}` },
@@ -111,13 +140,22 @@ Deno.serve(async (req: Request) => {
     }
 
     const region = String(product.provider_region || "").toUpperCase();
-    const targetFields = Array.isArray(product.provider_target_fields) ? product.provider_target_fields : [];
-    const targetKey = targetFields.find((field: unknown) =>
-      typeof field === "string" && /^[a-zA-Z0-9_]{1,40}$/.test(field)
-    );
-    if (!targetKey || product.provider_requires_target !== true) {
-      return reply(409, { error: "player_id_not_supported", message: "El proveedor no ha definido un campo de ID válido para este paquete." });
+    const target = providerTargetConfig(product.game, product.provider_target_fields, product.provider_target_schema);
+    if (!target.ok || !target.playerKey || product.provider_requires_target !== true) {
+      return reply(409, { error: "player_id_not_supported", message: "El proveedor no ha definido campos compatibles de ID de jugador y servidor para este paquete." });
     }
+    if (target.zoneKey && (!zoneId || zoneId.length > 24)) {
+      return reply(400, { error: "invalid_zone_id", message: "Escribe el Zone ID del servidor antes de comprobar la cuenta.", region });
+    }
+    if (!target.zoneKey && zoneId) {
+      return reply(400, { error: "unexpected_zone_id", message: "Este paquete no requiere Zone ID. Vuelve a comprobar los datos.", region });
+    }
+    const canonicalPlayerId = target.zoneKey ? playerId + "::" + zoneId : playerId;
+    if (canonicalPlayerId.length > 64) {
+      return reply(400, { error: "invalid_player_target", message: "La combinación de ID y Zone ID supera el límite permitido.", region });
+    }
+    const targetPayload: Record<string, string> = { [target.playerKey]: playerId };
+    if (target.zoneKey) targetPayload[target.zoneKey] = zoneId;
 
     // This is a read/validation request only. It does not create an order or spend prepaid balance.
     const upstream = await fetch(`${CENTRAL_ONE_BASE}/player/validate`, {
@@ -128,7 +166,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         product_id: product.provider_product_id,
-        target_payload: { [targetKey]: playerId },
+        target_payload: targetPayload,
       }),
       signal: AbortSignal.timeout(20000),
     });
@@ -170,7 +208,7 @@ Deno.serve(async (req: Request) => {
     // never stored; the database checks its SHA-256 hash when the order is inserted.
     const now = new Date();
     const validationToken = crypto.randomUUID();
-    const playerIdBytes = new TextEncoder().encode(playerId);
+    const playerIdBytes = new TextEncoder().encode(canonicalPlayerId);
     const playerIdDigest = await crypto.subtle.digest("SHA-256", playerIdBytes);
     const playerIdHash = Array.from(new Uint8Array(playerIdDigest))
       .map((byte) => byte.toString(16).padStart(2, "0"))
