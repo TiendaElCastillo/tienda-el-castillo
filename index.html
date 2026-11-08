@@ -2558,11 +2558,14 @@ async function loadCentralOneSyncStatus(){
  const el=$("centralOneAutoSyncMsg");
  const result=await db.from("central_one_catalog_sync_status").select("checked_at,last_success_at,provider_status,last_error,product_count,changed").eq("id",1).maybeSingle();
  if(result.error){el.textContent="No se pudo leer el estado de sincronización: "+result.error.message;return;}
+ const pricing=await db.from("pricing_settings").select("usdt_cup_rate,mobile_credit_units,mobile_cost_cup,markup_percent").eq("id",1).maybeSingle();
+ const p=pricing.data;
+ const activeRules=p?" Reglas activas: 1 USDT = "+money(p.usdt_cup_rate)+" CUP; "+money(p.mobile_credit_units)+" de saldo = "+money(p.mobile_cost_cup)+" CUP; margen objetivo "+money(p.markup_percent)+"%.":"";
  const s=result.data;
- if(!s){el.textContent="Sincronización automática cada 15 minutos: pendiente de la primera consulta.";return;}
+ if(!s){el.textContent="Sincronización automática cada 15 minutos: pendiente de la primera consulta."+activeRules;return;}
  const checked=s.checked_at?new Date(s.checked_at).toLocaleString("es-ES"):"sin fecha";
- if(s.last_error){el.textContent="Sincronización automática cada 15 minutos. Último intento ("+checked+"): "+s.last_error+". Se conserva el último catálogo correcto.";return;}
- el.textContent="Sincronización automática cada 15 minutos. Última revisión correcta: "+checked+". "+Number(s.product_count||0).toLocaleString("es-ES")+" productos revisados. "+(s.changed?"Se detectaron cambios y se guardó una nueva versión.":"Sin cambios de precios ni disponibilidad.");
+ if(s.last_error){el.textContent="Sincronización automática cada 15 minutos. Último intento ("+checked+"): "+s.last_error+". Se conserva el último catálogo correcto."+activeRules;return;}
+ el.textContent="Sincronización automática cada 15 minutos. Última revisión correcta: "+checked+". "+Number(s.product_count||0).toLocaleString("es-ES")+" productos revisados. "+(s.changed?"Se detectaron cambios y se guardó una nueva versión de los precios y la disponibilidad.":"Sin cambios de precios ni disponibilidad.")+activeRules;
 }
 async function loadLatestCentralOneCatalog(){
  if(currentProfile?.role!=="admin")return;
