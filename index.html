@@ -213,7 +213,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Centro de notificaciones y buzón privado */
 .notification-header-btn{position:relative;display:inline-flex;align-items:center;gap:7px;padding-right:14px}.notification-header-btn>span:first-child{font-size:18px;line-height:1}.notification-badge{position:absolute;top:4px;right:5px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}.notification-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.notification-panel-head h2{margin:0}.notification-panel-head button{width:auto;margin:0}.notification-item{padding:15px;border:1px solid var(--line);border-radius:15px;margin:10px 0;background:#fff}.notification-item.unread{border-color:#c9dafc;background:#f7faff;box-shadow:inset 3px 0 #2468f2}.notification-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.notification-item-head strong{font-size:14px}.notification-item p{font-size:13px;line-height:1.55;margin:9px 0;color:#40516d;white-space:pre-wrap;overflow-wrap:anywhere}.notification-item small{font-size:10px;color:#7a879a}.notification-type,.notification-read-label{font-size:10px;color:#6f7f98;font-weight:750}.notification-read-btn{margin:10px 0 0;padding:8px 11px;font-size:11px}.notification-read-label{display:inline-block;margin-top:9px}.notification-header-btn .notification-label{display:inline}
 @media(max-width:420px){.notification-header-btn{padding:8px 10px}.notification-header-btn .notification-label{display:none}.header-actions{gap:5px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=25">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=26">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -1033,6 +1033,12 @@ function gamePaymentButton(method,rows){const enabled=isPaymentMethodReady(metho
 
 function freeFirePlanIcon(p,item){
  const group=freeFirePackageGroup(p);
+ if(fold(item?.name||"")==="mobile legends: bang bang"){
+  const label=fold(String(p.name||"")+" "+String(p.description||""));
+  const file=/twilight/.test(label)?"mlbb-twilight.svg":/mensual|monthly|elite/.test(label)?"mlbb-monthly.svg":/pase|semanal|weekly/.test(label)?"mlbb-weekly.svg":"mlbb-diamonds.svg";
+  const alt=/twilight/.test(label)?"Twilight Pass de Mobile Legends":/mensual|monthly|elite/.test(label)?"Paquete mensual de Mobile Legends":/pase|semanal|weekly/.test(label)?"Pase semanal de Mobile Legends":"Diamantes de Mobile Legends";
+  return '<img class="plan-icon-image" src="./assets/games/'+file+'" alt="'+alt+'" loading="lazy" decoding="async" width="64" height="64">';
+ }
  if(fold(item?.name||"")!=="free fire")return '<span class="plan-icon-emoji" aria-hidden="true">'+gameCurrency(item).icon+'</span>';
  const label=fold(String(p.name||"")+" "+String(p.description||""));
  const amount=Number(p.amount||0);
@@ -1092,6 +1098,17 @@ function renderGameDetail(){
    '<section id="freeFireExtraPanel" class="free-fire-category-panel '+(activeCategory==="extra"?"active":"")+'" role="tabpanel">'+
     (extraContent||empty("No hay ofertas extra para este método de pago"))+
    '</section>';
+ }else if(fold(item.name)==="mobile legends: bang bang"){
+  const diamonds=plans.filter(p=>freeFirePackageGroup(p)==="diamonds");
+  const passes=plans.filter(p=>freeFirePackageGroup(p)==="passes");
+  const activeCategory=activeFreeFireCategory==="extra"?"extra":"diamonds";
+  const section=(id,title,subtitle,icon,list)=>'<section class="mlbb-offer-section"><header class="mlbb-offer-head"><span>'+icon+'</span><div><strong>'+title+'</strong><small>'+subtitle+'</small></div><b>'+list.length+'</b></header><div class="ff-package-list">'+(list.length?list.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay ofertas disponibles para este pago.</div>')+'</div></section>';
+  $("gameDetailPlans").innerHTML='<div class="ff-browser-head"><div><span class="ff-eyebrow">CATÁLOGO MOBILE LEGENDS</span><h2>Elige tu recarga</h2><p>Diamantes y pases para tu cuenta</p></div><span class="ff-total">'+plans.length+' opciones</span></div>'+
+   '<div class="free-fire-category-tabs" role="tablist" aria-label="Categorías de Mobile Legends">'+
+   '<button type="button" class="free-fire-category-tab '+(activeCategory==="diamonds"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="diamonds")+'" onclick="selectFreeFireCategory(&quot;diamonds&quot;)"><span>💎 Diamantes</span><b>'+diamonds.length+'</b></button>'+
+   '<button type="button" class="free-fire-category-tab '+(activeCategory==="extra"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="extra")+'" onclick="selectFreeFireCategory(&quot;extra&quot;)"><span>🎟️ Pases y ofertas</span><b>'+passes.length+'</b></button></div>'+
+   '<div class="'+(activeCategory==="diamonds"?"":"hidden")+'">'+section("diamonds","Paquetes de diamantes","Recargas directas a tu cuenta","💎",diamonds)+'</div>'+
+   '<div class="'+(activeCategory==="extra"?"":"hidden")+'">'+section("passes","Pases y membresías","Ofertas especiales del juego","🎟️",passes)+'</div>';
  }else{
   $("gameDetailPlans").innerHTML='<div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
  }
@@ -3167,6 +3184,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=15" async></script>
+<script src="./assets/admin-panel.js?v=16" async></script>
 </body>
 </html>
