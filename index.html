@@ -209,6 +209,10 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Ajustes móviles: acceso sin textos montados unos sobre otros */
 @media(max-width:760px){.auth-layout{grid-template-columns:1fr;gap:12px;margin:12px auto}.auth-visual{min-height:0;padding:22px 21px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.auth-visual h1{max-width:none;font-size:clamp(27px,7vw,33px);line-height:1.08;margin:15px 0 10px}.auth-visual p{max-width:none;margin:0;font-size:14px;line-height:1.5;position:relative;z-index:2}.auth-visual .orb{display:none!important}.auth-benefits{position:static;left:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:15px;font-size:11px;line-height:1.4}.auth-panel{padding:20px}.auth-panel h2{font-size:22px}.auth-tabs{margin:17px 0}}
 @media(max-width:420px){.auth-visual{padding:20px 18px 18px;border-radius:22px}.auth-visual h1{font-size:29px}.auth-visual p{font-size:13px}.auth-benefits{gap:7px 10px;font-size:10px}.auth-panel{padding:18px}}
+
+/* Centro de notificaciones y buzón privado */
+.notification-header-btn{position:relative;display:inline-flex;align-items:center;gap:7px;padding-right:14px}.notification-header-btn>span:first-child{font-size:18px;line-height:1}.notification-badge{position:absolute;top:4px;right:5px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}.notification-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.notification-panel-head h2{margin:0}.notification-panel-head button{width:auto;margin:0}.notification-item{padding:15px;border:1px solid var(--line);border-radius:15px;margin:10px 0;background:#fff}.notification-item.unread{border-color:#c9dafc;background:#f7faff;box-shadow:inset 3px 0 #2468f2}.notification-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.notification-item-head strong{font-size:14px}.notification-item p{font-size:13px;line-height:1.55;margin:9px 0;color:#40516d;white-space:pre-wrap;overflow-wrap:anywhere}.notification-item small{font-size:10px;color:#7a879a}.notification-type,.notification-read-label{font-size:10px;color:#6f7f98;font-weight:750}.notification-read-btn{margin:10px 0 0;padding:8px 11px;font-size:11px}.notification-read-label{display:inline-block;margin-top:9px}.notification-header-btn .notification-label{display:inline}
+@media(max-width:420px){.notification-header-btn{padding:8px 10px}.notification-header-btn .notification-label{display:none}.header-actions{gap:5px}}
 </style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp><link rel="stylesheet" href="./assets/admin-panel.css?v=17">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
@@ -287,7 +291,7 @@ window.addEventListener("DOMContentLoaded",function(){
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
-<header id="siteHeader" class="site-header hidden"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><img class="brand-logo" src="./assets/castle-logo.webp" alt="Logo de Tienda El Castillo" width="42" height="42"><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn" type="button" onclick="currentUser?showView('profile'):openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
+<header id="siteHeader" class="site-header hidden"><div class="header-inner"><a class="brand" href="./" aria-label="Tienda El Castillo, inicio"><img class="brand-logo" src="./assets/castle-logo.webp" alt="Logo de Tienda El Castillo" width="42" height="42"><span class="brand-name"><strong>Tienda El Castillo</strong><span>Recargas digitales</span></span></a><div class="header-actions"><button class="header-btn notification-header-btn hidden" id="notificationsButton" type="button" onclick="openNotificationCenter()" aria-label="Mensajes y notificaciones"><span aria-hidden="true">✉</span><span class="notification-label">Mensajes</span><i id="notificationBadge" class="notification-badge hidden" aria-hidden="true"></i></button><button class="header-btn" type="button" onclick="currentUser?showView('profile'):openAccount()">Mi cuenta</button><button class="header-btn primary hidden" id="adminNav" type="button" onclick="showView('admin')">Admin</button></div></div></header>
 <main id="appMain">
 <section id="setup" class="hidden"><input id="url"><input id="key"><button onclick="connect()">Conectar</button></section>
 <section id="auth" class="auth-layout">
@@ -308,7 +312,7 @@ window.addEventListener("DOMContentLoaded",function(){
    <button id="resendConfirmationBtn" class="secondary-btn block-btn" type="button" onclick="resendSignupConfirmation()">Reenviar correo de confirmación</button>
    <p id="resendConfirmationMsg" class="msg" role="status" aria-live="polite"></p>
   </div><p class="subtle">No necesitas compartir la contraseña de tu juego. Para una recarga solo te pediremos los datos necesarios del pedido, como tu ID de jugador.</p><p class="auth-legal">Antes de continuar, revisa nuestra <a href="#privacidad" onclick="openPublicInfo('privacy');return false">Política de privacidad</a> y los <a href="#condiciones" onclick="openPublicInfo('terms');return false">Términos de compra</a>.</p>
-  <p class="auth-help">¿Necesitas ayuda? <a href="#ayuda" onclick="openPublicInfo('faq');return false">Preguntas frecuentes</a> · <a href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">WhatsApp +53 51884050</a></p>
+  <p class="auth-help">¿Necesitas ayuda? <a href="#ayuda" onclick="openPublicInfo('faq');return false">Preguntas frecuentes</a> · <a href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">WhatsApp +53 51884050 (solo incidencias que no puedas resolver desde la tienda)</a></p>
  </div>
 </section>
 <section id="store" class="hidden">
@@ -378,6 +382,7 @@ window.addEventListener("DOMContentLoaded",function(){
  </div>
 </div></section>
 <section id="ordersView" class="store-view hidden"><div class="panel"><h2>Mis pedidos</h2><p class="subtle">Revisa el estado y el progreso de tus solicitudes.</p><div id="myorders">Cargando...</div></div></section>
+<section id="notificationsView" class="store-view hidden"><div class="panel"><div class="notification-panel-head"><div><h2>Mensajes y notificaciones</h2><p class="subtle">Aquí recibirás avisos privados y actualizaciones del estado de tus pedidos.</p></div><button id="markAllNotificationsRead" class="secondary-btn hidden" type="button" onclick="markAllNotificationsRead()">Marcar todo como leído</button></div><div id="notificationList" aria-live="polite">Cargando mensajes...</div></div></section>
  
 <section id="profileView" class="store-view hidden">
  <div class="panel">
@@ -421,7 +426,7 @@ window.addEventListener("DOMContentLoaded",function(){
       <input class="proof-input" id="walletDepositProof" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby="walletDepositProofHelp walletDepositProofSelection" onchange="previewWalletDepositProof()">
       <label class="proof-dropzone" for="walletDepositProof">
        <span class="proof-icon" aria-hidden="true">↑</span>
-       <span class="proof-copy"><strong id="walletDepositProofTitle">Toca aquí para seleccionar tus capturas</strong><small id="walletDepositProofHelp">Selecciona la captura de Transfermóvil o del pago USDT. Puedes elegir de 1 a 5 imágenes JPG, PNG o WEBP, de hasta 5 MB cada una.</small></span>
+       <span class="proof-copy"><strong id="walletDepositProofTitle">Toca aquí para seleccionar tus capturas</strong><small id="walletDepositProofHelp">Selecciona la captura de Transfermóvil o del pago USDT. Adjunta solo las capturas necesarias: de 1 a 2 imágenes JPG, PNG o WEBP, de hasta 5 MB cada una.</small></span>
       </label>
       <small id="walletDepositProofSelection" class="wallet-proof-selection" role="status" aria-live="polite">Todavía no has adjuntado capturas. Pulsa el recuadro azul para elegirlas.</small>
      </div>
@@ -486,7 +491,7 @@ window.addEventListener("DOMContentLoaded",function(){
   <article class="faq-item"><h3>6. Comprobantes</h3><p>La captura debe ser legible y corresponder al pago realizado. La tienda puede rechazar comprobantes incompletos, alterados, repetidos o que no coincidan con los datos de la solicitud.</p></article>
   <p class="policy-note">Si una operación pagada no puede completarse, la tienda revisará la incidencia y comunicará la solución correspondiente antes de solicitar un nuevo pago. No pagues dos veces por el mismo pedido.</p>
  </div></section>
-<footer class="site-footer"><div class="footer-brand"><img src="./assets/castle-logo.webp" alt="" width="42" height="42"><div><strong>Tienda El Castillo</strong><span>Recargas digitales con atención personalizada</span></div></div><div class="footer-columns"><div><strong>Tu compra</strong><a href="#catalogo" onclick="showView('games');return false">Catálogo Free Fire</a><span>Transferencia CUP y saldo móvil</span><a href="#pedidos" onclick="currentUser?showView('orders'):openAccount();return false">Seguimiento de pedidos</a></div><div><strong>Ayuda e información</strong><a href="#ayuda" onclick="showView('faq');return false">Preguntas frecuentes</a><a href="#privacidad" onclick="showView('privacy');return false">Política de privacidad</a><a href="#condiciones" onclick="showView('terms');return false">Términos de compra</a><a href="./recargar-free-fire-cuba.html">Guía de recarga</a><a class="footer-whatsapp" href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">WhatsApp: +53 51884050</a></div></div><p class="footer-legal">Tienda El Castillo es un servicio independiente. No está afiliada ni respaldada por Garena. Las marcas y juegos pertenecen a sus respectivos propietarios.</p></footer>
+<footer class="site-footer"><div class="footer-brand"><img src="./assets/castle-logo.webp" alt="" width="42" height="42"><div><strong>Tienda El Castillo</strong><span>Recargas digitales con atención personalizada</span></div></div><div class="footer-columns"><div><strong>Tu compra</strong><a href="#catalogo" onclick="showView('games');return false">Catálogo Free Fire</a><span>Transferencia CUP y saldo móvil</span><a href="#pedidos" onclick="currentUser?showView('orders'):openAccount();return false">Seguimiento de pedidos</a></div><div><strong>Ayuda e información</strong><a href="#ayuda" onclick="showView('faq');return false">Preguntas frecuentes</a><a href="#privacidad" onclick="showView('privacy');return false">Política de privacidad</a><a href="#condiciones" onclick="showView('terms');return false">Términos de compra</a><a href="./recargar-free-fire-cuba.html">Guía de recarga</a><a class="footer-whatsapp" href="https://wa.me/5351884050" target="_blank" rel="noopener noreferrer">Soporte WhatsApp · solo cuando sea necesario: +53 51884050</a></div></div><p class="footer-legal">Tienda El Castillo es un servicio independiente. No está afiliada ni respaldada por Garena. Las marcas y juegos pertenecen a sus respectivos propietarios.</p></footer>
 </section>
 </main>
 <nav id="bottomNav" class="bottom-nav hidden" aria-label="Navegación inferior"><div class="bottom-nav-inner"><button class="nav-item active" data-view="home" onclick="showView('home')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Inicio</button><button class="nav-item" data-view="games" onclick="showView('games')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.2"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.2"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.2"/></svg></span>Juegos</button><button class="nav-item" data-view="orders" onclick="showView('orders')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h8l4 4V21H7z"/><path d="M15 3.5V8h4M10 12h6M10 16h6"/></svg></span>Pedidos</button><button class="nav-item" data-view="profile" onclick="showView('profile')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"/></svg></span>Perfil</button></div></nav>
@@ -540,7 +545,7 @@ function loadCastleTurnstile(){
 }
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, walletRequestMemory={}, walletDepositMethodPrevious="Transferencia CUP", walletSettings={cup_per_usd:1160,usdt_network:"BNB Smart Chain (BEP20)",usdt_address:"0x30d000d6B30f241986186BfFeCa8A449E5790C1D"}, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds";
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, walletRequestMemory={}, walletDepositMethodPrevious="Transferencia CUP", walletSettings={cup_per_usd:1160,usdt_network:"BNB Smart Chain (BEP20)",usdt_address:"0x30d000d6B30f241986186BfFeCa8A449E5790C1D"}, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds", notificationPoll=null;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -834,6 +839,9 @@ async function openStore(user){
  $("welcome").textContent="Hola, "+(currentProfile.full_name||user.email);
  $("profileEmail").textContent=user.email||"";
  if(currentProfile.role==="admin") $("adminNav").classList.remove("hidden");
+ $("notificationsButton")?.classList.remove("hidden");
+ try{await loadNotifications();}catch(notificationError){console.error("No se pudieron cargar los avisos:",notificationError);}
+ startNotificationPolling();
  // Load payment methods first: the catalogue renderer depends on this data.
  try{await loadPaymentMethods({render:false});}
  catch(paymentError){
@@ -1139,9 +1147,9 @@ function chooseCheckoutPaymentMethod(name){
 }
 function showView(name){
  if(name==="giftcards")name="games";
- if(["orders","profile","admin"].includes(name)&&!currentUser){openAccount();$("authmsg").textContent="Inicia sesión para acceder a tu cuenta y consultar tus pedidos.";return}
+ if(["orders","notifications","profile","admin"].includes(name)&&!currentUser){openAccount();$("authmsg").textContent="Inicia sesión para acceder a tu cuenta y consultar tus pedidos.";return}
  if(name==="admin"&&currentProfile?.role!=="admin"){$("adminNav")?.classList.add("hidden");$("admin")?.classList.add("hidden");showView("profile");return}
- const views={home:"homeView",games:"gamesView",giftcards:"giftcardsView",search:"searchView",checkout:"checkoutView",orders:"ordersView",profile:"profileView",admin:"admin",faq:"faqView",privacy:"privacyView",terms:"termsView"};
+ const views={home:"homeView",games:"gamesView",giftcards:"giftcardsView",search:"searchView",checkout:"checkoutView",orders:"ordersView",notifications:"notificationsView",profile:"profileView",admin:"admin",faq:"faqView",privacy:"privacyView",terms:"termsView"};
  Object.values(views).forEach(id=>$(id)?.classList.add("hidden"));
  $(views[name]||views.home)?.classList.remove("hidden");
  document.querySelectorAll("#bottomNav [data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
@@ -1656,6 +1664,66 @@ async function placeOrder(){
  }catch(e){$("ordermsg").textContent="Error de conexión. Comprueba tu conexión e inténtalo de nuevo. Si el pedido llegó a crearse, revisa «Mis pedidos» antes de repetirlo.";}
  finally{if(button)window.updateCheckoutSubmitState?.();}
 }
+
+function openNotificationCenter(){
+ if(!currentUser){openAccount();return;}
+ showView("notifications");
+ loadNotifications();
+}
+async function loadNotifications(){
+ const list=$("notificationList"),badge=$("notificationBadge"),button=$("notificationsButton");
+ if(!currentUser||!db){badge?.classList.add("hidden");return;}
+ const {data,error}=await db.from("user_notifications")
+  .select("id,order_id,kind,title,message,created_at,read_at")
+  .eq("user_id",currentUser.id)
+  .order("created_at",{ascending:false})
+  .limit(50);
+ if(error){
+  if(list)list.textContent="No se pudieron cargar los mensajes. Comprueba tu conexión y vuelve a intentarlo.";
+  return;
+ }
+ const rows=data||[],unread=rows.filter(item=>!item.read_at).length;
+ badge?.classList.toggle("hidden",unread===0);
+ button?.setAttribute("aria-label",unread?"Mensajes y notificaciones: "+unread+" sin leer":"Mensajes y notificaciones");
+ $("markAllNotificationsRead")?.classList.toggle("hidden",unread===0);
+ if(!list)return;
+ if(!rows.length){list.innerHTML='<p class="empty-note">Todavía no tienes mensajes ni notificaciones. Aquí aparecerán los avisos y los cambios de estado de tus pedidos.</p>';return;}
+ list.innerHTML=rows.map(item=>{
+  const isRead=Boolean(item.read_at);
+  const kind=item.kind==="order_status"?"Actualización de pedido":"Mensaje de la tienda";
+  return '<article class="notification-item '+(isRead?"read":"unread")+'"><div class="notification-item-head"><strong>'+clean(item.title)+'</strong><span class="notification-type">'+kind+'</span></div><p>'+clean(item.message)+'</p><small>'+new Date(item.created_at).toLocaleString("es-CU")+'</small>'+
+   (isRead?'<span class="notification-read-label">Leído</span>':'<button class="secondary-btn notification-read-btn" type="button" data-notification-read="'+clean(item.id)+'">Marcar como leído</button>')+'</article>';
+ }).join("");
+ list.querySelectorAll("[data-notification-read]").forEach(readButton=>{
+  readButton.addEventListener("click",()=>markNotificationRead(readButton.dataset.notificationRead));
+ });
+}
+async function markNotificationRead(notificationId){
+ if(!currentUser||!notificationId)return;
+ const result=await db.from("user_notifications").update({read_at:new Date().toISOString()})
+  .eq("id",notificationId).eq("user_id",currentUser.id).is("read_at",null).select("id").maybeSingle();
+ if(result.error){window.alert("No se pudo marcar el mensaje como leído. Comprueba tu conexión.");return;}
+ await loadNotifications();
+}
+async function markAllNotificationsRead(){
+ if(!currentUser)return;
+ const result=await db.from("user_notifications").update({read_at:new Date().toISOString()})
+  .eq("user_id",currentUser.id).is("read_at",null);
+ if(result.error){window.alert("No se pudieron marcar los mensajes como leídos. Comprueba tu conexión.");return;}
+ await loadNotifications();
+}
+function stopNotificationPolling(){
+ if(notificationPoll){clearInterval(notificationPoll);notificationPoll=null;}
+}
+function startNotificationPolling(){
+ stopNotificationPolling();
+ if(!currentUser)return;
+ const userId=currentUser.id;
+ notificationPoll=setInterval(()=>{
+  if(currentUser?.id===userId&&document.visibilityState!=="hidden")loadNotifications();
+ },60000);
+}
+
 async function loadMyOrders(){
  if(!currentUser)return;
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
@@ -1671,12 +1739,10 @@ async function loadMyOrders(){
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
     ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
-  const supportMessage="Hola, necesito ayuda con el pedido "+String(o.order_code||"")+" de Tienda El Castillo.";
-  const supportUrl="https://wa.me/5351884050?text="+encodeURIComponent(supportMessage);
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+(o.payment_source==="wallet"?" · USD":"")+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
-   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+proofNote+providerInfo+'<a class="order-support-link" href="'+supportUrl+'" target="_blank" rel="noopener noreferrer">Contactar por WhatsApp sobre este pedido</a></article>';
+   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+proofNote+providerInfo+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
 }
 
@@ -1782,6 +1848,7 @@ function updateWalletDepositInstructions(){
  }
 }
 async function uploadWalletDepositProofs(depositId,method,files,reference,senderPhone,txid){
+ if(!Array.isArray(files)||files.length<1||files.length>2)throw new Error("Cada solicitud admite entre 1 y 2 imágenes de comprobante.");
  const paths=[];
  for(const file of files){
   const invalid=validateProofFile(file);if(invalid)throw new Error(invalid);
@@ -1807,7 +1874,7 @@ function previewWalletDepositProof(){
  if(!input||!title||!status)return false;
  const files=Array.from(input.files||[]);
  if(!files.length){title.textContent="Toca aquí para seleccionar tus capturas";status.textContent="Todavía no has adjuntado capturas. Pulsa el recuadro azul para elegirlas.";return false;}
- if(files.length>5){title.textContent="Has seleccionado demasiadas imágenes";status.textContent="El máximo permitido son 5 imágenes. Quita las adicionales y vuelve a elegir.";return false;}
+ if(files.length>2){title.textContent="Has seleccionado demasiadas imágenes";status.textContent="El máximo permitido son 2 imágenes. Quita las adicionales y vuelve a elegir.";return false;}
  for(const file of files){const invalid=validateProofFile(file);if(invalid){title.textContent="Revisa las imágenes seleccionadas";status.textContent=invalid;return false;}}
  title.textContent=files.length===1?"1 captura seleccionada":files.length+" capturas seleccionadas";
  status.textContent=files.map(file=>file.name).join(" · ");
@@ -1862,7 +1929,7 @@ async function requestWalletDeposit(){
  }else if(!/^[a-f0-9]{64}$/.test(txid)){
   $("walletDepositMsg").textContent="El TxID debe tener 64 caracteres hexadecimales. Comprueba la red y copia el hash completo.";return;
  }
- if(files.length<1||files.length>5){$("walletDepositMsg").textContent="Adjunta entre 1 y 5 comprobantes.";return;}
+ if(files.length<1||files.length>2){$("walletDepositMsg").textContent="Adjunta entre 1 y 2 comprobantes, solo los necesarios para comprobar el pago.";return;}
  for(const file of files){const invalid=validateProofFile(file);if(invalid){$("walletDepositMsg").textContent=invalid;return;}}
  if(!paymentMethods.some(m=>m.name===method&&m.active&&m.instructions)){$("walletDepositMsg").textContent="Ese método no está configurado. No realices el pago.";return;}
  const button=$("walletDepositSubmit");if(button){button.disabled=true;button.textContent="Creando solicitud…";}
@@ -1883,8 +1950,9 @@ async function requestWalletDeposit(){
  finally{if(button){button.disabled=false;button.textContent="Enviar solicitud de depósito";}}
 }
 async function attachWalletDepositProof(id,method){
- const files=Array.from($("wallet-retry-proof-"+id)?.files||[]),reference=$("wallet-retry-reference-"+id)?.value||"",sender=$("wallet-retry-sender-"+id)?.value||"",txid=$("wallet-retry-txid-"+id)?.value||"",button=$("wallet-retry-button-"+id);
+ const input=$("wallet-retry-proof-"+id),files=Array.from(input?.files||[]),reference=$("wallet-retry-reference-"+id)?.value||"",sender=$("wallet-retry-sender-"+id)?.value||"",txid=$("wallet-retry-txid-"+id)?.value||"",button=$("wallet-retry-button-"+id);
  if(!files.length){const msg=$("wallet-retry-msg-"+id);if(msg)msg.textContent="Selecciona al menos un comprobante.";return;}
+ if(files.length>Number(input?.dataset.maxFiles||2)){const msg=$("wallet-retry-msg-"+id);if(msg)msg.textContent="Solo puedes añadir "+Number(input?.dataset.maxFiles||2)+" imagen(es) más a esta solicitud. El máximo total es 2.";return;}
  if(button){button.disabled=true;button.textContent="Enviando…";}
  try{await uploadWalletDepositProofs(id,method,files,reference,sender,txid);await loadMyWalletDeposits();if(currentProfile?.role==="admin")await loadWalletDepositsAdmin();}
  catch(e){const msg=$("wallet-retry-msg-"+id);if(msg)msg.textContent=e.message||"No se pudo enviar el comprobante.";}
@@ -1916,12 +1984,14 @@ async function loadMyWalletDeposits(){
  for(const d of data){
   const cup=d.currency==="CUP",currency=cup?"CUP":"USDT",status=d.status==="approved"?"Aprobado":d.status==="rejected"?"Rechazado":d.status==="payment_review"?"En revisión":"Pendiente";
   const statusClass=d.status==="approved"?"approved":d.status==="rejected"?"rejected":"";
-  const canUpload=["pending","payment_review"].includes(d.status);
-  const retry=canUpload?'<div class="field"><label for="wallet-retry-proof-'+clean(d.id)+'">Añadir comprobantes (1 a 5 imágenes)</label><input id="wallet-retry-proof-'+clean(d.id)+'" type="file" multiple accept="image/jpeg,image/png,image/webp"></div>'+
+  const proofRows=proofsByDeposit.get(d.id)||[];
+  const remainingProofSlots=Math.max(0,2-proofRows.length);
+  const canUpload=["pending","payment_review"].includes(d.status)&&remainingProofSlots>0;
+  const retry=canUpload?'<div class="field"><label for="wallet-retry-proof-'+clean(d.id)+'">Añadir comprobante (máximo '+remainingProofSlots+' imagen'+(remainingProofSlots===1?"":"es")+' adicional'+(remainingProofSlots===1?"":"es")+'</label><input id="wallet-retry-proof-'+clean(d.id)+'" data-max-files="'+remainingProofSlots+'" type="file" multiple accept="image/jpeg,image/png,image/webp"></div>'+
    (cup?'<div class="field"><label for="wallet-retry-sender-'+clean(d.id)+'">Teléfono de origen</label><input id="wallet-retry-sender-'+clean(d.id)+'" value="'+clean(d.sender_phone||"")+'" placeholder="+53 5XXXXXXX"></div><div class="field"><label for="wallet-retry-reference-'+clean(d.id)+'">Nro. de Transacción</label><input id="wallet-retry-reference-'+clean(d.id)+'" value="'+clean(d.payment_reference||"")+'"></div>':
    '<div class="field"><label for="wallet-retry-txid-'+clean(d.id)+'">TxID</label><input id="wallet-retry-txid-'+clean(d.id)+'" maxlength="64" value="'+clean(d.txid||"")+'"></div>')+
    '<button id="wallet-retry-button-'+clean(d.id)+'" class="secondary-btn" type="button" onclick="attachWalletDepositProof(\''+clean(d.id)+'\',\''+clean(d.payment_method)+'\')">Enviar comprobantes</button><p id="wallet-retry-msg-'+clean(d.id)+'" class="msg" role="status"></p>':'';
-  const links=await createSignedWalletProofLinks(proofsByDeposit.get(d.id)||[]);
+  const links=await createSignedWalletProofLinks(proofRows);
   const credited=d.credited_amount==null?"Pendiente de cálculo":moneyUSD(d.credited_amount)+" USD";
   cards.push('<article class="wallet-history-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><strong>Depósito · '+money(d.amount)+' '+currency+'</strong><span class="wallet-status '+statusClass+'">'+status+'</span></div><div class="order-detail">'+clean(d.payment_method)+'<br>Saldo previsto: '+credited+(d.status==="approved"?"<br>Saldo acreditado: "+moneyUSD(d.credited_amount)+" USD":"")+'<br>Fecha: '+new Date(d.created_at).toLocaleString("es-CU")+(d.exchange_rate?"<br>Tasa aplicada: "+money(d.exchange_rate)+" CUP/USD":"")+(d.network?"<br>Red: "+clean(d.network):"")+(d.payment_reference?"<br>Referencia: "+clean(d.payment_reference):"")+'</div>'+links+(d.admin_notes?'<p class="wallet-warning"><strong>Motivo del rechazo:</strong> '+clean(d.admin_notes)+'</p>':'')+retry+'</article>');
  }
@@ -2059,6 +2129,33 @@ function centralOneStatusText(value){
   cancelled:"Cancelado"
  };
  return labels[value]||clean(value||"Sin estado");
+}
+
+
+async function sendAdminOrderNotice(button){
+ if(currentProfile?.role!=="admin"||!currentUser||!button)return;
+ const orderId=button.dataset.orderId,userId=button.dataset.userId,input=$(button.dataset.messageInput),feedback=$(button.dataset.feedbackId);
+ const message=String(input?.value||"").trim();
+ if(!orderId||!userId){if(feedback)feedback.textContent="No se pudo identificar al cliente de este pedido.";return;}
+ if(message.length<3||message.length>1000){if(feedback)feedback.textContent="Escribe un mensaje de entre 3 y 1000 caracteres.";return;}
+ button.disabled=true;button.textContent="Enviando aviso…";
+ if(feedback)feedback.textContent="";
+ try{
+  const orderCode=String(button.closest(".order-card")?.querySelector("b")?.textContent||"");
+  const {data,error}=await db.rpc("admin_send_user_notification",{
+   p_user_id:userId,p_order_id:orderId,
+   p_title:"Aviso sobre el pedido "+orderCode,
+   p_message:message
+  });
+  if(error)throw new Error(error.message);
+  if(!data)throw new Error("Supabase no confirmó el envío.");
+  input.value="";
+  if(feedback)feedback.textContent="Aviso enviado al buzón privado del cliente.";
+ }catch(error){
+  if(feedback)feedback.textContent="No se pudo enviar el aviso: "+(error.message||"comprueba la conexión.");
+ }finally{
+  button.disabled=false;button.textContent="Enviar al buzón del cliente";
+ }
 }
 
 async function updateOrderStatus(orderId,selectId){
@@ -2541,6 +2638,8 @@ async function loadAllOrders(options={}){
    :canRefresh
     ?'<div class="order-actions"><button type="button" data-provider-refresh data-order-id="'+clean(o.id)+'">Actualizar estado en Central One</button></div>'
     :"";
+  const noticeId="order-notice-"+String(o.id);
+  const noticeComposer='<details class="admin-notice-compose"><summary>Enviar aviso privado al cliente</summary><label for="'+noticeId+'">Mensaje (3 a 1000 caracteres)</label><textarea id="'+noticeId+'" maxlength="1000" rows="3" placeholder="Escribe una advertencia o una actualización importante sobre este pedido."></textarea><button type="button" class="secondary-btn" data-send-user-notice data-order-id="'+clean(o.id)+'" data-user-id="'+clean(o.user_id)+'" data-message-input="'+noticeId+'" data-feedback-id="'+noticeId+'-feedback">Enviar al buzón del cliente</button><p id="'+noticeId+'-feedback" class="msg" role="status"></p></details>';
   return '<div class="order-card" data-order-status="'+clean(o.status)+'" data-provider-status="'+clean(providerStatus)+'" data-provider-id="'+clean(o.central_one_order_id||"")+'"><b>'+clean(o.order_code)+'</b>'+
    '<div class="order-detail">'+clean(o.game)+' – '+clean(o.package_name)+'<br>'+
    'Jugador: '+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'<br>'+
@@ -2552,7 +2651,7 @@ async function loadAllOrders(options={}){
    'Estado actual: <span class="status">'+statusText(o.status)+'</span></div>'+
    providerInfo+
    (allowed.length?'<div class="order-actions"><select id="'+selectId+'" aria-label="Acción para pedido '+clean(o.order_code)+'">'+options+'</select><button type="button" data-update-order data-order-id="'+clean(o.id)+'" data-select-id="'+selectId+'">'+actionLabel+'</button></div>':"")+
-   providerAction+
+   providerAction+noticeComposer+
    (o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':"")+
   '</div>';
  }))).join("");
@@ -2592,12 +2691,16 @@ async function loadAllOrders(options={}){
  container.querySelectorAll("[data-provider-refresh]").forEach(button=>{
   button.addEventListener("click",()=>refreshCentralOneOrder(button.dataset.orderId));
  });
+ container.querySelectorAll("[data-send-user-notice]").forEach(button=>{
+  button.addEventListener("click",()=>sendAdminOrderNotice(button));
+ });
 }
 async function logout(){
  stopCustomerOrderRealtime();
  stopAdminPaymentPolling();
+ stopNotificationPolling();
  await db.auth.signOut();pendingCheckoutAfterLogin=false;currentUser=null;currentProfile=null;
- $("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");
+ $("siteHeader").classList.add("hidden");$("store").classList.add("hidden");$("bottomNav").classList.add("hidden");$("adminNav").classList.add("hidden");$("notificationsButton")?.classList.add("hidden");$("notificationBadge")?.classList.add("hidden");
  $("auth").classList.remove("hidden");setAuthMode("login");window.scrollTo({top:0,behavior:"smooth"});
 }
 const launchCastleStore=()=>{
