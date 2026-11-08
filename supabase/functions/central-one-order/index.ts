@@ -185,17 +185,38 @@ async function preflightPriceAndStock(claim: any) {
   else return { ok:false, code:"unsupported_payment_method", message:"No reconocemos la moneda de cobro del pedido. No se enviará la recarga." };
 
   const wholesaleCup = wholesale * rate;
-  const actualMarkup = (retailCup / wholesaleCup - 1) * 100;
-  // Allow 0.10 percentage points for two-decimal customer prices (not a price-loss exception).
-  if (actualMarkup + 0.10 < markup) {
+  const grossProfitCup = retailCup - wholesaleCup;
+  const actualMarkup = (grossProfitCup / wholesaleCup) * 100;
+  const requiredRetailCup = wholesaleCup * (1 + markup / 100);
+  const priceCheck = {
+    payment_method: method,
+    customer_retail_cup: Number(retailCup.toFixed(2)),
+    provider_wholesale_usd: Number(wholesale.toFixed(4)),
+    usdt_cup_rate: Number(rate.toFixed(2)),
+    provider_cost_cup: Number(wholesaleCup.toFixed(2)),
+    gross_profit_cup: Number(grossProfitCup.toFixed(2)),
+    margin_percent: Number(actualMarkup.toFixed(2)),
+    target_markup_percent: Number(markup.toFixed(2)),
+    target_retail_cup: Number(requiredRetailCup.toFixed(2)),
+    is_profitable: grossProfitCup > 0,
+    below_target_margin: actualMarkup < markup,
+  };
+
+  // Hard stop only at zero or negative gross profit. A positive result can proceed,
+  // but a margin below the configured target is explicitly surfaced to the admin.
+  if (grossProfitCup <= 0) {
     return {
       ok:false,
-      code:"provider_price_above_retail",
-      message:"El precio de Central One cambió y este pedido ya no alcanza el recargo mínimo configurado (" +
-        markup.toFixed(2) + " %). No se ha creado la orden ni se ha descontado saldo. Revisa el precio y decide cómo atender al cliente.",
+      code:"provider_cost_not_covered",
+      message:"ALERTA DE PÉRDIDA: el cliente pagó " + retailCup.toFixed(2) +
+        " CUP y Central One cobra " + wholesaleCup.toFixed(2) +
+        " CUP al cambio de " + rate.toFixed(2) + " CUP/USDT. Resultado: " +
+        Math.abs(grossProfitCup).toFixed(2) +
+        " CUP de pérdida. La recarga NO se enviará a Central One.",
       wholesale_price: String(item.reseller_price),
-      required_retail_cup: Number((wholesaleCup * (1 + markup / 100)).toFixed(2)),
+      required_retail_cup: Number(requiredRetailCup.toFixed(2)),
       actual_retail_cup: Number(retailCup.toFixed(2)),
+      price_check: priceCheck,
     };
   }
   return {
@@ -204,6 +225,10 @@ async function preflightPriceAndStock(claim: any) {
     currency: String(item.currency),
     retail_cup: Number(retailCup.toFixed(2)),
     margin_percent: Number(actualMarkup.toFixed(2)),
+    price_check: priceCheck,
+    warning: priceCheck.below_target_margin
+      ? "El pedido deja beneficio, pero el margen está por debajo del objetivo configurado de " + markup.toFixed(2) + " %."
+      : null,
   };
 }
 
@@ -252,12 +277,19 @@ async function submitOrder(orderId: string, adminId: string) {
       orderId, status:"retryable",
       errorCode:preflight.code,
       errorMessage:preflight.message,
-      response:{ preflight:"blocked", required_retail_cup:preflight.required_retail_cup??null,
-        actual_retail_cup:preflight.actual_retail_cup??null },
+      response:{
+        preflight:"blocked",
+        required_retail_cup:preflight.required_retail_cup??null,
+        actual_retail_cup:preflight.actual_retail_cup??null,
+        price_check:preflight.price_check??null,
+        warning:preflight.warning??null,
+      },
     });
     return reply(409, {
       error:preflight.code, message:preflight.message,
       retryable:true, no_provider_order_created:true,
+      price_check:preflight.price_check??null,
+      warning:preflight.warning??null,
     });
   }
   const requestBody = {
@@ -321,10 +353,12 @@ async function submitOrder(orderId: string, adminId: string) {
         status:providerStatus,
         reference_code:typeof providerOrder.reference_code==="string"?providerOrder.reference_code:null,
         currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,
+        price_check:preflight.price_check,
+        warning:preflight.warning,
       },
       errorCode:null,errorMessage:null,
     });
-    return reply(200, {ok:true,provider_order_id:providerOrderId,reference_code:providerOrder.reference_code||null,provider_status:providerStatus,provider_total_sale_amount:typeof providerOrder.total_sale_amount==="string"?providerOrder.total_sale_amount:null,provider_currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,preflight_margin_percent:preflight.margin_percent,local:saved});
+    return reply(200, {ok:true,provider_order_id:providerOrderId,reference_code:providerOrder.reference_code||null,provider_status:providerStatus,provider_total_sale_amount:typeof providerOrder.total_sale_amount==="string"?providerOrder.total_sale_amount:null,provider_currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,preflight_margin_percent:preflight.margin_percent,price_check:preflight.price_check,warning:preflight.warning,local:saved});
   } catch (error) {
     const message = error instanceof Error ? error.message : "Fallo de comunicación con Central One.";
     try {
