@@ -2867,7 +2867,7 @@ async function loadAllOrders(options={}){
    const belowTarget=priceCheck.below_target_margin===true;
    const profit=Number(priceCheck.gross_profit_cup||0);
    const auditClass=!profitable?"is-loss":belowTarget?"is-warning":"is-profitable";
-   const auditTitle=!profitable?"OPERACIÓN BLOQUEADA · PÉRDIDA":belowTarget?"Beneficio positivo · margen bajo el objetivo":"Operación rentable";
+   const auditTitle=!profitable?(profit<0?"OPERACIÓN BLOQUEADA · PÉRDIDA":"OPERACIÓN BLOQUEADA · SIN BENEFICIO"):belowTarget?"Beneficio positivo · margen bajo el objetivo":"Operación rentable";
    priceCheckHtml='<section class="admin-profit-audit '+auditClass+'"><h4>'+auditTitle+'</h4><div class="admin-profit-grid">'+
     '<div><span>Cliente (equiv. CUP)</span><strong>'+money(priceCheck.customer_retail_cup)+' CUP</strong></div>'+
     '<div><span>Central One</span><strong>'+money(priceCheck.provider_cost_cup)+' CUP</strong></div>'+
