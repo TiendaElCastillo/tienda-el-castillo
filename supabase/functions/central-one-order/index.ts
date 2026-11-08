@@ -324,7 +324,7 @@ async function submitOrder(orderId: string, adminId: string) {
       await finishOrder({
         orderId, status: retryState ? "retryable" : "rejected",
         requestId, errorCode: err.code, errorMessage: err.message,
-        response: { http_status: upstream.status, error: err },
+        response: { http_status: upstream.status, error: err, price_check: preflight.price_check },
       });
       return reply(upstream.status >= 500 ? 502 : upstream.status, {
         error: err.code, message: err.message, request_id: requestId,
@@ -342,7 +342,7 @@ async function submitOrder(orderId: string, adminId: string) {
         orderId, status:"unknown", requestId,
         errorCode:"missing_provider_order_id",
         errorMessage:"Central One respondió sin un ID de orden reconocible. Reintentar es seguro porque se conserva la misma clave de idempotencia.",
-        response:{http_status:upstream.status, provider_status:providerStatus},
+        response:{http_status:upstream.status, provider_status:providerStatus, price_check:preflight.price_check},
       });
       return reply(502, {error:"provider_response_incomplete",message:"Central One respondió, pero no pudimos leer el ID de su pedido. No crees otro pedido; reintenta el mismo más tarde.",request_id:requestId});
     }
@@ -362,7 +362,7 @@ async function submitOrder(orderId: string, adminId: string) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Fallo de comunicación con Central One.";
     try {
-      await finishOrder({orderId,status:"unknown",errorCode:"network_or_timeout",errorMessage:message.slice(0,500)});
+      await finishOrder({orderId,status:"unknown",errorCode:"network_or_timeout",errorMessage:message.slice(0,500),response:{outcome_unknown:true,price_check:preflight.price_check}});
     } catch { /* the stable idempotency key remains stored by the claim operation */ }
     return reply(504, {
       error:"provider_result_unknown",
