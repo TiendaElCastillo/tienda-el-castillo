@@ -447,7 +447,7 @@ window.addEventListener("DOMContentLoaded",function(){
   <div class="checkout-stage-title"><strong>Completa los datos de pago</strong><small>Envía la cantidad exacta y conserva el comprobante original.</small></div>
   <div class="field"><label>Selecciona el método de pago</label><div id="checkoutPaymentMethods" class="checkout-payment-methods" role="group" aria-label="Método de pago"></div><select id="payment" class="hidden" aria-hidden="true" tabindex="-1" onchange="updateCheckoutSummary()"><option value="Transferencia CUP">Transferencia CUP</option><option value="Saldo móvil">Saldo móvil</option><option value="USDT">USDT</option><option value="Saldo de Tienda El Castillo">Saldo de Tienda El Castillo</option></select></div>
   <div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div><p id="walletCheckoutNote" class="track-note" aria-live="polite"></p>
-  <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">¿Desde qué número haces el pago? (obligatorio)</label><input id="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+53 5XXXXXXX" maxlength="20"><small class="field-hint" id="senderPhoneHelp">Escribe el número de la línea desde la que realizaste el pago.</small></div>
+  <div class="field hidden" id="senderPhoneWrap"><label id="senderPhoneLabel" for="senderPhone">¿Desde qué número haces el pago? (obligatorio)</label><div class="cuba-phone-control"><span class="cuba-phone-prefix">🇨🇺 +53</span><input id="senderPhone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="51884050" maxlength="20" aria-label="Ocho dígitos del móvil cubano desde el que pagaste"></div><small class="field-hint" id="senderPhoneHelp">Escribe los 8 dígitos de la línea desde la que realizaste el pago.</small></div>
   <div id="paymentInstructions" class="payment-data-panel" role="status" aria-live="polite"></div>
   <div class="field hidden" id="referenceWrap"><label id="referenceLabel" for="reference">Nro. Transacción (obligatorio)</label><input id="reference" inputmode="text" autocapitalize="characters" autocomplete="off" minlength="3" maxlength="100" placeholder="Ej. AY600UJ716R999" oninput="this.value=this.value.toUpperCase().replace(/\\s/g,'')"><small id="referenceHelp" class="field-hint">Copia el código que aparece junto a «Nro. Transacción» en el comprobante del banco. Es único para cada pago.</small></div>
   <div class="field hidden" id="reportedAmountWrap"><label for="reportedAmount">Cantidad exacta de saldo móvil enviada</label><input id="reportedAmount" type="number" inputmode="decimal" min="1" step="0.01" placeholder="Escribe el importe exacto"></div>
@@ -501,7 +501,7 @@ window.addEventListener("DOMContentLoaded",function(){
     <div id="walletDepositStep2" class="wallet-deposit-stage hidden">
      <div class="checkout-stage-title"><strong>2. Realiza el pago y registra sus datos</strong><small>Revisa las instrucciones. Después de pagar, completa los datos de la operación.</small></div>
      <div id="walletDepositInstructions" class="wallet-instructions">Cargando las instrucciones de pago…</div>
-     <div class="field hidden" id="walletDepositSenderPhoneWrap"><label for="walletDepositSenderPhone">Teléfono desde el que haces la transferencia</label><input id="walletDepositSenderPhone" type="tel" inputmode="tel" maxlength="20" placeholder="+53 5XXXXXXX"><small class="wallet-field-hint">Escribe tu línea de origen, no el número receptor de la tienda.</small></div>
+     <div class="field hidden" id="walletDepositSenderPhoneWrap"><label for="walletDepositSenderPhone">Teléfono desde el que haces la transferencia</label><div class="cuba-phone-control"><span class="cuba-phone-prefix">🇨🇺 +53</span><input id="walletDepositSenderPhone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="20" placeholder="51884050" aria-label="Ocho dígitos del móvil cubano desde el que pagaste"></div><small class="wallet-field-hint">Escribe solo los 8 dígitos de tu línea de origen; el +53 ya aparece separado.</small></div>
      <div class="field" id="walletDepositReferenceWrap"><label for="walletDepositReference">Número de transacción bancaria</label><input id="walletDepositReference" inputmode="text" maxlength="100" placeholder="Copia el Nro. de Transacción"></div>
      <div class="field hidden" id="walletDepositTxidWrap"><label for="walletDepositTxid">Hash / TxID de la transacción</label><input id="walletDepositTxid" inputmode="text" autocapitalize="off" maxlength="64" placeholder="64 caracteres hexadecimales"><small class="wallet-field-hint">Copia el hash de la transacción confirmada en BNB Smart Chain.</small></div>
      <div class="checkout-stage-actions"><button class="secondary-btn" type="button" onclick="goWalletDepositStep(1)">← Volver</button><button class="primary-btn" type="button" onclick="goWalletDepositStep(3)">Continuar a los comprobantes →</button></div>
@@ -1203,23 +1203,19 @@ async function continueToPayment(){
  const player=$("player").value.trim();
  if(!p){if(message)message.textContent="Selecciona un paquete disponible.";return}
  if(player.length<3||player.length>64){if(message)message.textContent="Escribe un ID válido de entre 3 y 64 caracteres.";return}
- if(p.provider_product_id){
-  if(p.provider_validation_supported!==true){if(message)message.textContent="Este paquete no tiene verificación de ID disponible y no puede continuar.";return}
+ if(requiresPlayerValidation(p)){
+  if(!p.provider_product_id){if(message)message.textContent="Este paquete no está vinculado correctamente con Central One. No realices ninguna transferencia.";return}
+  if(p.provider_validation_supported!==true){if(message)message.textContent="La verificación de ID no está disponible para esta región. No realices ninguna transferencia.";return}
   if(!isPlayerValidationCurrent(p.id,player)){
-   if(message)message.textContent="Estamos comprobando el ID. Espera el resultado y confirma que el nombre sea correcto.";
+   if(message)message.textContent="El ID todavía no está verificado. Estamos comprobándolo; no realices el pago hasta ver la confirmación.";
    if(button){button.disabled=true;button.textContent="Comprobando ID…";}
    try{
     const requestKey=String(p.id)+"::"+player;
     if(playerValidationInFlightKey===requestKey)await waitForCurrentPlayerValidation(p.id,player);
-    else{
-     await validatePlayerId();
-     if(!isPlayerValidationCurrent(p.id,player)){
-      await waitForCurrentPlayerValidation(p.id,player);
-     }
-    }
+    else await validatePlayerId();
    }catch(e){}
    if(!isPlayerValidationCurrent(p.id,player)){
-    if(message)message.textContent="No se pudo validar este ID. Comprueba los números y vuelve a intentarlo.";
+    if(message&&!message.textContent.includes("Central One no confirmó"))message.textContent="No se pudo verificar el ID. Comprueba el número y la conexión; no hagas ninguna transferencia.";
     if(button){button.disabled=false;button.textContent="Continuar al pago →";}
     return;
    }
@@ -1290,36 +1286,56 @@ function setPlayerValidationDisplay(state,icon,message,placeholder){
  const statusWrap=$("playerValidationWrap");
  if(statusWrap){statusWrap.classList.remove("is-valid","is-invalid","is-loading","is-error");if(state)statusWrap.classList.add(state);}
 }
+function requiresPlayerValidation(product){
+ const game=String(product?.game||"").trim().toLowerCase();
+ return Boolean(product?.provider_product_id)||game==="free fire";
+}
+function cubaMobileNational(value){
+ let digits=String(value??"").replace(/\\D/g,"");
+ if(digits.length===10&&digits.startsWith("53"))digits=digits.slice(2);
+ return /^5[0-9]{7}$/.test(digits)?digits:"";
+}
+function cubaMobileInputValue(value){
+ let digits=String(value??"").replace(/\\D/g,"");
+ if(digits.length===10&&digits.startsWith("53"))digits=digits.slice(2);
+ return digits.slice(0,8);
+}
 function resetPlayerValidation(){
  playerValidationRequest++;
  playerValidationInFlightKey="";
  validatedPlayerCheckout=null;
  if($("playername")){$("playername").value="";$("playername").placeholder="Se mostrará al verificar el ID";}
  const p=products.find(item=>String(item.id)===$("product")?.value);
- if(p?.provider_product_id&&p.provider_validation_supported===true){
+ if(requiresPlayerValidation(p)&&p?.provider_product_id&&p.provider_validation_supported===true){
   setPlayerValidationDisplay("","•","La comprobación comenzará automáticamente cuando salgas del campo del ID.","Esperando ID…");
+ }else if(requiresPlayerValidation(p)){
+  setPlayerValidationDisplay("is-error","!","Este paquete no tiene una validación de jugador disponible. No realices el pago.","Validación no disponible");
  }else{
   setPlayerValidationDisplay("","","","");
  }
 }
 function syncPlayerRegionUI(){
  const p=products.find(item=>String(item.id)===$("product")?.value);
+ const needsValidation=requiresPlayerValidation(p);
  const providerProduct=Boolean(p?.provider_product_id);
- $("playerValidationWrap")?.classList.toggle("hidden",!providerProduct);
+ $("playerValidationWrap")?.classList.toggle("hidden",!needsValidation);
  if($("playerRegionNote")){
-  if(providerProduct){
+  if(needsValidation&&!providerProduct){
+   $("playerRegionNote").textContent="Este paquete de Free Fire no está correctamente vinculado con Central One. No pagues ni continúes; avisa a la tienda.";
+   setPlayerValidationDisplay("is-error","!","No podemos comprobar este ID porque falta la vinculación del paquete con Central One.","Validación no disponible");
+  }else if(providerProduct){
    const supported=p.provider_validation_supported===true;
    $("playerRegionNote").textContent=supported
-    ?"Servidor "+String(p.provider_region||"").toUpperCase()+". Al salir del campo, se comprobará automáticamente el ID. Esta consulta no realiza recargas ni descuenta saldo."
+    ?"Servidor "+String(p.provider_region||"").toUpperCase()+". El ID debe quedar verificado antes de mostrar los datos de pago."
     :"La verificación automática no está disponible para esta región. No se pueden crear pedidos de este paquete.";
    if(!supported)setPlayerValidationDisplay("is-error","!","La verificación automática no está disponible para esta región.","Validación no disponible");
   }else{
    $("playerRegionNote").textContent="Revisa cuidadosamente el ID del jugador y confirma que corresponde a la región de este paquete.";
   }
  }
- if($("playername"))$("playername").readOnly=providerProduct;
+ if($("playername"))$("playername").readOnly=needsValidation;
 }
-async function isPlayerValidationCurrent(productId,playerId){
+function isPlayerValidationCurrent(productId,playerId){
  const validation=validatedPlayerCheckout;
  if(!validation||validation.productId!==String(productId)||validation.playerId!==String(playerId)||!validation.token)return false;
  const expiry=Number(validation.expiresAt)||Date.parse(validation.validatedAt||"");
@@ -1331,7 +1347,14 @@ async function validatePlayerId(){
  if(!playerField||!nameField)return;
  const p=products.find(item=>String(item.id)===$("product")?.value);
  const playerId=playerField.value.trim();
- if(!p?.provider_product_id)return;
+ if(!p)return;
+ if(!p.provider_product_id){
+  if(requiresPlayerValidation(p)){
+   validatedPlayerCheckout=null;
+   setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete porque falta su vinculación con Central One. No pagues ni continúes.","Validación no disponible");
+  }
+  return;
+ }
  if(p.provider_validation_supported!==true){
   setPlayerValidationDisplay("is-error","!","La verificación de ID no está disponible para esta región.","Validación no disponible");
   return;
@@ -1369,7 +1392,8 @@ async function validatePlayerId(){
   if(!isCurrent())return;
   if(!response.ok||result?.valid!==true){
    if(response.status===422||result?.error==="player_id_not_confirmed"||result?.error==="invalid_player_id"){
-    setPlayerValidationDisplay("is-invalid","×","Usuario incorrecto. ID no encontrado. Revisa el número e inténtalo de nuevo.","ID no encontrado");
+    const providerMessage=String(result?.message||"").trim().slice(0,220);
+    setPlayerValidationDisplay("is-invalid","×",providerMessage?"Central One no confirmó este ID: "+providerMessage:"Central One no confirmó el ID. Revisa el número y la región del paquete e inténtalo de nuevo.","ID no confirmado");
     return;
    }
    throw new Error("No se pudo comprobar el usuario en este momento.");
@@ -1443,7 +1467,7 @@ function updateCheckoutSummary(){
  const method=select.value,raw=prices[method],isWallet=method==="Saldo de Tienda El Castillo";
  const unit=isWallet?"USD":method==="USDT"?"USDT":"CUP";
  const amount=Number(raw)>0?(isWallet?moneyUSD(raw):money(raw)):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
- const regionLine=p.provider_product_id?'<small>Región '+clean(p.provider_region||"")+' · Comprobación de ID obligatoria</small>':'<small>Precio final según el método de pago</small>';
+ const regionLine=requiresPlayerValidation(p)?'<small>Región '+clean(p.provider_region||"")+' · Comprobación de ID obligatoria</small>':'<small>Precio final según el método de pago</small>';
  $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong>'+regionLine+'</div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
  syncPlayerRegionUI();
  const walletNote=$("walletCheckoutNote");
@@ -1492,6 +1516,11 @@ function paymentCopyCard(label,value,extraClass="",note=""){
  if(!value)return "";
  return '<div class="payment-copy-card '+extraClass+'"><div class="payment-copy-meta">'+label+'</div><div class="payment-copy-value">'+clean(value)+'</div><button type="button" class="copy-payment-btn" data-copy="'+clean(value)+'">Copiar</button>'+(note?'<p class="payment-copy-note">'+clean(note)+'</p>':"")+'</div>';
 }
+function paymentCopyCubaPhoneCard(label,value,extraClass="",note=""){
+ const national=cubaMobileNational(value);
+ if(!national)return '<div class="payment-copy-card '+extraClass+'"><div class="payment-copy-meta">'+label+'</div><div class="payment-copy-value">Número cubano no válido</div></div>';
+ return '<div class="payment-copy-card '+extraClass+'"><div class="payment-copy-meta">'+label+'</div><div class="cuba-phone-display"><span class="cuba-phone-country">🇨🇺 +53</span><strong>'+national+'</strong></div><button type="button" class="copy-payment-btn" data-copy="'+national+'">Copiar solo los 8 dígitos</button>'+(note?'<p class="payment-copy-note">'+clean(note)+'</p>':"")+'</div>';
+}
 function updatePaymentInstructions(){
  const box=$("paymentInstructions");if(!box)return;
  const name=$("payment")?.value||"";
@@ -1513,13 +1542,13 @@ function updatePaymentInstructions(){
   const confirm=digits.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   rows+=paymentCopyCard("Tarjeta para transferir",card,"payment-card-number");
   rows+=paymentCopyCard("Importe exacto a pagar",moneyText,"payment-card-amount");
-  rows+=paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en «Móvil a confirmar». No es tu teléfono de origen.");
-  if(!card||confirm.replace(/\D/g,"").length<8)warning='<div class="payment-unavailable"><strong>Datos bancarios incompletos</strong><span>No hagas la transferencia todavía. La tienda debe completar la tarjeta y el móvil de confirmación.</span></div>';
+  rows+=paymentCopyCubaPhoneCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","En Transfermóvil pega solo los 8 dígitos, sin escribir +53. No es tu teléfono de origen.");
+  if(!card||!cubaMobileNational(confirm))warning='<div class="payment-unavailable"><strong>Datos bancarios incompletos</strong><span>No hagas la transferencia todavía. La tienda debe completar la tarjeta y el móvil de confirmación.</span></div>';
  }else if(name==="Saldo móvil"){
   const phone=digits.match(/n[uú]mero\s*:?\s*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
-  rows+=paymentCopyCard("Número al que debes enviar el saldo",phone,"payment-card-number");
+  rows+=paymentCopyCubaPhoneCard("Número al que debes enviar el saldo",phone,"payment-card-number","Copia únicamente los 8 dígitos del número cubano; el +53 se muestra por separado.");
   rows+=paymentCopyCard("Importe exacto a enviar",moneyText,"payment-card-amount");
-  if(phone.replace(/\D/g,"").length<8)warning='<div class="payment-unavailable"><strong>Número receptor incompleto</strong><span>No envíes el saldo hasta que la tienda configure el número receptor.</span></div>';
+  if(!cubaMobileNational(phone))warning='<div class="payment-unavailable"><strong>Número receptor incompleto</strong><span>No envíes el saldo hasta que la tienda configure el número receptor.</span></div>';
  }else if(name==="USDT"){
   rows+=paymentCopyCard("Importe exacto a enviar",moneyText,"payment-card-amount");
   rows+=paymentCopyCard("Red obligatoria",walletSettings.usdt_network||"BNB Smart Chain (BEP20)");
@@ -1552,6 +1581,9 @@ function previewPaymentProof(){
 }
 function updatePaymentFields(){
  const copyBox=$("paymentInstructions");if(copyBox&&!copyBox.dataset.copyHandler){copyBox.dataset.copyHandler="1";copyBox.addEventListener("click",event=>{const button=event.target.closest("[data-copy]");if(button)copyPaymentButton(button);});}
+ const senderField=$("senderPhone");
+ if(senderField&&!senderField.dataset.cubaMobileHandler){senderField.dataset.cubaMobileHandler="1";senderField.addEventListener("input",()=>{senderField.value=cubaMobileInputValue(senderField.value);});}
+ if(senderField){senderField.inputMode="numeric";senderField.placeholder="51884050";}
  const method=$("payment")?.value||"";
  const isWallet=method==="Saldo de Tienda El Castillo",isTransfer=method==="Transferencia CUP",isMobile=method==="Saldo móvil",isUsdt=method==="USDT";
  $("referenceWrap")?.classList.toggle("hidden",isWallet||(!isTransfer&&!isUsdt));
@@ -1570,7 +1602,7 @@ function updatePaymentFields(){
  $("referenceHelp").textContent=isUsdt?"Copia el hash/TxID de la operación en BNB Smart Chain. Debe tener 64 caracteres hexadecimales.":"Copia el código que aparece junto a «Nro. Transacción» en el comprobante del banco. Es único para cada pago.";
  $("senderPhoneLabel").textContent=isMobile?"¿Desde qué número enviaste el saldo? (obligatorio)":"¿Desde qué número haces la transferencia? (obligatorio)";
  $("senderPhoneHelp").textContent=isTransfer?"Tiene que ser la misma línea con la que entras a Transfermóvil. No escribas el número receptor de la tienda.":"Escribe la línea desde la que enviaste el saldo móvil.";
- $("senderPhone").placeholder="+53 5XXXXXXX";
+ $("senderPhone").placeholder="51884050";
  if($("reportedAmount").previousElementSibling)$("reportedAmount").previousElementSibling.textContent=isUsdt?"Cantidad exacta de USDT enviada":"Cantidad exacta de saldo móvil enviada";
  $("proofLabel").textContent=isUsdt?"Captura del envío USDT (obligatoria)":isMobile?"Captura del SMS de ETECSA (obligatoria)":"Captura completa de Transfermóvil (obligatoria)";
  $("proofHelp").textContent=isUsdt?"La captura debe mostrar la red, la dirección receptora, el importe y el hash de la transacción. La tienda comprobará el pago manualmente. JPG, PNG o WEBP; máximo 5 MB.":isMobile?"La captura debe mostrar el envío, el número receptor, la fecha y el importe. JPG, PNG o WEBP; máximo 5 MB.":"La captura debe mostrar el importe, la fecha, la tarjeta destinataria y el Nro. de transacción. JPG, PNG o WEBP; máximo 5 MB.";
@@ -1657,8 +1689,9 @@ async function uploadProofForOrder(orderId,method,file,reference,senderPhone,rep
  const tx=String(reference||"").trim().toUpperCase().replace(/\s+/g,"");
  if(method==="Transferencia CUP"&&(!tx||tx.length<3||tx.length>100))throw new Error("Escribe el número de transferencia.");
  if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(tx))throw new Error("Escribe el hash/TxID válido de 64 caracteres hexadecimales.");
- const phone=String(senderPhone||"").trim(),digits=phone.replace(/\D/g,"");
- if((method==="Transferencia CUP"||method==="Saldo móvil")&&(!/^\+?[0-9\s().-]+$/.test(phone)||digits.length<8||digits.length>15))throw new Error("Escribe el móvil desde el que realizaste el pago.");
+ const nationalPhone=cubaMobileNational(senderPhone);
+ const phone=nationalPhone?"+53"+nationalPhone:"";
+ if((method==="Transferencia CUP"||method==="Saldo móvil")&&!nationalPhone)throw new Error("Escribe los 8 dígitos válidos de tu móvil cubano (empieza por 5).");
  const {data:order,error:orderError}=await db.from("orders").select("id,price,payment_method,status,payment_source").eq("id",orderId).eq("user_id",currentUser.id).maybeSingle();
  if(orderError||!order)throw new Error("No se pudo comprobar el pedido de tu cuenta.");
  if(order.payment_source!=="direct"||!["pending","payment_review"].includes(order.status))throw new Error("Este pedido ya no admite comprobantes.");
@@ -1721,16 +1754,22 @@ async function placeOrder(){
    await loadMyOrders();showView("orders");return;
   }
  }
- if(product.provider_product_id){
-  if(product.provider_validation_supported!==true){$("ordermsg").textContent="La comprobación automática no está disponible para esta región. No se puede continuar con este paquete.";return;}
+ if(requiresPlayerValidation(product)){
+  if(!product.provider_product_id||product.provider_validation_supported!==true){
+   $("checkoutPlayerMsg").textContent="Este paquete no tiene una verificación activa de Central One. No se ha creado ningún pedido.";
+   updateCheckoutStage("player");return;
+  }
   if(!isPlayerValidationCurrent(product.id,player)){
-   $("ordermsg").textContent="La verificación del ID caducó. Estamos comprobando de nuevo tu jugador…";
+   $("checkoutPlayerMsg").textContent="La verificación caducó o no estaba confirmada. Estamos comprobando de nuevo el ID. No vuelvas a transferir.";
    await validatePlayerId();
-   if(!isPlayerValidationCurrent(product.id,player)&&playerValidationInFlightKey===String(product.id)+"::"+player){
+   const requestKey=String(product.id)+"::"+player;
+   if(!isPlayerValidationCurrent(product.id,player)&&playerValidationInFlightKey===requestKey){
     await waitForCurrentPlayerValidation(product.id,player);
    }
    if(!isPlayerValidationCurrent(product.id,player)){
-    $("ordermsg").textContent="No se pudo renovar la verificación del ID. Comprueba la conexión y vuelve a intentarlo.";
+    $("checkoutPlayerMsg").textContent="Central One no confirmó este ID. No se creó el pedido ni se subió el comprobante. Conserva el comprobante del banco; no hagas otra transferencia. Corrige el ID o contacta con la tienda si ya pagaste.";
+    updateCheckoutStage("player");
+    $("player")?.focus();
     return;
    }
   }
@@ -1771,8 +1810,9 @@ async function placeOrder(){
  const reference=$("reference").value.trim().toUpperCase().replace(/\s+/g,"");
  if(method==="Transferencia CUP"&&(reference.length<3||reference.length>100)){$("ordermsg").textContent="Escribe el N.º de transacción del banco (entre 3 y 100 caracteres).";return;}
  if(method==="USDT"&&!/^[A-F0-9]{64}$/i.test(reference)){$("ordermsg").textContent="Escribe el hash/TxID de 64 caracteres hexadecimales de la red indicada.";return;}
- const senderPhone=$("senderPhone").value.trim(),phoneDigits=senderPhone.replace(/\D/g,"");
- if((method==="Transferencia CUP"||method==="Saldo móvil")&&(!/^\+?[0-9\s().-]+$/.test(senderPhone)||phoneDigits.length<8||phoneDigits.length>15)){$("ordermsg").textContent="Escribe el móvil desde el que realizaste el pago.";return;}
+ const senderPhoneNational=cubaMobileNational($("senderPhone").value);
+ if((method==="Transferencia CUP"||method==="Saldo móvil")&&!senderPhoneNational){$("ordermsg").textContent="Escribe los 8 dígitos válidos de tu móvil cubano (empieza por 5).";return;}
+ const senderPhone=senderPhoneNational?"+53"+senderPhoneNational:"";
  const reportedAmount=(method==="Saldo móvil"||method==="USDT")?Number($("reportedAmount").value):null;
  if((method==="Saldo móvil"||method==="USDT")&&(!Number.isFinite(reportedAmount)||reportedAmount<=0||Math.abs(reportedAmount-Number(price))>(method==="USDT"?0.000001:0.01))){
   $("ordermsg").textContent="El importe debe coincidir exactamente con el precio del paquete: "+money(price)+" "+(method==="USDT"?"USDT":"unidades de saldo")+".";return;
@@ -1985,6 +2025,9 @@ function previewWalletDeposit(){
 }
 function updateWalletDepositMethod(){
  const method=$("walletDepositMethod")?.value||"Transferencia CUP",isCup=method==="Transferencia CUP";
+ const walletSender=$("walletDepositSenderPhone");
+ if(walletSender&&!walletSender.dataset.cubaMobileHandler){walletSender.dataset.cubaMobileHandler="1";walletSender.addEventListener("input",()=>{walletSender.value=cubaMobileInputValue(walletSender.value);});}
+ if(walletSender){walletSender.inputMode="numeric";walletSender.placeholder="51884050";}
  if(method!==walletDepositMethodPrevious){
   walletDepositMethodPrevious=method;
   ["walletDepositAmount","walletDepositSenderPhone","walletDepositReference","walletDepositTxid"].forEach(id=>{const field=$(id);if(field)field.value="";});
@@ -2013,10 +2056,10 @@ function updateWalletDepositInstructions(){
   const card=raw.match(/tarjeta\s*:?\s*([0-9][0-9\s-]{8,})/i)?.[1]?.trim()||"";
   const confirm=raw.match(/m[oó]vil\s+a\s+confirmar[^+0-9]*([+]?[0-9][0-9\s-]{7,})/i)?.[1]?.trim().replace(/[.\s]+$/,"")||"";
   const amount=money($("walletDepositAmount")?.value||0);
-  let warning=(!card||confirm.replace(/\D/g,"").length<8)?'<div class="wallet-warning">Los datos bancarios están incompletos. No envíes dinero hasta que la tienda los configure.</div>':"";
+  let warning=(!card||!cubaMobileNational(confirm))?'<div class="wallet-warning">Los datos bancarios están incompletos o el móvil receptor no tiene 8 dígitos cubanos válidos. No envíes dinero.</div>':"";
   const rows=paymentCopyCard("Tarjeta bancaria para transferir",card,"payment-card-number")
    +paymentCopyCard("Importe exacto que debes enviar",amount+" CUP","payment-card-amount")
-   +paymentCopyCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Escribe este número en «Móvil a confirmar». El teléfono de origen se escribe aparte en el formulario.");
+   +paymentCopyCubaPhoneCard("Móvil a confirmar en Transfermóvil",confirm,"payment-card-confirm","Pega solo los 8 dígitos, sin +53. El teléfono de origen se escribe aparte en el formulario.");
   box.innerHTML='<strong>Transferencia CUP · datos para pagar</strong><p class="wallet-field-hint">Usamos la misma tarjeta y el mismo número de confirmación que en las recargas directas. Envía exactamente el importe indicado.</p>'+warning+'<div class="payment-copy-grid">'+rows+'</div><p class="wallet-field-hint">Después adjunta el comprobante, tu número de origen y el Nro. de Transacción. La captura no acredita el saldo por sí sola.</p>';
  }else{
   const amount=moneyUSD($("walletDepositAmount")?.value||0);
@@ -2024,6 +2067,8 @@ function updateWalletDepositInstructions(){
  }
 }
 async function uploadWalletDepositProofs(depositId,method,files,reference,senderPhone,txid){
+ const nationalPhone=method==="Transferencia CUP"?cubaMobileNational(senderPhone):"";
+ if(method==="Transferencia CUP"&&!nationalPhone)throw new Error("Escribe los 8 dígitos válidos de tu móvil cubano.");
  if(!Array.isArray(files)||files.length<1||files.length>2)throw new Error("Cada solicitud admite entre 1 y 2 imágenes de comprobante.");
  const paths=[];
  for(const file of files){
@@ -2038,7 +2083,7 @@ async function uploadWalletDepositProofs(depositId,method,files,reference,sender
  const result=await db.rpc("submit_wallet_deposit_proofs",{
   p_deposit_id:depositId,p_proof_paths:paths,
   p_reference:method==="Transferencia CUP"?String(reference||"").trim():null,
-  p_sender_phone:method==="Transferencia CUP"?String(senderPhone||"").trim():null,
+  p_sender_phone:method==="Transferencia CUP"?"+53"+nationalPhone:null,
   p_txid:method==="USDT"?String(txid||"").trim().toLowerCase():null,
   p_network:method==="USDT"?"BNB Smart Chain (BEP20)":null
  });
@@ -2069,9 +2114,9 @@ function goWalletDepositStep(step){
  }
  if(target>=3){
   if(isCup){
-   const phone=$("walletDepositSenderPhone")?.value.trim()||"",digits=phone.replace(/[^0-9]/g,"");
+   const phone=$("walletDepositSenderPhone")?.value.trim()||"";
    const reference=$("walletDepositReference")?.value.trim()||"";
-   if(!/^[+0-9 ().-]+$/.test(phone)||digits.length<8||digits.length>15){if(msg)msg.textContent="Escribe correctamente el teléfono desde el que hiciste la transferencia.";return;}
+   if(!cubaMobileNational(phone)){if(msg)msg.textContent="Escribe los 8 dígitos válidos de tu móvil cubano (empieza por 5).";return;}
    if(reference.length<3||reference.length>100){if(msg)msg.textContent="Escribe el Nro. de Transacción del banco.";return;}
   }else if(!/^[a-f0-9]{64}$/.test(($("walletDepositTxid")?.value||"").trim().toLowerCase())){if(msg)msg.textContent="El TxID debe tener 64 caracteres hexadecimales. Comprueba la red y copia el hash completo.";return;}
  }
@@ -2093,14 +2138,13 @@ function goWalletDepositStep(step){
 async function requestWalletDeposit(){
  if(!currentUser){openAccount();return;}
  const amount=Number($("walletDepositAmount").value),method=$("walletDepositMethod").value,files=Array.from($("walletDepositProof").files||[]);
- const isCup=method==="Transferencia CUP",senderPhone=$("walletDepositSenderPhone").value.trim(),reference=$("walletDepositReference").value.trim(),txid=$("walletDepositTxid").value.trim().toLowerCase();
+ const isCup=method==="Transferencia CUP",senderPhoneInput=$("walletDepositSenderPhone").value.trim(),senderPhoneNational=cubaMobileNational(senderPhoneInput),senderPhone=senderPhoneNational?"+53"+senderPhoneNational:"",reference=$("walletDepositReference").value.trim(),txid=$("walletDepositTxid").value.trim().toLowerCase();
  if(!Number.isFinite(amount)||amount<(isCup?Math.ceil(Number(walletSettings.cup_per_usd||1160)):1)){
   $("walletDepositMsg").textContent=isCup?"El depósito mínimo actual es "+money(Math.ceil(Number(walletSettings.cup_per_usd||1160)))+" CUP (1 USD).":"El depósito mínimo es 1 USDT.";return;
  }
  if(!isCup&&method!=="USDT"){$("walletDepositMsg").textContent="Selecciona Transferencia CUP o USDT.";return;}
  if(isCup){
-  const digits=senderPhone.replace(/\D/g,"");
-  if(!/^\+?[0-9\s().-]+$/.test(senderPhone)||digits.length<8||digits.length>15){$("walletDepositMsg").textContent="Escribe correctamente el teléfono desde el que haces la transferencia.";return;}
+  if(!senderPhoneNational){$("walletDepositMsg").textContent="Escribe los 8 dígitos válidos de tu móvil cubano (empieza por 5).";return;}
   if(reference.length<3||reference.length>100){$("walletDepositMsg").textContent="Escribe el Nro. de Transacción del banco.";return;}
  }else if(!/^[a-f0-9]{64}$/.test(txid)){
   $("walletDepositMsg").textContent="El TxID debe tener 64 caracteres hexadecimales. Comprueba la red y copia el hash completo.";return;
