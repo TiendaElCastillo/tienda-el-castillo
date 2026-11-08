@@ -217,3 +217,6 @@
 .admin-order-search{display:block;width:100%;min-height:44px;margin:4px 0 8px;padding:11px 14px;border:1px solid #dfe7f2;border-radius:13px;background:#fff;color:#243b60;font-size:13px;outline:none;box-sizing:border-box}
 .admin-order-search:focus{border-color:#7da7ec;box-shadow:0 0 0 3px rgba(52,124,255,.12)}
 .admin-order-search::placeholder{color:#8795aa}
+
+/* Mensajes privados enviados desde la ficha del pedido */
+.admin-notice-compose{margin-top:12px;border:1px solid #dce6f5;border-radius:13px;background:#f8faff;padding:11px 13px}.admin-notice-compose summary{cursor:pointer;color:#245fc4;font-weight:850;font-size:12px;list-style-position:inside}.admin-notice-compose label{display:block;margin:12px 0 6px;font-size:11px;color:#586982;font-weight:800}.admin-notice-compose textarea{width:100%;min-height:82px;resize:vertical;border:1px solid #dce5f1;border-radius:10px;padding:10px;background:#fff;color:#1c2d49;font:inherit;font-size:12px;line-height:1.5}.admin-notice-compose button{margin-top:8px}.admin-notice-compose .msg{margin:7px 0 0;font-size:11px}
