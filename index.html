@@ -213,7 +213,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 /* Centro de notificaciones y buzón privado */
 .notification-header-btn{position:relative;display:inline-flex;align-items:center;gap:7px;padding-right:14px}.notification-header-btn>span:first-child{font-size:18px;line-height:1}.notification-badge{position:absolute;top:4px;right:5px;width:10px;height:10px;border-radius:50%;background:#e53935;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}.notification-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.notification-panel-head h2{margin:0}.notification-panel-head button{width:auto;margin:0}.notification-item{padding:15px;border:1px solid var(--line);border-radius:15px;margin:10px 0;background:#fff}.notification-item.unread{border-color:#c9dafc;background:#f7faff;box-shadow:inset 3px 0 #2468f2}.notification-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.notification-item-head strong{font-size:14px}.notification-item p{font-size:13px;line-height:1.55;margin:9px 0;color:#40516d;white-space:pre-wrap;overflow-wrap:anywhere}.notification-item small{font-size:10px;color:#7a879a}.notification-type,.notification-read-label{font-size:10px;color:#6f7f98;font-weight:750}.notification-read-btn{margin:10px 0 0;padding:8px 11px;font-size:11px}.notification-read-label{display:inline-block;margin-top:9px}.notification-header-btn .notification-label{display:inline}
 @media(max-width:420px){.notification-header-btn{padding:8px 10px}.notification-header-btn .notification-label{display:none}.header-actions{gap:5px}}
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=19">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=20">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -538,7 +538,7 @@ window.addEventListener("DOMContentLoaded",function(){
 </section>
  <section id="admin" class="store-view hidden">
  <div class="panel"><h2>Conexión con Central One</h2><p class="subtle">Prueba segura de lectura. No crea pedidos ni utiliza saldo.</p><button id="centralOneTestBtn" class="secondary-btn block-btn" type="button" onclick="testCentralOneConnection()">Probar conexión (ping)</button><p id="centralOneTestMsg" class="msg" role="status">La clave se lee desde los secretos de Supabase; nunca se muestra aquí.</p></div>
- <div class="panel"><h2>Catálogo mayorista de Central One</h2><p class="subtle">Consulta los productos y costes reales habilitados para tu cuenta. Esta acción solo lee datos; no crea pedidos ni descuenta saldo.</p><div class="field-row"><button id="centralOneCatalogBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneCatalog()">Cargar catálogo</button><button id="centralOneBalanceBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneBalance()">Consultar saldo</button></div><p id="centralOneCatalogMsg" class="msg" role="status">Todavía no se ha consultado el catálogo.</p><p id="centralOneAutoSyncMsg" class="msg" role="status">Sincronización automática cada 15 minutos: preparando primera consulta.</p><div id="centralOnePriceProposals" class="order-card"><h3>Precios sugeridos de Free Fire</h3><p class="track-note">Se calculan con el coste más reciente de Central One y tus reglas guardadas. No se publican automáticamente. Confirma compatibilidad LATAM con Cuba antes de activar un paquete.</p><div id="centralOnePriceTable" style="overflow:auto"><p class="empty-note">Esperando el primer catálogo sincronizado.</p></div><p class="track-note">Cobertura comprobada: LATAM admite verificación para los 16 paquetes publicados. Indonesia tiene productos en el catálogo, pero Central One aún no los enumera en su cobertura de verificación. No se publican para pedidos. No aparece una región USA/EEUU en el catálogo ni en la cobertura. La imagen de Free Fire que enviaste ya está instalada en su tarjeta. Las otras siete imágenes quedaron guardadas en Recursos para incorporarlas al activar esas categorías. El catálogo API no incluye fotografías.</p></div><div class="field"><label>Catálogo y precios más recientes recibidos del proveedor (datos originales del proveedor)</label><pre id="centralOneCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f5f8fd;border:1px solid #e2eaf5;border-radius:12px;padding:12px;font-size:11px;color:#263957">Aún no hay datos guardados.</pre></div><p id="centralOneBalanceMsg" class="msg" role="status"></p></div>
+ <div class="panel"><h2>Catálogo mayorista de Central One</h2><p class="subtle">Consulta los productos y costes reales habilitados para tu cuenta. Esta acción solo lee datos; no crea pedidos ni descuenta saldo.</p><div class="field-row"><button id="centralOneCatalogBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneCatalog()">Cargar catálogo</button><button id="centralOneBalanceBtn" class="secondary-btn block-btn" type="button" onclick="loadCentralOneBalance()">Consultar saldo</button></div><p id="centralOneCatalogMsg" class="msg" role="status">Todavía no se ha consultado el catálogo.</p><p id="centralOneAutoSyncMsg" class="msg" role="status">Sincronización automática cada 15 minutos: preparando primera consulta.</p><div id="centralOnePriceProposals" class="order-card"><h3>Precios sugeridos de Free Fire</h3><p class="track-note">Se calculan con el coste más reciente de Central One y tus reglas guardadas. El catálogo publicado se recalcula automáticamente cada 15 minutos con la tasa USDT/CUP configurada. Las propuestas manuales de esta tabla no se aplican por sí solas.</p><div id="centralOnePriceTable" style="overflow:auto"><p class="empty-note">Esperando el primer catálogo sincronizado.</p></div><p class="track-note">Cobertura comprobada: LATAM admite verificación para los 16 paquetes publicados. Indonesia tiene productos en el catálogo, pero Central One aún no los enumera en su cobertura de verificación. No se publican para pedidos. No aparece una región USA/EEUU en el catálogo ni en la cobertura. La imagen de Free Fire que enviaste ya está instalada en su tarjeta. Las otras siete imágenes quedaron guardadas en Recursos para incorporarlas al activar esas categorías. El catálogo API no incluye fotografías.</p></div><div class="field"><label>Catálogo y precios más recientes recibidos del proveedor (datos originales del proveedor)</label><pre id="centralOneCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f5f8fd;border:1px solid #e2eaf5;border-radius:12px;padding:12px;font-size:11px;color:#263957">Aún no hay datos guardados.</pre></div><p id="centralOneBalanceMsg" class="msg" role="status"></p></div>
  <div class="panel"><h2>Reglas de precios y cambio diario</h2><p class="subtle">Estos valores sirven para calcular propuestas. Guardarlos no modifica los precios publicados a tus clientes.</p><div class="field-row"><div class="field"><label for="pricingUsdtRate">Tu coste de 1 USDT (CUP)</label><input id="pricingUsdtRate" type="number" min="1" step="0.01" value="1200"></div><div class="field"><label for="pricingMarkup">Ganancia sobre coste (%)</label><input id="pricingMarkup" type="number" min="0" step="0.1" value="35"></div></div><div class="field-row"><div class="field"><label for="pricingMobileUnits">Unidades de saldo móvil</label><input id="pricingMobileUnits" type="number" min="1" step="1" value="360"></div><div class="field"><label for="pricingMobileCost">Valor recuperable de esas unidades en transferencia (CUP)</label><input id="pricingMobileCost" type="number" min="1" step="0.01" value="1250"></div></div><div class="field"><label for="pricingRounding">Redondear precio CUP hacia arriba a múltiplos de</label><input id="pricingRounding" type="number" min="1" step="1" value="10"></div><button id="savePricingBtn" class="primary-btn block-btn" type="button" onclick="savePricingSettings()">Guardar tasas y reglas</button><p id="pricingSettingsMsg" class="msg" role="status"></p><div id="pricingHistory"></div><div class="section"><h3>Calculadora de precio sugerido</h3><p class="subtle">Introduce el coste exacto del paquete que veas en Central One. La sugerencia no se publica automáticamente.</p><div class="field"><label for="pricingCostUsdt">Coste del paquete en USDT</label><input id="pricingCostUsdt" type="number" min="0" step="0.0001" placeholder="Ej. 1.25"></div><button class="secondary-btn block-btn" type="button" onclick="previewRetailPrice()">Calcular propuesta</button><div id="pricingPreview" class="notice" style="margin-top:12px">Aquí aparecerá el precio sugerido en CUP, saldo móvil y USDT.</div></div></div>
  <div class="panel"><h2>Administrar productos</h2><div class="field"><label>Juego o plataforma</label><input id="game" placeholder="Ej. Free Fire"></div><div class="field"><label>Nombre del paquete</label><input id="pname" placeholder="Ej. 110 diamantes"></div><div class="field"><label>Descripción</label><input id="description" placeholder="Opcional"></div><div class="field-row"><div class="field"><label>Cantidad</label><input id="amount" type="number" placeholder="110"></div></div><div class="field-row"><div class="field"><label>Transferencia CUP</label><input id="transfer" type="number" placeholder="0"></div><div class="field"><label>Saldo móvil</label><input id="mobile" type="number" placeholder="0"></div></div><div class="field"><label>Precio USDT</label><input id="usdt" type="number" step="0.01" placeholder="0"></div><button id="adminProductSubmit" class="primary-btn block-btn" type="button" onclick="addProduct()">Guardar producto</button><button id="cancelProductEdit" class="secondary-btn block-btn hidden" type="button" onclick="cancelProductEdit()">Cancelar edición</button><p id="adminmsg" class="msg" role="status"></p><div id="adminProducts"></div></div>
  <div class="panel"><h2>Instrucciones de pago</h2><p class="subtle">Configura los datos que verá el cliente según el método elegido. Deja desactivado un método que todavía no puedas recibir.</p><div class="field"><label for="payMethodName">Método</label><select id="payMethodName"><option>Transferencia CUP</option><option>Saldo móvil</option><option>USDT</option></select></div><div class="field"><label for="payInstructions">Instrucciones para el cliente</label><textarea id="payInstructions" rows="4" placeholder="Ej. Datos para transferir, número de teléfono o dirección de billetera. Nunca incluyas claves privadas."></textarea></div><button class="primary-btn block-btn" type="button" onclick="savePaymentMethod()">Guardar instrucciones</button><p id="paymentAdminMsg" class="msg" role="status"></p><div id="paymentAdminList"></div><div class="wallet-panel" style="margin-top:16px"><h3>Configuración de la wallet</h3><p>La tasa se utiliza solo para convertir depósitos por Transferencia CUP a USD. Cada cambio aplica a las nuevas solicitudes; los depósitos anteriores conservan la tasa con la que se crearon.</p><div class="wallet-rate-row"><div class="field"><label for="walletCupRate">CUP por cada 1 USD de saldo</label><input id="walletCupRate" type="number" min="1" step="0.01" value="1160"></div><button class="primary-btn" type="button" onclick="saveWalletSettings()">Guardar tasa</button></div><p id="walletSettingsMsg" class="msg" role="status"></p><p class="wallet-field-hint">El sistema redondea siempre hacia abajo a dos decimales. El mínimo de cada depósito es 1 USD.</p></div><div class="wallet-panel" style="margin-top:16px"><div class="order-toolbar"><h3>Depósitos por revisar</h3><button class="secondary-btn" type="button" onclick="loadWalletDepositsAdmin()">Actualizar</button></div><p class="subtle">Comprueba la recepción real en la tarjeta o en la red BNB Smart Chain antes de aprobar. Una captura no demuestra por sí sola que el dinero llegó.</p><div id="walletAdminMsg" class="msg" role="status"></div><div id="walletDepositsAdmin">Cargando depósitos…</div></div></div>
@@ -2620,7 +2620,7 @@ async function savePricingSettings(){
  const button=$("savePricingBtn");button.disabled=true;button.textContent="Guardando…";
  const result=await db.from("pricing_settings").update(values).eq("id",1);
  if(result.error){$("pricingSettingsMsg").textContent="No se pudieron guardar las reglas: "+result.error.message;}
- else{$("pricingSettingsMsg").textContent="Reglas guardadas. Se añadió una entrada al historial. Los precios públicos no se modificaron.";await loadPricingSettings();}
+ else{$("pricingSettingsMsg").textContent="Reglas guardadas. La tasa USDT se comparte con la wallet y los precios se recalculan con estas reglas en la próxima sincronización automática (cada 15 minutos).";await loadPricingSettings();}
  button.disabled=false;button.textContent="Guardar tasas y reglas";
 }
 function previewRetailPrice(){
@@ -2806,12 +2806,15 @@ function showOrderProofPreview(url,details={}){
  const image=document.createElement("img");
  image.className="proof-viewer-image";
  image.alt="Captura del comprobante del pedido "+(details.orderCode||"");
- image.src=url;
+ image.loading="eager";
+ image.decoding="async";
+ image.style.cssText="display:block;max-width:100%;height:auto;object-fit:contain;border-radius:10px";
  const error=document.createElement("p");
  error.className="proof-viewer-image-error";
- error.textContent="No se pudo cargar la imagen. Cierra esta ventana y vuelve a pulsar «Ver comprobante» para generar un enlace nuevo.";
+ error.textContent="No se pudo mostrar la imagen dentro de la ventana. Usa «Abrir / descargar» para verla directamente o cierra y vuelve a intentarlo.";
  error.hidden=true;
- image.addEventListener("error",()=>{error.hidden=false;});
+ image.addEventListener("error",()=>{error.hidden=false;image.hidden=true;});
+ image.addEventListener("load",()=>{error.hidden=true;image.hidden=false;});
  stage.append(image,error);
  panel.append(header,info,stage);
  overlay.append(panel);
@@ -2826,7 +2829,11 @@ function showOrderProofPreview(url,details={}){
  overlay.addEventListener("click",event=>{if(event.target===overlay)closeViewer();});
  document.addEventListener("keydown",onKeyDown);
  document.body.style.overflow="hidden";
+ overlay.style.cssText="position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:8px;background:rgba(5,15,34,.82)";
+ panel.style.cssText="display:flex;flex-direction:column;width:min(920px,100%);height:min(94dvh,920px);max-height:calc(100dvh - 16px);overflow:hidden;border-radius:18px;background:#fff";
+ stage.style.cssText="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px;background:#eef1f6";
  document.body.append(overlay);
+ image.src=url;
  close.focus();
 }
 async function loadAllOrders(options={}){
@@ -2844,7 +2851,7 @@ async function loadAllOrders(options={}){
   const actionLabel=o.status==="payment_review"?"Confirmar pago recibido":"Rechazar pedido";
   let proofLink=o.payment_source==="wallet"?'<span class="subtle">Pago descontado desde billetera</span>':'<span class="subtle">Sin comprobante</span>';
   if(o.proof_path){
-   proofLink='<a href="#" data-proof-preview data-proof-path="'+clean(o.proof_path)+'" data-order-code="'+clean(o.order_code||"")+'" data-payment-reference="'+clean(o.payment_reference||"No indicado")+'" data-payment-sender-phone="'+clean(o.payment_sender_phone||"No indicado")+'" data-payment-method="'+clean(o.payment_method||"")+'" data-payment-amount="'+clean(o.price||"")+'">Ver comprobante (10 min)</a>';
+   proofLink='<a href="#" data-proof-preview data-proof-path="'+clean(o.proof_path)+'" data-order-code="'+clean(o.order_code||"")+'" data-payment-reference="'+clean(o.payment_reference||"No indicado")+'" data-payment-sender-phone="'+clean(o.payment_sender_phone||"No indicado")+'" data-payment-method="'+clean(o.payment_method||"")+'" data-payment-amount="'+clean(o.price||"")+'">Ver comprobante</a>';
   }
   const providerStatus=String(o.central_one_status||"not_submitted");
   const providerDate=o.central_one_submitted_at?new Date(o.central_one_submitted_at).getTime():0;
@@ -2853,6 +2860,25 @@ async function loadAllOrders(options={}){
    o.player_id_validated===true&&Boolean(o.provider_product_id)&&!o.central_one_order_id&&
    (["not_submitted","unknown","retryable","rejected"].includes(providerStatus)||staleSubmitting);
   const canRefresh=Boolean(o.central_one_order_id);
+  const priceCheck=o.central_one_response?.price_check||null;
+  let priceCheckHtml="";
+  if(priceCheck){
+   const profitable=priceCheck.is_profitable===true;
+   const belowTarget=priceCheck.below_target_margin===true;
+   const profit=Number(priceCheck.gross_profit_cup||0);
+   const auditClass=!profitable?"is-loss":belowTarget?"is-warning":"is-profitable";
+   const auditTitle=!profitable?"OPERACIÓN BLOQUEADA · PÉRDIDA":belowTarget?"Beneficio positivo · margen bajo el objetivo":"Operación rentable";
+   priceCheckHtml='<section class="admin-profit-audit '+auditClass+'"><h4>'+auditTitle+'</h4><div class="admin-profit-grid">'+
+    '<div><span>Cliente (equiv. CUP)</span><strong>'+money(priceCheck.customer_retail_cup)+' CUP</strong></div>'+
+    '<div><span>Central One</span><strong>'+money(priceCheck.provider_cost_cup)+' CUP</strong></div>'+
+    '<div><span>Coste mayorista</span><strong>'+Number(priceCheck.provider_wholesale_usd||0).toFixed(4)+' USDT</strong></div>'+
+    '<div><span>Beneficio bruto</span><strong>'+(profit>0?"+":"")+money(profit)+' CUP</strong></div>'+
+    '<div><span>Margen obtenido</span><strong>'+Number(priceCheck.margin_percent||0).toFixed(2)+' %</strong></div>'+
+    '<div><span>Objetivo configurado</span><strong>'+Number(priceCheck.target_markup_percent||0).toFixed(2)+' %</strong></div>'+
+    '</div>'+(priceCheck.warning?'<p>'+clean(priceCheck.warning)+'</p>':"")+
+    (!profitable?'<p>La orden no se envió a Central One. No autorices ni cobres de nuevo este pedido.</p>':"")+
+    '</section>';
+  }
   let providerInfo="";
   if(o.central_one_order_id){
    providerInfo='<p class="track-note"><strong>Central One:</strong> '+centralOneStatusText(providerStatus)+
@@ -2867,7 +2893,7 @@ async function loadAllOrders(options={}){
   }else if(providerStatus==="submitting"&&staleSubmitting){
    providerInfo='<p class="track-note">La solicitud lleva más de 90 segundos sin respuesta. Puedes reintentar con la misma clave segura; Central One indica que una repetición con esa clave no genera un segundo cobro. Comprueba también el historial del proveedor.</p>';
   }
-  const canCancelPreflight=o.status==="processing"&&!o.central_one_order_id&&providerStatus==="retryable"&&o.central_one_error_code==="local_order_read_failed"&&o.central_one_response?.preflight==="blocked";
+  const canCancelPreflight=o.status==="processing"&&!o.central_one_order_id&&!o.central_one_reference_code&&!o.central_one_request_id&&providerStatus==="retryable"&&o.central_one_response?.preflight==="blocked";
   const safeCancelAction=canCancelPreflight?'<div class="order-actions order-safe-cancel"><button type="button" data-cancel-preflight-order data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">Anular pedido bloqueado</button><small>Fallo anterior al envío; no se descontó saldo. Sin devolución automática.</small></div>':"";
   const providerAction=canAuthorize
    ?'<div class="order-actions"><button type="button" data-provider-submit data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">'+(providerStatus==="not_submitted"?"Autorizar recarga (usa saldo real)":"Reintentar con la misma clave segura")+'</button></div>'
@@ -2876,20 +2902,22 @@ async function loadAllOrders(options={}){
     :"";
   const noticeId="order-notice-"+String(o.id);
   const noticeComposer='<details class="admin-notice-compose"><summary>Enviar aviso privado al cliente</summary><label for="'+noticeId+'">Mensaje (3 a 1000 caracteres)</label><textarea id="'+noticeId+'" maxlength="1000" rows="3" placeholder="Escribe una advertencia o una actualización importante sobre este pedido."></textarea><button type="button" class="secondary-btn" data-send-user-notice data-order-id="'+clean(o.id)+'" data-user-id="'+clean(o.user_id)+'" data-message-input="'+noticeId+'" data-feedback-id="'+noticeId+'-feedback">Enviar al buzón del cliente</button><p id="'+noticeId+'-feedback" class="msg" role="status"></p></details>';
-  return '<div class="order-card" data-order-status="'+clean(o.status)+'" data-provider-status="'+clean(providerStatus)+'" data-provider-id="'+clean(o.central_one_order_id||"")+'"><b>'+clean(o.order_code)+'</b>'+
-   '<div class="order-detail">'+clean(o.game)+' – '+clean(o.package_name)+'<br>'+
-   'Jugador: '+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'<br>'+
-   'Precio cliente: '+money(o.price)+' '+clean(o.payment_method)+(o.payment_source==="wallet"?" · USD":"") +'<br>'+
-   'Móvil del remitente: '+clean(o.payment_sender_phone||"No indicado")+'<br>'+
-   (o.payment_method==="Saldo móvil"?'Importe de saldo declarado: '+money(o.payment_reported_amount)+' unidades de saldo<br>':'')+
-   'Nro. Transacción: '+clean(o.payment_reference||"No indicado")+'<br>'+
-   'Comprobante: '+proofLink+'<br>'+
-   'Estado actual: <span class="status">'+statusText(o.status)+'</span></div>'+
-   providerInfo+
+  return '<article class="order-card" data-order-status="'+clean(o.status)+'" data-provider-status="'+clean(providerStatus)+'" data-provider-id="'+clean(o.central_one_order_id||"")+'">'+
+   '<div class="admin-order-header"><strong class="admin-order-code">'+clean(o.order_code)+'</strong><span class="status">'+statusText(o.status)+'</span></div>'+
+   '<div class="admin-order-detail-grid">'+
+    '<div class="admin-order-field"><span>Juego y paquete</span><strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong></div>'+
+    '<div class="admin-order-field"><span>Jugador</span><strong>'+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'</strong></div>'+
+    '<div class="admin-order-field"><span>Precio cobrado</span><strong>'+money(o.price)+' '+clean(o.payment_method)+(o.payment_source==="wallet"?" · USD":"")+'</strong></div>'+
+    '<div class="admin-order-field"><span>Móvil remitente</span><strong>'+clean(o.payment_sender_phone||"No indicado")+'</strong></div>'+
+    (o.payment_method==="Saldo móvil"?'<div class="admin-order-field"><span>Saldo declarado</span><strong>'+money(o.payment_reported_amount)+' unidades</strong></div>':"")+
+    '<div class="admin-order-field"><span>N.º transacción</span><strong>'+clean(o.payment_reference||"No indicado")+'</strong></div>'+
+    '<div class="admin-order-field admin-order-proof"><span>Comprobante</span><strong>'+proofLink+'</strong></div>'+
+   '</div>'+
+   providerInfo+priceCheckHtml+
    (allowed.length?'<div class="order-actions"><select id="'+selectId+'" aria-label="Acción para pedido '+clean(o.order_code)+'">'+options+'</select><button type="button" data-update-order data-order-id="'+clean(o.id)+'" data-select-id="'+selectId+'">'+actionLabel+'</button></div>':"")+
    providerAction+safeCancelAction+noticeComposer+
    (o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':"")+
-  '</div>';
+  '</article>';
  }))).join("");
  container.innerHTML=cards;
  container.querySelectorAll("[data-proof-preview]").forEach(link=>{
@@ -2898,7 +2926,7 @@ async function loadAllOrders(options={}){
    link.textContent="Preparando captura...";
    link.setAttribute("aria-busy","true");
    try{
-    const {data,error}=await db.storage.from("payment-proofs").createSignedUrl(link.dataset.proofPath,600);
+    const {data,error}=await db.storage.from("payment-proofs").createSignedUrl(link.dataset.proofPath,1800);
     if(error||!data?.signedUrl)throw error||new Error("No se pudo generar el enlace seguro.");
     showOrderProofPreview(data.signedUrl,{
      orderCode:link.dataset.orderCode,
@@ -2910,7 +2938,7 @@ async function loadAllOrders(options={}){
    }catch(error){
     window.alert("No se pudo abrir la captura. Comprueba la conexión y vuelve a intentarlo."+(error?.message?" "+error.message:""));
    }finally{
-    link.textContent="Ver comprobante (10 min)";
+    link.textContent="Ver comprobante";
     link.removeAttribute("aria-busy");
    }
   });
@@ -2967,6 +2995,6 @@ if(document.readyState==="loading"){
 }
 </script>
 
-<script src="./assets/admin-panel.js?v=14" async></script>
+<script src="./assets/admin-panel.js?v=15" async></script>
 </body>
 </html>
