@@ -592,7 +592,7 @@ window.addEventListener("DOMContentLoaded",function(){
 <script>
 window.onCastleCaptchaSuccess=function(token){window.castleCaptchaToken=token;const m=document.getElementById("authmsg");if(m&&m.textContent.includes("CAPTCHA"))m.textContent="";};
 window.onCastleCaptchaExpired=function(){window.castleCaptchaToken=null;};
-window.onCastleCaptchaError=function(){window.castleCaptchaToken=null;const m=document.getElementById("authmsg");if(m)m.textContent="No se pudo verificar el CAPTCHA. Comprueba tu conexión y vuelve a intentarlo."};
+window.onCastleCaptchaError=function(errorCode){window.castleCaptchaToken=null;const m=document.getElementById("authmsg");if(m)m.textContent="La verificación está teniendo problemas de conexión. Cloudflare volverá a intentarlo automáticamente; espera unos segundos.";console.warn("Turnstile error:",errorCode);return false;};
 let castleTurnstileWidgetId=null;
 function renderCastleTurnstile(){
  if(!window.turnstile||!window.turnstile.render)return false;
@@ -601,7 +601,12 @@ function renderCastleTurnstile(){
   sitekey:"0x4AAAAAAFzpg8oL2eQCGBYr",
   callback:token=>window.onCastleCaptchaSuccess(token),
   "expired-callback":()=>window.onCastleCaptchaExpired(),
-  "error-callback":()=>window.onCastleCaptchaError()
+  "error-callback":errorCode=>window.onCastleCaptchaError(errorCode),
+   "timeout-callback":()=>{window.castleCaptchaToken=null;const m=document.getElementById("authmsg");if(m)m.textContent="La verificación tardó demasiado por la conexión. Cloudflare está renovando el intento; espera un momento."},
+   retry:"auto",
+   "retry-interval":12000,
+   "refresh-expired":"auto",
+   "refresh-timeout":"auto"
  });
  return Boolean(castleTurnstileWidgetId);
 }
@@ -626,7 +631,7 @@ function loadCastleTurnstile(){
    if(!ok){script.remove();castleTurnstilePromise=null;}
    resolve(Boolean(ok&&castleTurnstileWidgetId));
   };
-  const timeout=setTimeout(()=>finish(false),20000);
+  const timeout=setTimeout(()=>finish(false),45000);
   script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
   script.async=true;
   script.onload=()=>{
@@ -2898,7 +2903,9 @@ const launchCastleStore=()=>{
  $("brandLoader")?.classList.add("done");
  $("auth").classList.remove("hidden");
  if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
- // Descarga la verificación cuando el visitante empieza a escribir, no al abrir la página.
+ // Iniciar Turnstile desde la apertura, en paralelo con Supabase, para que avance mientras el cliente escribe.
+ // Los listeners de foco quedan como respaldo si el primer intento de carga no termina.
+ loadCastleTurnstile().catch(error=>console.warn("Turnstile se reintentará al enfocar el formulario:",error));
  ["email","password"].forEach(id=>{
   $(id)?.addEventListener("focus",()=>{loadCastleTurnstile();},{once:true});
  });
