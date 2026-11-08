@@ -1867,7 +1867,7 @@ async function loadProducts(){
    $("gamePlansSubtitle").textContent=message;
    return;
   }
-  products=(data||[]).filter(isGlobalMobileLegendsProduct);
+  products=(data||[]).filter(p=>isGlobalMobileLegendsProduct(p)&&isStorefrontVisibleProduct(p));
   $("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");
   try{renderProductCatalogs();updateCheckoutSummary();}
   catch(renderError){
