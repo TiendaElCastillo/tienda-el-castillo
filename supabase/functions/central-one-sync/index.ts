@@ -190,7 +190,7 @@ Deno.serve(async (req: Request) => {
         item?.product_family_id, item?.product_family_name, item?.game,
         item?.category, item?.name, item?.sku,
       ].filter(Boolean).join(" ").toLowerCase();
-      return /mobile[\\s_-]*legends?|mlbb/.test(searchable)
+      return /mobile[\s_-]*legends?|mlbb/.test(searchable)
         && String(item?.product_type || "").toLowerCase() === "game_topup"
         && String(item?.region || "").toUpperCase() === "GLOBAL";
     });
@@ -261,7 +261,7 @@ Deno.serve(async (req: Request) => {
       product_count: items.length,
       free_fire_product_count: freeFireItems.length,
       mobile_legends_product_count: mobileLegendsItems.length,
-      published_products: productsSync,
+      published_products: { free_fire: freeFireSync, mobile_legends: mobileLegendsSync },
       sync: saveResult,
     });
   } catch (error) {
