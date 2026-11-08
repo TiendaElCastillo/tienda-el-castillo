@@ -17,12 +17,21 @@ function initAdminLayout(){
  const tabs=[["overview","Resumen"],["orders","Pedidos"],["products","Productos"],["payments","Pagos"],["pricing","Precios y capital"],["central","Central One"]];
  tabs.forEach(([key,label])=>{const b=el("button","admin-tab"+(key==="overview"?" active":""),label);b.type="button";b.dataset.adminTab=key;b.addEventListener("click",()=>showAdminSection(key));nav.append(b);});
  const overview=el("div","panel admin-overview");overview.dataset.adminSection="overview";
- overview.append(el("h2","","Tu negocio, organizado"));
- overview.append(el("p","subtle","Entra en cada apartado para administrar una sola parte del negocio."));
+ overview.append(el("h2","","Resumen del negocio"));
+ overview.append(el("p","subtle","Control rápido de pagos, recargas, pedidos y actividad de Central One."));
+ const metrics=el("div","admin-kpi-grid");
+ [["all","Pedidos totales"],["pending","Pagos por revisar"],["ready","Listos para autorizar"],["provider","En Central One"],["history","Finalizados"]].forEach(([key,label])=>{
+  const metric=el("article","admin-kpi");
+  metric.append(el("span","admin-kpi-label",label));
+  metric.append(el("strong","admin-kpi-value","0"));
+  metric.querySelector(".admin-kpi-value").dataset.adminKpi=key;
+  metrics.append(metric);
+ });
+ overview.append(metrics);
  const shortcuts=el("div","admin-shortcuts");
  const cards=[["orders","Pedidos","Revisa pagos y autoriza recargas"],["products","Productos","Crea, edita y activa paquetes"],["payments","Pagos","Configura cobros y revisa depósitos"],["pricing","Precios y capital","Actualiza tasas y calcula precios"],["central","Central One","Consulta catálogo y saldo mayorista"]];
  cards.forEach(([key,title,desc])=>{const b=el("button","admin-shortcut");b.type="button";b.append(el("strong","",title),el("span","",desc));b.addEventListener("click",()=>showAdminSection(key));shortcuts.append(b);});
- overview.append(shortcuts,el("p","track-note","Flujo seguro en dos pasos: 1) verifica que el pago llegó y confirma solo el pago; 2) después autoriza la recarga para que Central One use tu saldo prepago. Confirmar el pago NO envía diamantes. La entrega solo se da por terminada cuando Central One marca el pedido como «Entregado»."));
+ overview.append(shortcuts,el("p","track-note","Flujo seguro: primero verifica que el dinero llegó. Después autoriza la recarga. Antes del envío, el sistema vuelve a comprobar el coste real de Central One y bloquea cualquier operación que produzca pérdidas. Confirmar el pago no envía diamantes; la entrega solo termina cuando Central One confirma el resultado."));
  const sectionForPanel=["central","central","pricing","products","payments","orders"];
  panels.forEach((panel,i)=>{panel.dataset.adminSection=sectionForPanel[i];panel.classList.add("admin-section-panel");});
  admin.insertBefore(overview,panels[0]);
@@ -58,6 +67,7 @@ function applyOrderFilter(group){
  let visible=0;const counts={pending:0,ready:0,provider:0,history:0,all:cards.length};
  cards.forEach(card=>{const category=classifyOrder(card);counts[category]++;const searchMatch=!orderSearchQuery||card.textContent.toLocaleLowerCase("es").includes(orderSearchQuery);const show=(activeOrderFilter==="all"||category===activeOrderFilter)&&searchMatch;card.classList.toggle("hidden",!show);if(show)visible++;});
  document.querySelectorAll("[data-order-filter]").forEach(b=>{b.classList.toggle("active",b.dataset.orderFilter===activeOrderFilter);const badge=b.querySelector(".admin-filter-count");if(badge)badge.textContent=String(counts[b.dataset.orderFilter]||0);});
+ document.querySelectorAll("[data-admin-kpi]").forEach(node=>{node.textContent=String(counts[node.dataset.adminKpi]||0);});
  const empty=document.getElementById("adminOrderFilterEmpty");if(empty){empty.classList.toggle("show",cards.length>0&&visible===0);empty.textContent=orderSearchQuery?"No se encontraron pedidos con esa búsqueda.":"No hay pedidos en este apartado.";}
 }
 function setupOrderFilters(panel){
