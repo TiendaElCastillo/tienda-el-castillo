@@ -220,3 +220,21 @@
 
 /* Mensajes privados enviados desde la ficha del pedido */
 .admin-notice-compose{margin-top:12px;border:1px solid #dce6f5;border-radius:13px;background:#f8faff;padding:11px 13px}.admin-notice-compose summary{cursor:pointer;color:#245fc4;font-weight:850;font-size:12px;list-style-position:inside}.admin-notice-compose label{display:block;margin:12px 0 6px;font-size:11px;color:#586982;font-weight:800}.admin-notice-compose textarea{width:100%;min-height:82px;resize:vertical;border:1px solid #dce5f1;border-radius:10px;padding:10px;background:#fff;color:#1c2d49;font:inherit;font-size:12px;line-height:1.5}.admin-notice-compose button{margin-top:8px}.admin-notice-compose .msg{margin:7px 0 0;font-size:11px}
+
+/* Refinamientos del panel y visor de comprobantes */
+#admin .admin-heading{position:relative;overflow:hidden}
+#admin .admin-heading:after{content:"";position:absolute;width:190px;height:190px;right:-55px;top:-80px;border:1px solid rgba(255,255,255,.16);border-radius:50%;box-shadow:0 0 0 22px rgba(255,255,255,.045),0 0 0 48px rgba(255,255,255,.025);pointer-events:none}
+#admin .admin-tabs{border-bottom:1px solid #e3eaf4}
+#admin .admin-order-search{min-height:48px;margin:12px 0 10px;border-radius:14px}
+#admin .order-card{display:flex;flex-direction:column;gap:9px}
+#admin .order-card>b{font-size:15px;color:#18345e;letter-spacing:.02em}
+#admin .order-detail{padding:12px 13px;border-radius:13px;background:#f7f9fd;line-height:1.8}
+#admin .order-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+#admin .order-actions button{min-height:43px;flex:1 1 190px}
+#admin .order-safe-cancel{padding:10px;border:1px solid #f1d9c4;border-radius:13px;background:#fffaf5}
+#admin .order-safe-cancel button{background:#fff0e4;color:#9a4d19;box-shadow:none;border:1px solid #f0c9a8}
+#admin .order-safe-cancel small{flex:1 1 100%;color:#8b684f;font-size:11px;line-height:1.45}
+.proof-viewer-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.proof-viewer-download,.proof-viewer-zoom{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 10px;border:1px solid #dce5f2;border-radius:10px;background:#f4f7fc;color:#234b85;font-size:11px;font-weight:850;text-decoration:none;white-space:nowrap}
+.proof-viewer-image.is-zoomed{width:min(180%,1200px);max-width:none;cursor:zoom-out}
+@media(max-width:520px){.proof-viewer-actions{gap:5px}.proof-viewer-download,.proof-viewer-zoom,.proof-viewer-close{min-height:36px;padding:7px 8px;font-size:10px}.proof-viewer-header{align-items:flex-start}.proof-viewer-header h2{padding-top:8px}}
