@@ -1331,6 +1331,7 @@ function providerPlayerTargetConfig(product){
 function currentPlayerTarget(product){
  const config=providerPlayerTargetConfig(product);
  const playerId=$("player")?.value.trim()||"";
+ if(!requiresPlayerValidation(product))return playerId;
  if(!config.ok)return "";
  if(!config.zoneKey)return playerId;
  const zoneId=$("playerZone")?.value.trim()||"";
