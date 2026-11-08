@@ -82,6 +82,136 @@ function providerError(data: any) {
     request_id: typeof e?.request_id === "string" ? e.request_id.slice(0, 150) : null,
   };
 }
+
+function parseBalanceAmount(candidate: any): number | null {
+  let value = candidate;
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    for (const key of ["amount", "value", "available_amount", "availableAmount", "balance_amount"]) {
+      if (value[key] !== undefined && value[key] !== null) { value = value[key]; break; }
+    }
+  }
+  if (typeof value === "string") {
+    value = value.trim().replace(/,/g, "").replace(/[^0-9.\\-]/g, "");
+    if (!value) return null;
+  }
+  const amount = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(amount) && amount >= 0 ? amount : null;
+}
+
+function extractProviderAvailableBalance(payload: any): {available:number;currency:string} | null {
+  const balanceKeys = new Set([
+    "available", "available_balance", "availableBalance", "available_balance_usdt",
+    "available_usdt", "balance_available", "balanceAvailable", "spendable",
+    "spendable_balance", "available_amount", "availableAmount", "available_funds",
+    "funds_available"
+  ]);
+  const root = payload && typeof payload === "object" ? payload : {};
+  const seen = new Set<any>();
+  function visit(node: any, depth: number, inheritedCurrency: string): {available:number;currency:string} | null {
+    if (!node || typeof node !== "object" || depth > 5 || seen.has(node)) return null;
+    seen.add(node);
+    const localCurrency = String(
+      node.currency || node.balance_currency || node.asset || node.unit || inheritedCurrency || "USDT"
+    ).trim().toUpperCase();
+    for (const [key, value] of Object.entries(node)) {
+      if (balanceKeys.has(key)) {
+        const amount = parseBalanceAmount(value);
+        if (amount !== null) {
+          const candidateCurrency = value && typeof value === "object"
+            ? String((value as any).currency || (value as any).asset || (value as any).unit || localCurrency).toUpperCase()
+            : localCurrency;
+          return { available: amount, currency: candidateCurrency || "USDT" };
+        }
+      }
+    }
+    for (const value of Object.values(node)) {
+      if (value && typeof value === "object") {
+        const found = visit(value, depth + 1, localCurrency);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+  return visit(root, 0, String(root.currency || root.balance_currency || "USDT"));
+}
+
+async function checkProviderAvailableBalance(requiredAmount: number) {
+  let upstream: Response;
+  try {
+    upstream = await fetch(CENTRAL_ONE_BASE + "/balance", {
+      headers: { Authorization: "Bearer " + CENTRAL_ONE_API_KEY },
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    return {
+      ok:false, code:"provider_balance_unavailable",
+      message:"No pudimos consultar el saldo disponible de Central One. Por seguridad, el pedido no se enviará hasta poder verificarlo."
+    };
+  }
+  const raw = await upstream.text();
+  let data: any = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+  if (!upstream.ok) {
+    const err = providerError(data);
+    if (upstream.status === 401 || upstream.status === 403) {
+      return {
+        ok:false, code:"provider_balance_scope_missing",
+        message:"Central One no permitió consultar el saldo. Comprueba que la llave API tenga el permiso balance:read. No se ha enviado el pedido."
+      };
+    }
+    return {
+      ok:false, code:"provider_balance_unavailable",
+      message:"No pudimos comprobar el saldo de Central One: " + err.message + " No se ha enviado el pedido."
+    };
+  }
+  const balance = extractProviderAvailableBalance(data);
+  if (!balance) {
+    return {
+      ok:false, code:"provider_balance_unreadable",
+      message:"Central One respondió al consultar el saldo, pero no pudimos identificar el campo de saldo disponible. El pedido quedó bloqueado para evitar un envío sin fondos."
+    };
+  }
+  if (!["USDT","USD"].includes(balance.currency)) {
+    return {
+      ok:false, code:"provider_balance_currency_unsupported",
+      message:"Central One devolvió el saldo en una moneda no reconocida (" + balance.currency + "). No se enviará el pedido hasta verificar la equivalencia."
+    };
+  }
+  const roundedAvailable = Number(balance.available.toFixed(6));
+  const roundedRequired = Number(requiredAmount.toFixed(6));
+  if (roundedAvailable + 0.000001 < roundedRequired) {
+    return {
+      ok:false, code:"central_one_insufficient_balance",
+      available:roundedAvailable, required:roundedRequired, currency:balance.currency,
+      message:"Saldo insuficiente en Central One: disponible " + roundedAvailable.toFixed(4) + " " +
+        balance.currency + " y este pedido necesita " + roundedRequired.toFixed(4) + " " +
+        balance.currency + ". No se envió la orden ni se descontó saldo por este intento. Recarga el saldo del proveedor y reintenta el mismo pedido."
+    };
+  }
+  return {ok:true,available:roundedAvailable,required:roundedRequired,currency:balance.currency};
+}
+
+function providerRefundInfo(order: any) {
+  const topRefund = order?.refund && typeof order.refund === "object" ? order.refund : null;
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const itemRefunds = items.map((item: any) => item?.refund).filter((refund: any) => refund && typeof refund === "object");
+  const allItemsRefunded = items.length > 0 && itemRefunds.length === items.length &&
+    itemRefunds.every((refund: any) => refund.refunded === true);
+  const refunded = topRefund?.refunded === true || allItemsRefunded;
+  const refundedAt = typeof topRefund?.refunded_at === "string"
+    ? topRefund.refunded_at
+    : itemRefunds.find((refund: any) => typeof refund.refunded_at === "string")?.refunded_at || null;
+  return {refunded,refunded_at:refundedAt};
+}
+
+async function applyConfirmedWalletRefund(orderId: string, providerOrderId: string, status: string, refund: any) {
+  if (!["failed","cancelled"].includes(status) || refund?.refunded !== true) return null;
+  return await serviceRpc("refund_wallet_order_after_provider_refund", {
+    p_order_id: orderId,
+    p_provider_order_id: providerOrderId
+  });
+}
+
 async function adminContext(req: Request) {
   const match = (req.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i);
   if (!match) throw Object.assign(new Error("Debes iniciar sesión como administrador."), { status: 401 });
@@ -252,13 +382,34 @@ async function preflightPriceAndStock(claim: any) {
       price_check: priceCheck,
     };
   }
+  const balanceCheck = await checkProviderAvailableBalance(wholesale);
+  const auditedPriceCheck = {
+    ...priceCheck,
+    provider_balance_available: balanceCheck.available ?? null,
+    provider_balance_required: balanceCheck.required ?? Number(wholesale.toFixed(4)),
+    provider_balance_currency: balanceCheck.currency ?? "USDT",
+    provider_balance_sufficient: balanceCheck.ok === true,
+  };
+  if (!balanceCheck.ok) {
+    return {
+      ok:false,
+      code:balanceCheck.code,
+      message:balanceCheck.message,
+      wholesale_price:String(item.reseller_price),
+      required_retail_cup:Number(requiredRetailCup.toFixed(2)),
+      actual_retail_cup:Number(retailCup.toFixed(2)),
+      price_check:auditedPriceCheck,
+      balance_check:balanceCheck,
+    };
+  }
   return {
     ok:true,
     wholesale_price: String(item.reseller_price),
     currency: String(item.currency),
     retail_cup: Number(retailCup.toFixed(2)),
     margin_percent: Number(actualMarkup.toFixed(2)),
-    price_check: priceCheck,
+    price_check: auditedPriceCheck,
+    balance_check: balanceCheck,
     warning: priceCheck.below_target_margin
       ? "El pedido deja beneficio, pero el margen está por debajo del objetivo configurado de " + markup.toFixed(2) + " %."
       : null,
@@ -309,7 +460,7 @@ async function submitOrder(orderId: string, adminId: string) {
   try {
     preflight = await preflightPriceAndStock(claim);
   } catch {
-    preflight = {ok:false,code:"preflight_unavailable",message:"No pudimos actualizar el catálogo ni comprobar el margen. No se ha enviado la recarga; puedes intentarlo de nuevo."};
+    preflight = {ok:false,code:"preflight_unavailable",message:"No pudimos comprobar el catálogo, el margen o el saldo de Central One. No se ha enviado la recarga; puedes intentarlo de nuevo."};
   }
   if (!preflight.ok) {
     await finishOrder({
@@ -318,9 +469,11 @@ async function submitOrder(orderId: string, adminId: string) {
       errorMessage:preflight.message,
       response:{
         preflight:"blocked",
+        no_provider_order_created:true,
         required_retail_cup:preflight.required_retail_cup??null,
         actual_retail_cup:preflight.actual_retail_cup??null,
         price_check:preflight.price_check??null,
+        balance_check:preflight.balance_check??null,
         warning:preflight.warning??null,
       },
     });
@@ -328,6 +481,7 @@ async function submitOrder(orderId: string, adminId: string) {
       error:preflight.code, message:preflight.message,
       retryable:true, no_provider_order_created:true,
       price_check:preflight.price_check??null,
+      balance_check:preflight.balance_check??null,
       warning:preflight.warning??null,
     });
   }
@@ -357,17 +511,34 @@ async function submitOrder(orderId: string, adminId: string) {
       data?.request_id || data?.order?.request_id || data?.error?.request_id || null;
     if (!upstream.ok) {
       const err = providerError(data);
-      const retryState = upstream.status === 409 || upstream.status === 429 ||
+      const errorText = (String(err.code || "") + " " + String(err.message || "")).toLowerCase();
+      const insufficientBalance =
+        /insufficient.{0,40}(balance|funds)|(?:balance|funds).{0,40}insufficient|not enough.{0,30}(balance|funds)|saldo.{0,40}(insuficiente|no alcanza|suficiente)|fondos.{0,40}insuficientes|sin saldo suficiente/.test(errorText);
+      const retryState = insufficientBalance || upstream.status === 409 || upstream.status === 429 ||
         upstream.status === 500 || upstream.status === 502 || upstream.status === 503 ||
         upstream.status === 504;
+      const errorCode = insufficientBalance ? "central_one_insufficient_balance" :
+        (upstream.status === 401 || upstream.status === 403 ? "provider_api_permission_denied" : err.code);
+      const errorMessage = insufficientBalance
+        ? "Central One rechazó el pedido por saldo insuficiente. " + err.message +
+          " Recarga el saldo del proveedor y reintenta este mismo pedido; no crees otro ni vuelvas a cobrar al cliente."
+        : (upstream.status === 401 || upstream.status === 403
+          ? "Central One denegó la operación. Comprueba los permisos orders:write y balance:read de la llave API. " + err.message
+          : err.message);
       await finishOrder({
         orderId, status: retryState ? "retryable" : "rejected",
-        requestId, errorCode: err.code, errorMessage: err.message,
-        response: { http_status: upstream.status, error: err, price_check: preflight.price_check },
+        requestId, errorCode, errorMessage,
+        response: {
+          http_status: upstream.status,
+          error: {code:errorCode,message:errorMessage},
+          no_provider_order_created:true,
+          price_check: preflight.price_check,
+          balance_check: preflight.balance_check,
+        },
       });
       return reply(upstream.status >= 500 ? 502 : upstream.status, {
-        error: err.code, message: err.message, request_id: requestId,
-        retryable: retryState,
+        error: errorCode, message: errorMessage, request_id: requestId,
+        retryable: retryState, no_provider_order_created:true,
       });
     }
     const providerOrder = data?.order;
@@ -385,6 +556,7 @@ async function submitOrder(orderId: string, adminId: string) {
       });
       return reply(502, {error:"provider_response_incomplete",message:"Central One respondió, pero no pudimos leer el ID de su pedido. No crees otro pedido; reintenta el mismo más tarde.",request_id:requestId});
     }
+    const refund = providerRefundInfo(providerOrder);
     const saved = await finishOrder({
       orderId, status:providerStatus, providerOrderId,
       referenceCode:typeof providerOrder.reference_code==="string"?providerOrder.reference_code:null,
@@ -393,11 +565,39 @@ async function submitOrder(orderId: string, adminId: string) {
         reference_code:typeof providerOrder.reference_code==="string"?providerOrder.reference_code:null,
         currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,
         price_check:preflight.price_check,
+        balance_check:preflight.balance_check,
         warning:preflight.warning,
+        refund,
+        failure:providerOrder?.failure && typeof providerOrder.failure==="object" ? {
+          code:typeof providerOrder.failure.code==="string"?providerOrder.failure.code:null,
+          message_es:typeof providerOrder.failure.message_es==="string"?providerOrder.failure.message_es.slice(0,400):null,
+          action:typeof providerOrder.failure.action==="string"?providerOrder.failure.action:null,
+        } : null,
       },
-      errorCode:null,errorMessage:null,
+      errorCode:providerOrder?.failure?.code||null,
+      errorMessage:providerOrder?.failure?.message_es||null,
     });
-    return reply(200, {ok:true,provider_order_id:providerOrderId,reference_code:providerOrder.reference_code||null,provider_status:providerStatus,provider_total_sale_amount:typeof providerOrder.total_sale_amount==="string"?providerOrder.total_sale_amount:null,provider_currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,preflight_margin_percent:preflight.margin_percent,price_check:preflight.price_check,warning:preflight.warning,local:saved});
+    let walletRefund = null;
+    let walletRefundError = null;
+    try {
+      walletRefund = await applyConfirmedWalletRefund(orderId,providerOrderId,providerStatus,refund);
+    } catch (refundError) {
+      walletRefundError = refundError instanceof Error ? refundError.message : "No se pudo acreditar la devolución interna.";
+    }
+    return reply(200, {
+      ok:true,provider_order_id:providerOrderId,
+      reference_code:providerOrder.reference_code||null,
+      provider_status:providerStatus,
+      provider_total_sale_amount:typeof providerOrder.total_sale_amount==="string"?providerOrder.total_sale_amount:null,
+      provider_currency:typeof providerOrder.currency==="string"?providerOrder.currency:null,
+      preflight_margin_percent:preflight.margin_percent,
+      price_check:preflight.price_check,
+      balance_check:preflight.balance_check,
+      refund,
+      wallet_refund:walletRefund,
+      wallet_refund_error:walletRefundError,
+      warning:preflight.warning,local:saved
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Fallo de comunicación con Central One.";
     try {
@@ -413,7 +613,7 @@ async function refreshOrder(orderId: string) {
   if (!CENTRAL_ONE_API_KEY) return reply(503,{error:"central_one_not_configured",message:"Falta la clave de Central One."});
   const lookup = new URL(SUPABASE_URL + "/rest/v1/orders");
   lookup.searchParams.set("id","eq." + orderId);
-  lookup.searchParams.set("select","id,central_one_order_id,central_one_reference_code,central_one_status,status");
+  lookup.searchParams.set("select","id,central_one_order_id,central_one_reference_code,central_one_status,status,central_one_response,payment_source");
   lookup.searchParams.set("limit","1");
   const localResponse = await fetch(lookup, {
     headers:{apikey:SUPABASE_SERVICE_ROLE_KEY,Authorization:"Bearer " + SUPABASE_SERVICE_ROLE_KEY},
@@ -441,10 +641,15 @@ async function refreshOrder(orderId: string) {
     return reply(502,{error:"invalid_provider_order_response",message:"Central One devolvió un pedido que no pudimos verificar."});
   }
   const providerStatus=["created","confirmed","processing","partially_completed","completed","failed","cancelled"].includes(order.status)?order.status:"unknown";
+  const refund = providerRefundInfo(order);
   const safe = {
     status:providerStatus,
     reference_code:typeof order.reference_code==="string"?order.reference_code:null,
     updated_at:typeof order.updated_at==="string"?order.updated_at:null,
+    refund,
+    price_check:local.central_one_response?.price_check??null,
+    balance_check:local.central_one_response?.balance_check??null,
+    warning:local.central_one_response?.warning??null,
     failure:order?.failure&&typeof order.failure==="object"?{
       code:typeof order.failure.code==="string"?order.failure.code:null,
       message_es:typeof order.failure.message_es==="string"?order.failure.message_es.slice(0,400):null,
@@ -471,7 +676,18 @@ async function refreshOrder(orderId: string) {
     errorCode:order?.failure?.code||null,
     errorMessage:order?.failure?.message_es||null,
   });
-  return reply(200,{ok:true,provider_status:providerStatus,reference_code:order.reference_code||null,local:saved,details:safe});
+  let walletRefund = null;
+  let walletRefundError = null;
+  try {
+    walletRefund = await applyConfirmedWalletRefund(orderId,local.central_one_order_id,providerStatus,refund);
+  } catch (refundError) {
+    walletRefundError = refundError instanceof Error ? refundError.message : "No se pudo acreditar la devolución interna.";
+  }
+  return reply(200,{
+    ok:true,provider_status:providerStatus,reference_code:order.reference_code||null,
+    wallet_refund:walletRefund,wallet_refund_error:walletRefundError,
+    local:saved,details:safe
+  });
 }
 Deno.serve(async (req: Request) => {
   if(req.method==="OPTIONS") return new Response("ok",{headers:corsHeaders});
