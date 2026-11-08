@@ -1007,7 +1007,11 @@ function packageSortValue(p){
  return 999999;
 }
 function sortPackages(list){return [...(list||[])].sort((a,b)=>packageSortValue(a)-packageSortValue(b)||String(a.name||"").localeCompare(String(b.name||""),"es"));}
-function gameProductsFor(name){const item=gameFor(name);if(!item)return [];return sortPackages(products.filter(p=>{if(isGiftCard(p)||isLevelUpPackage(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return (item.match||[fold(item.name)]).some(word=>label.includes(fold(word))) }));}
+function isGlobalMobileLegendsProduct(product){
+ const game=fold(product?.game||"");
+ return !game.includes("mobile legends")||String(product?.provider_region||"").trim().toUpperCase()==="GLOBAL";
+}
+function gameProductsFor(name){const item=gameFor(name);if(!item)return [];return sortPackages(products.filter(p=>{if(!isGlobalMobileLegendsProduct(p))return false;if(isGiftCard(p)||isLevelUpPackage(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return (item.match||[fold(item.name)]).some(word=>label.includes(fold(word))) }));}
 function priceForMethod(p,method){return method==="Transferencia CUP"?p.price_transfer:method==="Saldo móvil"?p.price_mobile:(method==="USDT"||method==="Saldo de Tienda El Castillo")?p.price_usdt:0}
 function gameCurrency(item){const n=fold(item?.name||"");if(n.includes("free fire"))return {icon:"💎",unit:"diamantes"};if(n.includes("mobile legends"))return {icon:"💎",unit:"diamantes"};if(n.includes("blood strike"))return {icon:"🪙",unit:"gold"};if(n.includes("arena breakout"))return {icon:"🪙",unit:"bonos"};if(n.includes("honor of kings"))return {icon:"💎",unit:"tokens"};if(n.includes("genshin"))return {icon:"💠",unit:"cristales génesis"};if(n.includes("wuthering"))return {icon:"💠",unit:"lunites"};if(n.includes("roblox"))return {icon:"R$",unit:"Robux"};return {icon:"✦",unit:"créditos"}}
 function packageQuantity(p,item){const meta=gameCurrency(item);const amount=Number(p.amount||0);return amount>0?money(amount)+" "+meta.unit:p.name}
@@ -1155,7 +1159,7 @@ function productCard(p){
  const prices=options.length?options.map(item=>'<div class="price-option"><small>'+item[0]+'</small><strong>'+money(item[1])+' '+item[2]+'</strong></div>').join(""):'<div class="price-option"><small>Precio</small><strong>Por confirmar</strong></div>';
  const regionTag=p.provider_product_id?'<span class="provider-region-tag">Servidor '+clean(p.provider_region||"")+'</span>':"";return '<article class="catalog-product catalog-product-clickable" data-product-id="'+clean(p.id)+'"><div class="product-head"><span class="product-game">'+clean(p.game)+'</span><span class="product-badge"><span aria-hidden="true">✓</span> Disponible</span></div>'+regionTag+productArtwork(p)+'<h3>'+clean(p.name)+'</h3><p>'+clean(p.description||"Recarga digital por ID. Disponibilidad sujeta a confirmación.")+'</p><div class="product-prices">'+prices+'</div><button class="primary-btn block-btn" type="button" onclick="openCheckout(\''+clean(p.id)+'\')">Elegir paquete <span aria-hidden="true">→</span></button></article>';
 }
-function availableFor(item){const words=item.match||[fold(item.name)];return products.filter(p=>{if(item.kind==="gift"&&!isGiftCard(p))return false;if(item.kind!=="gift"&&(isGiftCard(p)||isLevelUpPackage(p)))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return words.some(w=>label.includes(fold(w)))})}
+function availableFor(item){const words=item.match||[fold(item.name)];return products.filter(p=>{if(!isGlobalMobileLegendsProduct(p))return false;if(item.kind==="gift"&&!isGiftCard(p))return false;if(item.kind!=="gift"&&(isGiftCard(p)||isLevelUpPackage(p)))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return words.some(w=>label.includes(fold(w)))})}
 function gameTile(item){const matches=availableFor(item);const image=item.image?'<img class="game-art-image" src="'+clean(item.image)+'" alt="" loading="lazy" decoding="async" width="180" height="235" onerror="this.onerror=null;this.src=\'./assets/free-fire-hero.svg\'"><span class="game-art-image-shade" aria-hidden="true"></span>':"";return '<button class="game-tile" type="button" onclick="chooseGame(&quot;'+clean(item.name)+'&quot;)"><div class="game-art art-'+item.art+'" role="img" aria-label="Imagen de '+clean(item.name)+'">'+image+'<span class="art-tag">'+item.tag+'</span></div><div class="tile-info"><div class="tile-title">'+clean(item.name)+'</div><div class="tile-meta">'+(matches.length?matches.length+' paquete(s)':'Planes en preparación')+'</div><span class="tile-status '+(matches.length?'':'off')+'">'+(matches.length?'Ver paquetes':'Próximamente')+'</span></div></button>'}
 function giftTile(item){const matches=availableFor({...item,kind:"gift"});return '<button class="gift-tile" type="button" onclick="chooseGift(\''+clean(item.name)+'\')"><div class="gift-art gift-'+item.art+'">'+item.icon+'</div><div class="gift-info">'+clean(item.name)+'<small>'+(matches.length?'Disponible':'Próximamente')+'</small></div></button>'}
 function renderProductCatalogs(){
@@ -1420,6 +1424,11 @@ async function validatePlayerId(){
  const target=providerPlayerTargetConfig(p);
  const zoneId=target.zoneKey?(zoneField?.value.trim()||""):"";
  if(!p)return;
+ if(fold(p.game||"").includes("mobile legends")&&!isGlobalMobileLegendsProduct(p)){
+  validatedPlayerCheckout=null;
+  setPlayerValidationDisplay("is-error","!","Solo verificamos Mobile Legends de la región GLOBAL. No continúes con este paquete.","Región no disponible");
+  return;
+ }
  if(!p.provider_product_id){
   if(requiresPlayerValidation(p)){
    validatedPlayerCheckout=null;
@@ -1502,6 +1511,11 @@ function openCheckout(productId,preferredMethod){
   const message="No pudimos abrir este paquete porque el catálogo todavía no está listo. Actualiza la página e inténtalo de nuevo.";
   const status=$("gamePlansSubtitle");if(status)status.textContent=message;
   console.error("openCheckout: product not found",productId);
+  return false;
+ }
+ if(!isGlobalMobileLegendsProduct(p)){
+  const message="Mobile Legends solo está disponible en la región GLOBAL. No se puede abrir un paquete de otra región.";
+  const status=$("gamePlansSubtitle");if(status)status.textContent=message;
   return false;
  }
  const productField=$("product");
@@ -1740,7 +1754,7 @@ async function loadProducts(){
    $("gamePlansSubtitle").textContent=message;
    return;
   }
-  products=data||[];
+  products=(data||[]).filter(isGlobalMobileLegendsProduct);
   $("product").innerHTML=products.map(p=>'<option value="'+clean(p.id)+'">'+clean(p.game)+' - '+clean(p.name)+'</option>').join("");
   try{renderProductCatalogs();updateCheckoutSummary();}
   catch(renderError){
@@ -1835,6 +1849,10 @@ async function placeOrder(){
  if(!currentUser){pendingCheckoutAfterLogin=true;openAccount();$("authmsg").textContent="Inicia sesión o crea tu cuenta para enviar y seguir este pedido.";return;}
  const product=products.find(p=>p.id===$("product").value);
  if(!product){$("ordermsg").textContent="No hay productos disponibles.";return;}
+ if(fold(product.game||"").includes("mobile legends")&&!isGlobalMobileLegendsProduct(product)){
+  $("ordermsg").textContent="Mobile Legends solo se vende en región GLOBAL. No se creó ningún pedido.";
+  updateCheckoutStage("player");return;
+ }
  const target=providerPlayerTargetConfig(product);
  const playerId=$("player").value.trim();
  const zoneId=target.zoneKey?($("playerZone")?.value.trim()||""):"";
