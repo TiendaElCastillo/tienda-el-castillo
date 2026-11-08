@@ -644,7 +644,7 @@ function loadCastleTurnstile(){
 }
 const STORE_SUPABASE_URL="https://kfllglkfncebpknnugnx.supabase.co";
 const STORE_SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbGxnbGtmbmNlYnBrbm51Z254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3Mjg5MTMsImV4cCI6MjEwOTMwNDkxM30.9lyiZC57tJuSRN6ReLkZZVsedJzl0kVxlhxUX90cE6g";
-let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, walletBalanceUSD=0, walletRequestMemory={}, walletDepositMethodPrevious="Transferencia CUP", walletSettings={cup_per_usd:1160,usdt_network:"BNB Smart Chain (BEP20)",usdt_address:"0x30d000d6B30f241986186BfFeCa8A449E5790C1D"}, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds", notificationPoll=null;
+let db=null, currentUser=null, currentProfile=null, products=[], paymentMethods=[], paymentLoadError=null, editingProductId=null, pendingCheckoutAfterLogin=false, checkoutPaymentMethodPrevious="", walletBalanceUSD=0, walletRequestMemory={}, walletDepositMethodPrevious="Transferencia CUP", walletSettings={cup_per_usd:1160,usdt_network:"BNB Smart Chain (BEP20)",usdt_address:"0x30d000d6B30f241986186BfFeCa8A449E5790C1D"}, validatedPlayerCheckout=null, adminOrderPoll=null, adminOrderChannel=null, customerOrderChannel=null, customerOrderPoll=null, playerValidationRequest=0, playerValidationInFlightKey="", activeFreeFireCategory="diamonds", notificationPoll=null;
 
 const $=id=>document.getElementById(id);
 const clean=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1463,8 +1463,16 @@ function updateCheckoutSummary(){
   option.disabled=!enabled;option.hidden=!enabled;if(enabled)available.push(option.value);
  });
  if(available.length&&!available.includes(select.value))select.value=available[0];
+ const method=select.value;
+ // Al cambiar de método, no reutilizar datos ni capturas de una operación distinta.
+ if(checkoutPaymentMethodPrevious&&checkoutPaymentMethodPrevious!==method){
+  ["reference","senderPhone","reportedAmount","paymentProof"].forEach(id=>{const field=$(id);if(field)field.value="";});
+  previewPaymentProof();
+  if($("ordermsg"))$("ordermsg").textContent="";
+ }
+ checkoutPaymentMethodPrevious=method;
  renderCheckoutPaymentMethods();
- const method=select.value,raw=prices[method],isWallet=method==="Saldo de Tienda El Castillo";
+ const raw=prices[method],isWallet=method==="Saldo de Tienda El Castillo";
  const unit=isWallet?"USD":method==="USDT"?"USDT":"CUP";
  const amount=Number(raw)>0?(isWallet?moneyUSD(raw):money(raw)):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
  const regionLine=requiresPlayerValidation(p)?'<small>Región '+clean(p.provider_region||"")+' · Comprobación de ID obligatoria</small>':'<small>Precio final según el método de pago</small>';
