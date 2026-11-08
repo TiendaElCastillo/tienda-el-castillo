@@ -115,18 +115,11 @@ async function finishOrder(args: {
   });
 }
 async function preflightPriceAndStock(claim: any) {
-  const orderUrl = new URL(SUPABASE_URL + "/rest/v1/orders");
-  orderUrl.searchParams.set("id", "eq." + claim.order_id);
-  orderUrl.searchParams.set("select", "price,payment_method");
-  orderUrl.searchParams.set("limit", "1");
-  const orderResponse = await fetch(orderUrl, {
-    headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: "Bearer " + SUPABASE_SERVICE_ROLE_KEY },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!orderResponse.ok) return { ok:false, code:"local_order_read_failed", message:"No pudimos comprobar el precio cobrado al cliente." };
-  const orderRows = await orderResponse.json();
-  const localOrder = Array.isArray(orderRows) ? orderRows[0] : null;
-  if (!localOrder) return { ok:false, code:"local_order_missing", message:"No encontramos el precio del pedido local." };
+  // The claim RPC locks the order and returns its exact price/payment method.
+  // Reuse those values instead of making a second PostgREST request.
+  if (claim.order_price === null || claim.order_price === undefined || !claim.payment_method) {
+    return { ok:false, code:"order_price_data_missing", message:"La autorización no recibió el precio y método de pago del pedido. No se enviará la recarga." };
+  }
 
   const settingsUrl = new URL(SUPABASE_URL + "/rest/v1/pricing_settings");
   settingsUrl.searchParams.set("id", "eq.1");
@@ -174,7 +167,7 @@ async function preflightPriceAndStock(claim: any) {
   const mobileUnits = Number(settings.mobile_credit_units);
   const mobileCost = Number(settings.mobile_cost_cup);
   const markup = Number(settings.markup_percent);
-  const salePrice = Number(localOrder.price);
+  const salePrice = Number(claim.order_price);
   if (!Number.isFinite(wholesale) || wholesale <= 0 || !Number.isFinite(rate) || rate <= 0 ||
       !Number.isFinite(mobileUnits) || mobileUnits <= 0 || !Number.isFinite(mobileCost) || mobileCost <= 0 ||
       !Number.isFinite(markup) || markup < 0 || !Number.isFinite(salePrice) || salePrice <= 0) {
@@ -185,7 +178,7 @@ async function preflightPriceAndStock(claim: any) {
   }
 
   let retailCup: number;
-  const method = String(localOrder.payment_method || "");
+  const method = String(claim.payment_method || "");
   if (method === "Transferencia CUP" || method === "Billetera CUP") retailCup = salePrice;
   else if (method === "Saldo móvil") retailCup = salePrice * mobileCost / mobileUnits;
   else if (method === "USDT" || method === "Saldo de Tienda El Castillo") retailCup = salePrice * rate;
