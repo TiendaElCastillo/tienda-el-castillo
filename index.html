@@ -1802,7 +1802,7 @@ async function loadMyOrders(){
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
     ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
-  const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id&&(!o.central_one_status||o.central_one_status==="not_submitted");
+  const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id&&!o.central_one_submitted_at&&!o.central_one_idempotency_key&&(!o.central_one_status||o.central_one_status==="not_submitted");
   const wasCancelledBeforeProof=o.status==="cancelled"&&o.payment_source==="direct"&&!o.proof_path&&!o.central_one_order_id;
   const progress=wasCancelledBeforeProof
    ?'<p class="track-note">Este pedido se canceló antes de enviar el comprobante. No se autorizó ninguna recarga. Puedes crear un pedido nuevo desde la tienda si todavía necesitas el paquete.</p>'
