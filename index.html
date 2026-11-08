@@ -2871,7 +2871,7 @@ async function loadAllOrders(options={}){
    priceCheckHtml='<section class="admin-profit-audit '+auditClass+'"><h4>'+auditTitle+'</h4><div class="admin-profit-grid">'+
     '<div><span>Cliente (equiv. CUP)</span><strong>'+money(priceCheck.customer_retail_cup)+' CUP</strong></div>'+
     '<div><span>Central One</span><strong>'+money(priceCheck.provider_cost_cup)+' CUP</strong></div>'+
-    '<div><span>Coste mayorista</span><strong>'+Number(priceCheck.provider_wholesale_usd||0).toFixed(4)+' USDT</strong></div>'+
+    '<div><span>Coste mayorista</span><strong>'+Number(priceCheck.provider_wholesale_usd||0).toFixed(4)+' USD</strong></div>'+
     '<div><span>Beneficio bruto</span><strong>'+(profit>0?"+":"")+money(profit)+' CUP</strong></div>'+
     '<div><span>Margen obtenido</span><strong>'+Number(priceCheck.margin_percent||0).toFixed(2)+' %</strong></div>'+
     '<div><span>Objetivo configurado</span><strong>'+Number(priceCheck.target_markup_percent||0).toFixed(2)+' %</strong></div>'+
