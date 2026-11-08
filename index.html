@@ -2207,10 +2207,33 @@ async function loadMyOrders(){
      ?'<p class="track-note">Este pedido ya está creado, pero todavía no tiene comprobante. Completa los datos y adjunta la captura aquí mismo; no crees otro pedido ni repitas el pago.</p>'
      :["pending","payment_review"].includes(o.status)
       ?'<p class="track-note">El pedido está pendiente de revisión del pago.</p>':"";
-  const providerInfo=o.central_one_reference_code
-   ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
-   :o.status==="failed"&&o.central_one_error_message
-    ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
+  const customerProviderStatus=String(o.central_one_status||"not_submitted");
+  const customerProviderError=String(o.central_one_error_code||"");
+  const customerWalletRefund=o.central_one_response?.wallet_refund;
+  const externalRefundReview=o.central_one_response?.external_payment_refund_review;
+  let providerInfo="";
+  if(o.central_one_order_id){
+   providerInfo='<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code||"Registrada en Central One")+'</strong> · Estado: '+centralOneStatusText(customerProviderStatus)+'</p>';
+   if(customerWalletRefund?.refunded===true){
+    providerInfo+='<p class="track-note"><strong>Devolución confirmada:</strong> Central One devolvió el importe y '+money(customerWalletRefund.credited_amount)+' '+clean(customerWalletRefund.currency||"USD")+' ya fue acreditado nuevamente en tu billetera.</p>';
+   }else if(externalRefundReview?.required===true){
+    providerInfo+='<p class="track-note"><strong>Devolución pendiente de gestión:</strong> Central One confirmó la devolución al proveedor. Como pagaste mediante un método externo, la tienda debe completar la devolución de tu pago. No vuelvas a pagar.</p>';
+   }else if(["failed","cancelled"].includes(customerProviderStatus)){
+    providerInfo+='<p class="track-note">La recarga no se completó. No realices otro pago ni crees otro pedido. La tienda está revisando la devolución correspondiente.</p>';
+   }
+  }else if(customerProviderError==="central_one_insufficient_balance"){
+   providerInfo='<p class="track-note"><strong>Pago recibido · saldo del proveedor insuficiente.</strong> Tu pago está registrado. Central One no aceptó la recarga porque la tienda necesita reponer su saldo. Conservamos este pedido para reintentarlo; no vuelvas a pagar ni crees otro.</p>';
+  }else if(customerProviderError==="admin_cancelled_before_provider"){
+   providerInfo='<p class="track-note"><strong>Pedido anulado antes del envío.</strong> No se creó ninguna orden en Central One y la tienda no realizó una devolución automática. Si ya pagaste, conserva el comprobante y contacta con la tienda para resolverlo.</p>';
+  }else if(o.central_one_error_message){
+   providerInfo='<p class="track-note"><strong>Incidencia de recarga:</strong> '+clean(o.central_one_error_message)+' No vuelvas a pagar ni crees otro pedido; la tienda revisará este pedido.</p>';
+  }else if(customerProviderStatus==="unknown"){
+   providerInfo='<p class="track-note"><strong>Respuesta pendiente de confirmar.</strong> Estamos verificando si Central One registró la orden. No pagues de nuevo ni crees otro pedido.</p>';
+  }else if(customerProviderStatus==="submitting"){
+   providerInfo='<p class="track-note">La autorización está en curso. No necesitas hacer otro pago ni crear otro pedido.</p>';
+  }else if(customerProviderStatus==="rejected"){
+   providerInfo='<p class="track-note">Central One no aceptó la solicitud. La tienda revisará el motivo y te informará; no realices otro pago.</p>';
+  }
   const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id&&!o.central_one_submitted_at&&!o.central_one_idempotency_key&&(!o.central_one_status||o.central_one_status==="not_submitted");
   const wasCancelledBeforeProof=o.status==="cancelled"&&o.payment_source==="direct"&&!o.proof_path&&!o.central_one_order_id;
   const progress=wasCancelledBeforeProof
@@ -3199,19 +3222,37 @@ async function loadAllOrders(options={}){
     (!profitable?'<p>La orden no se envió a Central One. No autorices ni cobres de nuevo este pedido.</p>':"")+
     '</section>';
   }
+  const providerErrorCode=String(o.central_one_error_code||"");
+  const balanceCheck=o.central_one_response?.balance_check||null;
   let providerInfo="";
   if(o.central_one_order_id){
    providerInfo='<p class="track-note"><strong>Central One:</strong> '+centralOneStatusText(providerStatus)+
     (o.central_one_reference_code?' · Referencia: '+clean(o.central_one_reference_code):"")+
     (o.central_one_error_message?' · '+clean(o.central_one_error_message):"")+'</p>';
+   if(o.central_one_response?.wallet_refund?.refunded===true){
+    providerInfo+='<p class="track-note"><strong>Billetera devuelta:</strong> se acreditaron '+money(o.central_one_response.wallet_refund.credited_amount)+' '+clean(o.central_one_response.wallet_refund.currency||"USD")+' al cliente. La devolución del proveedor fue confirmada.</p>';
+   }else if(o.central_one_response?.external_payment_refund_review?.required===true){
+    providerInfo+='<p class="track-note"><strong>Devolución externa pendiente:</strong> Central One confirmó el reembolso al proveedor. Debes devolver manualmente el pago CUP/USDT/saldo móvil del cliente y registrar el comprobante de esa devolución.</p>';
+   }
+  }else if(providerErrorCode==="central_one_insufficient_balance"){
+   providerInfo='<p class="track-note"><strong>SALDO INSUFICIENTE EN CENTRAL ONE.</strong> '+clean(o.central_one_error_message||"El proveedor rechazó el pedido por falta de saldo.")+
+    (balanceCheck?.available!==undefined?' · Disponible: '+money(balanceCheck.available)+' '+clean(balanceCheck.currency||"USDT"):"")+
+    (balanceCheck?.required!==undefined?' · Necesario: '+money(balanceCheck.required)+' '+clean(balanceCheck.currency||"USDT"):"")+
+    ' · No se creó una orden del proveedor. Recarga el saldo de Central One y usa «Reintentar con la misma clave segura». El cliente ya pagó: no le cobres otra vez.</p>';
+  }else if(providerErrorCode==="provider_balance_scope_missing"){
+   providerInfo='<p class="track-note"><strong>Falta permiso balance:read.</strong> La llave API de Central One debe tener este alcance para que la tienda pueda comprobar el saldo antes de enviar compras. El pedido está bloqueado y no se envió.</p>';
+  }else if(["provider_balance_unreadable","provider_balance_currency_unsupported","provider_balance_unavailable"].includes(providerErrorCode)){
+   providerInfo='<p class="track-note"><strong>Comprobación de saldo bloqueada:</strong> '+clean(o.central_one_error_message||providerErrorCode)+'. No se envió la orden. Revisa la respuesta de balance antes de reintentar.</p>';
+  }else if(providerErrorCode==="admin_cancelled_before_provider"){
+   providerInfo='<p class="track-note"><strong>Cancelado antes del proveedor:</strong> no se creó una orden de Central One. No hubo devolución automática al cliente.</p>';
   }else if(o.central_one_error_message){
-   providerInfo='<p class="track-note"><strong>Central One:</strong> '+clean(providerStatus)+' · '+clean(o.central_one_error_message)+'</p>';
+   providerInfo='<p class="track-note"><strong>Central One:</strong> '+centralOneStatusText(providerStatus)+' · '+clean(o.central_one_error_message)+'</p>';
   }else if(o.status==="processing"&&!o.player_id_validated){
    providerInfo='<p class="track-note">Este pedido no puede enviarse automáticamente: no tiene la validación de jugador exigida por Central One.</p>';
   }else if(providerStatus==="submitting"&&!staleSubmitting){
-   providerInfo='<p class="track-note">La autorización está en curso. No pulses otra vez ni cierres esta ficha hasta que llegue una respuesta.</p>';
+   providerInfo='<p class="track-note">La autorización está en curso. No pulses otra vez; espera la respuesta de Central One.</p>';
   }else if(providerStatus==="submitting"&&staleSubmitting){
-   providerInfo='<p class="track-note">La solicitud lleva más de 90 segundos sin respuesta. Puedes reintentar con la misma clave segura; Central One indica que una repetición con esa clave no genera un segundo cobro. Comprueba también el historial del proveedor.</p>';
+   providerInfo='<p class="track-note">La solicitud lleva más de 90 segundos sin respuesta. Reintenta solo con la misma clave segura y comprueba el historial de Central One.</p>';
   }
   const canCancelPreflight=o.status==="processing"&&!o.central_one_order_id&&!o.central_one_reference_code&&!o.central_one_request_id&&providerStatus==="retryable"&&o.central_one_response?.preflight==="blocked";
   const safeCancelAction=canCancelPreflight?'<div class="order-actions order-safe-cancel"><button type="button" data-cancel-preflight-order data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">Anular pedido bloqueado</button><small>Fallo anterior al envío; no se descontó saldo. Sin devolución automática.</small></div>':"";
