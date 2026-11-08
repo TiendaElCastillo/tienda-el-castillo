@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v96";
+const CACHE_NAME = "el-castillo-shell-v97";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -90,7 +90,8 @@ self.addEventListener("fetch", event => {
   const isProductArtwork =
     url.hostname === "seagm-media.seagmcdn.com" ||
     url.hostname === "cdn.prod.website-files.com" ||
-    url.hostname === "assets.nuuvem.com";
+    url.hostname === "assets.nuuvem.com" ||
+    url.hostname === "cdn1.codashop.com";
 
   // Auth, database reads, orders, payment proofs and provider calls are network-only.
   // Product artwork may be cached after its first successful load for later visits/offline use.
