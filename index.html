@@ -1727,6 +1727,34 @@ function startNotificationPolling(){
  },60000);
 }
 
+async function cancelUnsubmittedOrder(orderId,orderCode,button){
+ if(!currentUser||!db||!orderId||!button)return;
+ const accepted=window.confirm(
+  "CANCELAR PEDIDO SIN COMPROBANTE\n\nPedido "+(orderCode||orderId)+
+  "\n\nSolo se cancelará si sigue pendiente y nunca se ha enviado una captura ni confirmado un pago. "+
+  "No se cancela ninguna transferencia ni se devuelve dinero. Después podrás crear un pedido nuevo.\n\n¿Deseas cancelar este pedido incompleto?"
+ );
+ if(!accepted)return;
+ const originalText=button.textContent;
+ button.disabled=true;button.textContent="Cancelando…";
+ try{
+  const {data,error}=await db.rpc("cancel_own_unsubmitted_order",{p_order_id:orderId});
+  if(error)throw new Error(error.message);
+  if(data?.status!=="cancelled")throw new Error("La tienda no confirmó la cancelación.");
+  await loadMyOrders();
+  const list=$("myorders");
+  if(list){
+   const message=document.createElement("p");
+   message.className="track-note";
+   message.textContent="El pedido "+(data.order_code||orderCode||"")+" quedó cancelado porque no tenía comprobante. Puedes volver a la tienda y crear uno nuevo.";
+   list.prepend(message);
+  }
+ }catch(error){
+  button.disabled=false;button.textContent=originalText;
+  window.alert("No se pudo cancelar el pedido: "+(error.message||"Comprueba la conexión."));
+ }
+}
+
 async function loadMyOrders(){
  if(!currentUser)return;
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
@@ -1742,11 +1770,23 @@ async function loadMyOrders(){
    ?'<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code)+'</strong> · Estado: '+centralOneStatusText(o.central_one_status||"processing")+'</p>'
    :o.status==="failed"&&o.central_one_error_message
     ?'<p class="track-note">'+clean(o.central_one_error_message)+'</p>':"";
+  const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id;
+  const wasCancelledBeforeProof=o.status==="cancelled"&&o.payment_source==="direct"&&!o.proof_path&&!o.central_one_order_id;
+  const progress=wasCancelledBeforeProof
+   ?'<p class="track-note">Este pedido se canceló antes de enviar el comprobante. No se autorizó ninguna recarga. Puedes crear un pedido nuevo desde la tienda si todavía necesitas el paquete.</p>'
+   :customerOrderProgress(o.status);
+  const cancelBlock=canCancelWithoutProof
+   ?'<div class="order-actions"><button type="button" class="secondary-btn" data-cancel-unsubmitted data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">Cancelar pedido incompleto</button></div><p class="track-note">Úsalo solo si el comprobante no llegó a enviarse. No cancela transferencias ni devuelve pagos.</p>'
+   :"";
   return '<article class="order-card"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+(o.payment_source==="wallet"?" · USD":"")+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
-   '<span class="status">'+statusText(o.status)+'</span>'+customerOrderProgress(o.status)+proofNote+providerInfo+'</article>';
+   '<span class="status">'+statusText(o.status)+'</span>'+progress+proofNote+providerInfo+cancelBlock+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
+ const orderList=$("myorders");
+ orderList?.querySelectorAll("[data-cancel-unsubmitted]").forEach(button=>{
+  button.addEventListener("click",()=>cancelUnsubmittedOrder(button.dataset.orderId,button.dataset.orderCode,button));
+ });
 }
 
 
