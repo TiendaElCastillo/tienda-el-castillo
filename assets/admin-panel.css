@@ -238,3 +238,95 @@
 .proof-viewer-download,.proof-viewer-zoom{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 10px;border:1px solid #dce5f2;border-radius:10px;background:#f4f7fc;color:#234b85;font-size:11px;font-weight:850;text-decoration:none;white-space:nowrap}
 .proof-viewer-image.is-zoomed{width:min(180%,1200px);max-width:none;cursor:zoom-out}
 @media(max-width:520px){.proof-viewer-actions{gap:5px}.proof-viewer-download,.proof-viewer-zoom,.proof-viewer-close{min-height:36px;padding:7px 8px;font-size:10px}.proof-viewer-header{align-items:flex-start}.proof-viewer-header h2{padding-top:8px}}
+
+
+
+/* v20 — panel operativo mobile-first */
+.admin-kpi-grid{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0 20px;
+}
+.admin-kpi{
+ min-width:0;padding:14px 15px;border:1px solid #e2e9f3;border-radius:15px;
+ background:#fff;box-shadow:0 3px 12px rgba(22,42,73,.035);
+}
+.admin-kpi-label{display:block;color:#6b7a91;font-size:11px;font-weight:750;line-height:1.35}
+.admin-kpi-value{display:block;margin-top:8px;color:#17345f;font-size:27px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums}
+#admin .admin-heading{padding:21px 22px;border-radius:18px;box-shadow:0 10px 24px rgba(15,44,89,.12)}
+#admin .admin-heading h1{font-size:clamp(24px,4vw,31px);letter-spacing:-.035em}
+#admin .admin-tabs{gap:7px;padding:8px 0 12px;top:68px}
+#admin .admin-tab{padding:10px 13px;border-radius:11px;font-size:12px}
+#admin .admin-tab.active{background:#195fd2;box-shadow:0 4px 12px rgba(25,95,210,.18)}
+#admin .admin-overview{padding:22px}
+#admin .admin-shortcuts{gap:10px}
+#admin .admin-shortcut{min-height:82px;border-radius:14px;box-shadow:none;background:#fbfcff}
+#admin .admin-order-search{margin:12px 0 10px;min-height:48px}
+#admin .admin-order-filters{display:flex;flex-wrap:wrap;overflow:visible;gap:7px;padding:6px 0 12px}
+#admin .admin-order-filter{min-height:38px;border-radius:11px;background:#f6f8fc}
+#admin .admin-order-filter.active{background:#eaf2ff;border-color:#b9d0ff;color:#174fa7}
+#admin .admin-filter-empty{display:none}
+#admin .admin-filter-empty.show{display:block}
+#admin .order-card{
+ display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:17px;
+ background:#fff;border:1px solid #e2e8f1;box-shadow:0 4px 14px rgba(17,41,75,.045);
+}
+#admin .admin-order-header{display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0}
+#admin .admin-order-code{font-size:14px;color:#173b70;letter-spacing:.025em;overflow-wrap:anywhere}
+#admin .admin-order-header .status{flex:0 0 auto}
+#admin .admin-order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#admin .admin-order-field{
+ display:flex;flex-direction:column;gap:4px;min-width:0;padding:10px 11px;
+ border:1px solid #e8edf4;border-radius:11px;background:#f8faff;
+}
+#admin .admin-order-field>span{font-size:9px;font-weight:850;letter-spacing:.055em;color:#75849b;text-transform:uppercase}
+#admin .admin-order-field>strong{font-size:12px;line-height:1.4;color:#263b5d;overflow-wrap:anywhere}
+#admin .admin-order-proof{grid-column:1/-1}
+#admin .admin-order-proof a{color:#175fc9;font-weight:850;text-decoration:none}
+#admin .admin-order-proof a:hover{text-decoration:underline}
+#admin .order-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+#admin .order-actions select{min-height:44px;flex:1 1 150px}
+#admin .order-actions button{min-height:44px;flex:1 1 180px}
+#admin .admin-profit-audit{
+ padding:13px 14px;border:1px solid #d9e4f2;border-radius:14px;background:#f7faff;
+}
+#admin .admin-profit-audit h4{margin:0 0 10px;font-size:12px;letter-spacing:.045em;color:#28456c}
+#admin .admin-profit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#admin .admin-profit-grid>div{display:flex;flex-direction:column;gap:4px;padding:9px 10px;border-radius:10px;background:#fff;border:1px solid #e7edf5;min-width:0}
+#admin .admin-profit-grid span{font-size:9px;color:#71819a;font-weight:800;text-transform:uppercase}
+#admin .admin-profit-grid strong{font-size:13px;color:#1a355b;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#admin .admin-profit-audit p{margin:9px 0 0;font-size:11px;line-height:1.5;color:#52637c}
+#admin .admin-profit-audit.is-profitable{border-color:#b9e0ce;background:#f3fbf7}
+#admin .admin-profit-audit.is-profitable h4,#admin .admin-profit-audit.is-profitable .admin-profit-grid>div:nth-child(4) strong{color:#16734b}
+#admin .admin-profit-audit.is-warning{border-color:#efdaa8;background:#fffaf0}
+#admin .admin-profit-audit.is-warning h4{color:#936018}
+#admin .admin-profit-audit.is-loss{border:1.5px solid #e9a7a7;background:#fff4f4}
+#admin .admin-profit-audit.is-loss h4{color:#a52e2e}
+#admin .admin-profit-audit.is-loss .admin-profit-grid>div:nth-child(4) strong{color:#bd2929}
+#admin .order-safe-cancel{display:flex;flex-wrap:wrap;gap:8px}
+#admin .order-safe-cancel button{flex:1 1 200px;min-height:44px}
+#admin .admin-notice-compose{margin-top:0}
+#admin .admin-section-panel{scroll-margin-top:145px}
+.proof-viewer-panel{width:min(920px,100%);height:min(94dvh,920px)}
+.proof-viewer-image-stage{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px}
+.proof-viewer-image{display:block;max-width:100%;height:auto;max-height:100%;object-fit:contain}
+@media(max-width:760px){
+ .admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 17px}
+ .admin-kpi{padding:12px;border-radius:13px}
+ .admin-kpi-value{font-size:24px}
+ #admin .admin-overview{padding:16px}
+ #admin .admin-tabs{top:68px}
+ #admin .admin-order-filters{flex-wrap:nowrap;overflow-x:auto;margin-left:-3px;margin-right:-3px;padding:7px 3px 12px}
+ #admin .admin-order-filter{flex:0 0 auto}
+ #admin .admin-order-detail-grid{grid-template-columns:1fr 1fr}
+ #admin .admin-section-panel{scroll-margin-top:125px}
+}
+@media(max-width:420px){
+ #admin .admin-order-detail-grid{grid-template-columns:1fr}
+ #admin .admin-order-proof{grid-column:auto}
+ #admin .admin-order-header{align-items:flex-start;flex-direction:column}
+ #admin .admin-order-header .status{align-self:flex-start}
+ #admin .order-actions button,#admin .order-actions select{flex-basis:100%}
+ #admin .admin-profit-grid{grid-template-columns:1fr 1fr}
+ .proof-viewer-overlay{padding:4px}
+ .proof-viewer-panel{height:calc(100dvh - 8px);max-height:calc(100dvh - 8px);border-radius:13px}
+ .proof-viewer-info{grid-template-columns:1fr 1fr}
+}
