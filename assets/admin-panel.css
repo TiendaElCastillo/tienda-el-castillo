@@ -391,7 +391,7 @@
  #gameDetailPlans .plan-price strong{font-size:15px!important}
 }
 /* Imagen promocional Free Fire en las zonas principales */
-.hero-visual{background-image:url("./assets/games/free-fire-tienda.webp?v=1")!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;background-color:#07172e!important}
+.hero-visual{background-image:url("./games/free-fire-tienda.webp")!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;background-color:#07172e!important}
 .hero-visual:before{content:none!important}
 .auth-game-art{background:#07172e}
 .auth-game-art img{object-fit:contain!important;object-position:center!important;background:#07172e}
