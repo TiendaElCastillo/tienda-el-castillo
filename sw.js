@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v103";
+const CACHE_NAME = "el-castillo-shell-v104";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,7 +16,7 @@ const APP_SHELL = [
   "./assets/games/free-fire.webp",
   "./assets/games/free-fire-tienda.webp",
   "./assets/games/mobile-legends-bang-bang.webp",
-  "./assets/admin-panel.css?v=26",
+  "./assets/admin-panel.css?v=27",
   "./assets/admin-panel.js?v=16",
   "./assets/diamond-pile.svg",
   "./assets/diamond-chest.svg",
