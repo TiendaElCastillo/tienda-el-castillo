@@ -2696,7 +2696,7 @@ async function sendAdminOrderNotice(button){
  }catch(error){
   if(feedback)feedback.textContent="No se pudo enviar el aviso: "+(error.message||"comprueba la conexión.");
  }finally{
-  button.disabled=false;button.textContent="Enviar al buzón del cliente";
+  button.disabled=false;button.textContent="Enviar y registrar advertencia";
  }
 }
 
@@ -2707,13 +2707,13 @@ async function toggleCustomerBlock(button){
  if(!userId)return;
  let reason=null;
  if(wasBlocked){
-  if(!window.confirm("DESBLOQUEAR CUENTA\\n\\nLa cuenta podrá volver a crear pedidos. ¿Deseas retirar la restricción?"))return;
+  if(!window.confirm("DESBLOQUEAR CUENTA\n\nLa cuenta podrá volver a crear pedidos. ¿Deseas retirar la restricción?"))return;
  }else{
   reason=window.prompt("Motivo del bloqueo (se notificará al cliente):","Actividad fraudulenta confirmada mediante pedidos o comprobantes falsos.");
   if(reason===null)return;
   reason=String(reason).trim();
   if(reason.length<5||reason.length>500){window.alert("El motivo debe tener entre 5 y 500 caracteres.");return;}
-  if(!window.confirm("BLOQUEAR CUENTA\\n\\nSe impedirá crear nuevos pedidos desde esta cuenta. Los pedidos anteriores no se borrarán ni se cancelarán automáticamente. ¿Confirmas el bloqueo?"))return;
+  if(!window.confirm("BLOQUEAR CUENTA\n\nSe impedirá crear nuevos pedidos desde esta cuenta. Los pedidos anteriores no se borrarán ni se cancelarán automáticamente. ¿Confirmas el bloqueo?"))return;
  }
  const oldText=button.textContent;
  button.disabled=true;button.textContent=wasBlocked?"Reactivando…":"Bloqueando…";
