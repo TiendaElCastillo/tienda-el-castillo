@@ -28,8 +28,8 @@
         typeof draft.productId === "string" &&
         typeof draft.playerId === "string" &&
         typeof draft.paymentMethod === "string" &&
-        Number.isFinite(draft.savedAt) &&
-        Date.now() - draft.savedAt <= DRAFT_TTL_MS;
+        Number.isFinite(draft.savedAt) && Number.isFinite(draft.expiresAt) &&
+        draft.savedAt <= Date.now() + 60000 && Date.now() - draft.savedAt <= DRAFT_TTL_MS;
       if (!valid || draft.expiresAt <= Date.now()) {
         localStorage.removeItem(DRAFT_KEY);
         return null;
@@ -164,7 +164,7 @@
       if (message) message.textContent =
         "Hay un borrador guardado en este teléfono. Todavía no es un pedido ni se ha hecho ningún pago. Al restaurarlo tendrás que verificar el ID otra vez y adjuntar de nuevo el comprobante.";
       if (saveButton) saveButton.hidden = true;
-      if (restoreButton) restoreButton.hidden = false;
+      if (restoreButton) { restoreButton.hidden = false; restoreButton.textContent = draft.restoredAt ? "Volver a abrir borrador" : "Restaurar borrador"; }
       if (deleteButton) deleteButton.hidden = false;
       node.hidden = false;
       return;
@@ -192,6 +192,7 @@
     const zone = byId("playerZone");
     if (player) player.value = draft.playerId;
     if (zone) zone.value = draft.zoneId || "";
+    try { draft.restoredAt = Date.now(); localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (_) {}
     if (typeof resetPlayerValidation === "function") resetPlayerValidation();
     if (typeof updateCheckoutStage === "function") updateCheckoutStage("player");
     const help = byId("checkoutPlayerMsg");
