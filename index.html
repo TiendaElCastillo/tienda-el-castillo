@@ -1452,8 +1452,10 @@ function productArtwork(p){
  if(isMobileLegends){
   const category=mobileLegendsCatalogCategory(p);
   const display=mobileLegendsDisplayName(p);
+  const name=fold(p?.name||"");
   const label=category==="diamonds"?Number(p.amount||0).toLocaleString("es-ES")+" diamantes":display;
-  return '<div class="product-art product-art-mobile-legends"><img src="'+clean(mobileLegendsImageUrl(p))+'" alt="'+clean(display)+'" loading="lazy" decoding="async" width="560" height="180" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;./assets/games/mobile-legends-bang-bang.webp&quot;"><span class="product-art-caption">'+clean(label)+'</span></div>';
+  const fallback=category==="diamonds"?"./assets/games/mlbb-diamonds.svg":name.includes("twilight")?"./assets/games/mlbb-twilight.svg":name.includes("mensual")?"./assets/games/mlbb-monthly.svg":"./assets/games/mlbb-weekly.svg";
+  return '<div class="product-art product-art-mobile-legends"><img src="'+clean(mobileLegendsImageUrl(p))+'" alt="'+clean(display)+'" loading="lazy" decoding="async" width="560" height="180" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;'+fallback+'&quot;"><span class="product-art-caption">'+clean(label)+'</span></div>';
  }
  const group=freeFirePackageGroup(p);
  const label=fold(String(p.name||"")+" "+String(p.description||""));
