@@ -570,8 +570,8 @@ main{max-width:1160px}
 .product-art-mobile-legends img{object-fit:contain!important;padding:4px 7px 26px;box-sizing:border-box}
 .product-art-ff-membership{
  position:relative;overflow:hidden;aspect-ratio:300/171;background-color:#090b17;
- background-image:url("https://ffsoporte.garena.com/hc/article_attachments/31339873920153");
- background-repeat:no-repeat;background-size:950px auto;background-position:right 0;
+ background-image:url("https://ffsoporte.garena.com/hc/article_attachments/31339873920153"),url("./assets/ff-weekly-blue-purple.webp");
+ background-repeat:no-repeat,no-repeat;background-size:950px auto,200% 100%;background-position:right 0,0 0;
 }
 .product-art-ff-membership:before,.product-art-ff-membership:after{display:none!important}
 .product-art-ff-membership .product-art-caption{
@@ -579,9 +579,12 @@ main{max-width:1160px}
  border-radius:0;background:linear-gradient(90deg,rgba(6,8,17,.98),rgba(9,12,24,.97));
  flex-direction:column;gap:2px;padding:5px 8px
 }
-.product-art-ff-membership.ff-member-basic{background-position:right 0}
-.product-art-ff-membership.ff-member-weekly{background-position:right -210px}
-.product-art-ff-membership.ff-member-monthly{background-position:right -382px}
+.product-art-ff-membership.ff-member-basic{background-position:right 0,0 0}
+.product-art-ff-membership.ff-member-weekly{background-position:right -210px,100% 0}
+.product-art-ff-membership.ff-member-monthly{
+ background-image:url("https://ffsoporte.garena.com/hc/article_attachments/31339873920153"),url("./assets/ff-monthly.webp");
+ background-size:950px auto,100% 100%;background-position:right -382px,center;
+}
 
 </style>
 </head>
