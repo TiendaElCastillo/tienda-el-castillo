@@ -553,6 +553,36 @@ main{max-width:1160px}
 .game-detail-copy h1{color:#fff7e8!important}
 .game-detail-copy p,.game-detail-copy .detail-count{color:#ded4c0!important}
 .game-detail-copy .detail-eyebrow{color:#f0d58f!important}
+
+/* Imágenes originales y específicas de los productos activos */
+.product-art-official,.product-art-mobile-legends{position:relative;overflow:hidden}
+.product-art-caption{
+ position:absolute;left:8px;right:8px;bottom:7px;z-index:3;
+ display:flex;align-items:center;justify-content:center;gap:5px;
+ min-height:27px;padding:5px 9px;border:1px solid rgba(223,188,103,.72);
+ border-radius:999px;background:linear-gradient(110deg,rgba(8,8,7,.94),rgba(35,27,13,.94));
+ color:#f5dda0;font-size:10px;font-weight:900;line-height:1.2;letter-spacing:.025em;
+ box-shadow:0 3px 12px rgba(0,0,0,.24);text-align:center
+}
+.product-art-caption strong{font-size:10px;font-weight:900}
+.product-art-caption small{font-size:9px;font-weight:700;color:#f0e4c8}
+.product-art-mobile-legends{background:linear-gradient(145deg,#101b34,#273f70)!important}
+.product-art-mobile-legends img{object-fit:contain!important;padding:4px 7px 26px;box-sizing:border-box}
+.product-art-ff-membership{
+ position:relative;overflow:hidden;aspect-ratio:300/171;background-color:#090b17;
+ background-image:url("https://ffsoporte.garena.com/hc/article_attachments/31339873920153");
+ background-repeat:no-repeat;background-size:950px auto;background-position:right 0;
+}
+.product-art-ff-membership:before,.product-art-ff-membership:after{display:none!important}
+.product-art-ff-membership .product-art-caption{
+ left:0;right:0;bottom:0;min-height:40px;border:0;border-top:1px solid rgba(219,179,82,.8);
+ border-radius:0;background:linear-gradient(90deg,rgba(6,8,17,.98),rgba(9,12,24,.97));
+ flex-direction:column;gap:2px;padding:5px 8px
+}
+.product-art-ff-membership.ff-member-basic{background-position:right 0}
+.product-art-ff-membership.ff-member-weekly{background-position:right -210px}
+.product-art-ff-membership.ff-member-monthly{background-position:right -382px}
+
 </style>
 </head>
 <body>
@@ -1174,7 +1204,7 @@ async function openStore(user){
 }
 
 const gameCatalog=[
- {name:"Free Fire",icon:"🔥",art:"fire",tag:"Battle Royale",image:"./assets/games/free-fire-tienda.webp",match:["free fire"]},
+ {name:"Free Fire",icon:"🔥",art:"fire",tag:"Battle Royale",image:"https://cdn.wildflamestudio.com/common/web_event/official2.ff.garena.all/img/20228/cbf548a18b369a9a5aacae59afd6ad63.jpg",fallbackImage:"./assets/games/free-fire-tienda.webp",match:["free fire"]},
  {name:"Blood Strike",icon:"🎯",art:"strike",tag:"Shooter",match:["blood strike"]},
  {name:"Mobile Legends: Bang Bang",icon:"⚔️",art:"mobile",tag:"MOBA",image:"./assets/games/mobile-legends-bang-bang.webp",match:["mobile legends"]},
  {name:"Arena Breakout",icon:"🛡️",art:"arena",tag:"Shooter",match:["arena breakout"]},
@@ -1251,12 +1281,21 @@ const mobileLegendsExtraImages={
 };
 function mobileLegendsImageUrl(product){
  const category=mobileLegendsCatalogCategory(product);
- if(category==="diamonds")return mobileLegendsDiamondImages[Number(product.amount)]||"./assets/games/mobile-legends-bang-bang.webp";
  const name=fold(product?.name||"");
- if(name==="mobile legends · paquete elite semanal")return mobileLegendsExtraImages.weeklyElite;
- if(name==="mobile legends · pase semanal")return mobileLegendsExtraImages.weeklyPass;
- if(name==="mobile legends · paquete elite mensual")return mobileLegendsExtraImages.monthlyElite;
- if(name==="mobile legends · twilight pass")return mobileLegendsExtraImages.twilightPass;
+ if(category==="diamonds"){
+  const amount=Number(product?.amount||0);
+  if(mobileLegendsDiamondImages[amount])return mobileLegendsDiamondImages[amount];
+  // Para las demás denominaciones usamos arte real de diamantes de la misma familia,
+  // manteniendo visible la cantidad exacta en la tarjeta del producto.
+  if(amount>=2000)return mobileLegendsDiamondImages[3688];
+  if(amount>=500)return mobileLegendsDiamondImages[565];
+  if(amount>=172)return mobileLegendsDiamondImages[172];
+  return mobileLegendsDiamondImages[55];
+ }
+ if(name.includes("paquete elite semanal"))return mobileLegendsExtraImages.weeklyElite;
+ if(name.includes("pase semanal"))return mobileLegendsExtraImages.weeklyPass;
+ if(name.includes("paquete elite mensual"))return mobileLegendsExtraImages.monthlyElite;
+ if(name.includes("twilight pass"))return mobileLegendsExtraImages.twilightPass;
  return "./assets/games/mobile-legends-bang-bang.webp";
 }
 function mobileLegendsBonus(amount){
@@ -1347,7 +1386,7 @@ function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
- const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.remove()">':'<span>'+item.icon+'</span>';
+ const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async"'+(item.fallbackImage?' data-fallback="'+clean(item.fallbackImage)+'" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback}else{this.remove()}':' onerror="this.onerror=null;this.remove()"')+'>':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
@@ -1408,26 +1447,34 @@ function providerImageIsSafe(value){try{const url=new URL(String(value));return 
 function productArtwork(p){
  const fallback="this.onerror=null;this.remove()";
  const isFreeFire=fold(p.game||"").includes("free fire");
+ const isMobileLegends=fold(p.game||"").includes("mobile legends");
  if(!isFreeFire&&providerImageIsSafe(p.provider_image_url))return '<div class="product-art product-art-provider"><img src="'+clean(p.provider_image_url)+'" alt="'+clean(p.name||"Producto digital")+'" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
- if(fold(p.game||"").includes("mobile legends"))return '<div class="product-art product-art-mobile-legends"><img src="'+clean(mobileLegendsImageUrl(p))+'" alt="'+clean(mobileLegendsDisplayName(p))+'" loading="lazy" decoding="async" width="560" height="180" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;./assets/games/mobile-legends-bang-bang.webp&quot;"></div>';
+ if(isMobileLegends){
+  const category=mobileLegendsCatalogCategory(p);
+  const display=mobileLegendsDisplayName(p);
+  const label=category==="diamonds"?Number(p.amount||0).toLocaleString("es-ES")+" diamantes":display;
+  return '<div class="product-art product-art-mobile-legends"><img src="'+clean(mobileLegendsImageUrl(p))+'" alt="'+clean(display)+'" loading="lazy" decoding="async" width="560" height="180" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;./assets/games/mobile-legends-bang-bang.webp&quot;"><span class="product-art-caption">'+clean(label)+'</span></div>';
+ }
  const group=freeFirePackageGroup(p);
  const label=fold(String(p.name||"")+" "+String(p.description||""));
  const amount=Number(p.amount||0);
- let file="",position="0%",alt="";
+ if(isFreeFire&&group==="passes"){
+  if(/mensual|monthly/.test(label))return '<div class="product-art product-art-ff-membership ff-member-monthly" role="img" aria-label="Membresía mensual de Free Fire"><span class="product-art-caption"><strong>Membresía mensual</strong><small>1.800 diamantes · 30 días</small></span></div>';
+  if(/semanal|weekly/.test(label)&&/basica|basico|basic/.test(label))return '<div class="product-art product-art-ff-membership ff-member-basic" role="img" aria-label="Membresía semanal básica de Free Fire"><span class="product-art-caption"><strong>Membresía semanal básica</strong><small>80 diamantes · 7 días</small></span></div>';
+  if(/semanal|weekly/.test(label))return '<div class="product-art product-art-ff-membership ff-member-weekly" role="img" aria-label="Membresía semanal de Free Fire"><span class="product-art-caption"><strong>Membresía semanal</strong><small>340 diamantes · 7 días</small></span></div>';
+ }
+ let file="",position="0%",alt="",caption="";
  if(isFreeFire&&group==="booyah"){
-  file="ff-diamonds-chest-booyah.webp";position="100%";alt="Pase Booyah Premium de Free Fire";
- }else if(isFreeFire&&group==="passes"){
-  if(/mensual|monthly/.test(label)){file="ff-monthly.webp";alt="Tarjeta mensual de Free Fire"}
-  else if(/semanal|weekly/.test(label)&&/basica|basico|basic/.test(label)){file="ff-weekly-blue-purple.webp";alt="Tarjeta semanal básica de Free Fire"}
-  else if(/semanal|weekly/.test(label)){file="ff-weekly-blue-purple.webp";position="100%";alt="Tarjeta semanal de Free Fire"}
+  file="ff-diamonds-chest-booyah.webp";position="100%";alt="Pase Booyah Premium de Free Fire";caption="Booyah Pass Premium";
  }else if(isFreeFire&&group==="diamonds"){
+  caption=amount.toLocaleString("es-ES")+" diamantes";
   if(amount===110){file="ff-diamonds-small-medium.webp";alt="Paquete de 110 diamantes de Free Fire"}
   else if(amount===341||amount===572){file="ff-diamonds-small-medium.webp";position="100%";alt="Paquete de diamantes de Free Fire"}
   else if(amount===1166||amount===2398||amount===6160){file="ff-diamonds-chest-booyah.webp";alt="Paquete grande de diamantes de Free Fire"}
  }
  if(file){
-  const size=file==="ff-monthly.webp"?"100% 100%":"200% 100%";
-  return '<div class="product-art product-art-official" role="img" aria-label="'+alt+'" style="background-image:url(./assets/'+file+');background-size:'+size+';background-position:'+position+';background-repeat:no-repeat"></div>';
+  const size="200% 100%";
+  return '<div class="product-art product-art-official" role="img" aria-label="'+alt+'" style="background-image:url(./assets/'+file+');background-size:'+size+';background-position:'+position+';background-repeat:no-repeat"><span class="product-art-caption">'+clean(caption)+'</span></div>';
  }
  const legacyFile=group==="booyah"?"product-pass.svg":group==="passes"?"product-card.svg":group==="levels"?"product-level.svg":"product-diamonds.svg";
  return '<div class="product-art product-art-'+group+'" aria-hidden="true"><img src="./assets/'+legacyFile+'" alt="" loading="lazy" decoding="async" width="560" height="180" onerror="'+fallback+'"></div>';
@@ -1438,7 +1485,7 @@ function productCard(p){
  const regionTag=p.provider_product_id?'<span class="provider-region-tag">'+(fold(p.game||"").includes("mobile legends")?"Región ":"Servidor ")+clean(p.provider_region||"")+'</span>':"";return '<article class="catalog-product catalog-product-clickable" data-product-id="'+clean(p.id)+'"><div class="product-head"><span class="product-game">'+clean(p.game)+'</span><span class="product-badge"><span aria-hidden="true">✓</span> Disponible</span></div>'+regionTag+productArtwork(p)+'<h3>'+clean(p.name)+'</h3><p>'+clean(p.description||"Recarga digital por ID. Disponibilidad sujeta a confirmación.")+'</p><div class="product-prices">'+prices+'</div><button class="primary-btn block-btn" type="button" onclick="openCheckout(\''+clean(p.id)+'\')">Elegir paquete <span aria-hidden="true">→</span></button></article>';
 }
 function availableFor(item){const words=item.match||[fold(item.name)];return products.filter(p=>{if(!isGlobalMobileLegendsProduct(p)||!isStorefrontVisibleProduct(p))return false;if(item.kind==="gift"&&!isGiftCard(p))return false;if(item.kind!=="gift"&&(isGiftCard(p)||isLevelUpPackage(p)))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return words.some(w=>label.includes(fold(w)))})}
-function gameTile(item){const matches=availableFor(item);const image=item.image?'<img class="game-art-image" src="'+clean(item.image)+'" alt="" loading="lazy" decoding="async" width="180" height="235" onerror="this.onerror=null;this.remove()"><span class="game-art-image-shade" aria-hidden="true"></span>':"";return '<button class="game-tile" type="button" onclick="chooseGame(&quot;'+clean(item.name)+'&quot;)"><div class="game-art art-'+item.art+'" role="img" aria-label="Imagen de '+clean(item.name)+'">'+image+'<span class="art-tag">'+item.tag+'</span></div><div class="tile-info"><div class="tile-title">'+clean(item.name)+'</div><div class="tile-meta">'+(matches.length?matches.length+' paquete(s)':'Planes en preparación')+'</div><span class="tile-status '+(matches.length?'':'off')+'">'+(matches.length?'Ver paquetes':'Próximamente')+'</span></div></button>'}
+function gameTile(item){const matches=availableFor(item);const fallback=item.fallbackImage? ' data-fallback="'+clean(item.fallbackImage)+'" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback}else{this.remove()}"':' onerror="this.onerror=null;this.remove()"';const image=item.image?'<img class="game-art-image" src="'+clean(item.image)+'" alt="" loading="lazy" decoding="async" width="180" height="235"'+fallback+'><span class="game-art-image-shade" aria-hidden="true"></span>':"";return '<button class="game-tile" type="button" onclick="chooseGame(&quot;'+clean(item.name)+'&quot;)"><div class="game-art art-'+item.art+'" role="img" aria-label="Imagen de '+clean(item.name)+'">'+image+'<span class="art-tag">'+item.tag+'</span></div><div class="tile-info"><div class="tile-title">'+clean(item.name)+'</div><div class="tile-meta">'+(matches.length?matches.length+' paquete(s)':'Planes en preparación')+'</div><span class="tile-status '+(matches.length?'':'off')+'">'+(matches.length?'Ver paquetes':'Próximamente')+'</span></div></button>'}
 function giftTile(item){const matches=availableFor({...item,kind:"gift"});return '<button class="gift-tile" type="button" onclick="chooseGift(\''+clean(item.name)+'\')"><div class="gift-art gift-'+item.art+'">'+item.icon+'</div><div class="gift-info">'+clean(item.name)+'<small>'+(matches.length?'Disponible':'Próximamente')+'</small></div></button>'}
 function renderProductCatalogs(){
  const currentGames=gameCatalog.filter(game=>["Free Fire","Mobile Legends: Bang Bang"].includes(game.name));$("homeGames").innerHTML=currentGames.map(gameTile).join("");$("gamesTiles").innerHTML=currentGames.map(gameTile).join("");$("homeGifts").innerHTML="";$("giftTiles").innerHTML="";$("homeGifts").parentElement.classList.add("hidden");$("giftcardsView").classList.add("hidden");
