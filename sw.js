@@ -1,4 +1,4 @@
-const CACHE_NAME = "el-castillo-shell-v106";
+const CACHE_NAME = "el-castillo-shell-v107";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,6 +16,10 @@ const APP_SHELL = [
   "./assets/games/free-fire.webp",
   "./assets/games/free-fire-tienda.webp",
   "./assets/games/mobile-legends-bang-bang.webp",
+  "./assets/games/mlbb-diamonds.svg",
+  "./assets/games/mlbb-weekly.svg",
+  "./assets/games/mlbb-monthly.svg",
+  "./assets/games/mlbb-twilight.svg",
   "./assets/admin-panel.css?v=27",
   "./assets/offline-guard.js?v=2",
   "./assets/admin-panel.js?v=16",
@@ -57,7 +61,23 @@ self.addEventListener("install", event => {
     // Prioritize the actual store page. Optional images and admin files are
     // cached independently so one slow or missing asset cannot cancel install.
     const pageSaved = await cacheUrl(cache, INDEX_URL, INDEX_URL);
-    if (pageSaved) await cacheUrl(cache, ROOT_URL, ROOT_URL);
+    if (pageSaved) {
+      await cacheUrl(cache, ROOT_URL, ROOT_URL);
+    } else {
+      // Keep the previous offline page when an update is installed without Internet.
+      const previousCaches = (await caches.keys()).filter(key => key !== CACHE_NAME);
+      for (const previousName of previousCaches) {
+        const previousCache = await caches.open(previousName);
+        const previousPage =
+          await previousCache.match(INDEX_URL) ||
+          await previousCache.match(ROOT_URL);
+        if (previousPage) {
+          await cache.put(INDEX_URL, previousPage.clone());
+          await cache.put(ROOT_URL, previousPage.clone());
+          break;
+        }
+      }
+    }
 
     await Promise.all(APP_SHELL
       .filter(path => path !== "./" && path !== "./index.html")
@@ -102,20 +122,23 @@ self.addEventListener("fetch", event => {
     const cache = await caches.open(CACHE_NAME);
 
     if (request.mode === "navigate" && isLocal) {
+      // Network first: do not let an old cached index hide newly published store updates.
+      try {
+        const response = await fetch(request, { cache: "no-store" });
+        if (response && response.ok) {
+          await cache.put(INDEX_URL, response.clone()).catch(() => {});
+          await cache.put(ROOT_URL, response.clone()).catch(() => {});
+        }
+        if (response) return response;
+      } catch (_) {
+        // Use the last valid local page when the connection is unavailable.
+      }
+
       const cachedPage =
         await cache.match(INDEX_URL) ||
         await cache.match(ROOT_URL);
       if (cachedPage) return cachedPage;
-
-      try {
-        const response = await fetch(request);
-        if (response && response.ok) {
-          await cache.put(INDEX_URL, response.clone()).catch(() => {});
-        }
-        return response;
-      } catch (_) {
-        return Response.error();
-      }
+      return Response.error();
     }
 
     const cached = await cache.match(request);
