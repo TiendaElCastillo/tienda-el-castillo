@@ -196,8 +196,8 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
 
 
 /* Imagen principal y arte de producto servido desde la propia tienda */
-.hero-visual{background-image:linear-gradient(180deg,rgba(7,20,45,.02),rgba(7,20,45,.5)),url("./assets/free-fire-hero.svg")!important;background-size:100% 100%,cover!important;background-position:center!important}
-.game-art,.game-detail-art{background-image:linear-gradient(180deg,rgba(5,15,32,.02),rgba(5,15,32,.66)),url("./assets/free-fire-hero.svg")!important;background-size:100% 100%,cover!important;background-position:center!important}
+.hero-visual{background-image:linear-gradient(145deg,#171510,#3a2e17)!important;background-size:100% 100%,cover!important;background-position:center!important}
+.game-art,.game-detail-art{background-image:linear-gradient(145deg,#171510,#3a2e17)!important;background-size:100% 100%,cover!important;background-position:center!important}
 .product-art{padding:0;overflow:hidden;background:#eaf2ff}
 .product-art img{display:block;width:100%;height:100%;object-fit:cover}
 
@@ -532,7 +532,7 @@ main{max-width:1160px}
  .hero{grid-template-columns:minmax(0,1fr) 76px!important;padding:20px 15px!important;min-height:215px!important}
  .hero h1{font-size:27px!important;max-width:100%}
  .hero p{font-size:12px!important;max-width:100%;padding-right:0}
- .hero-visual{min-height:76px!important;border:0!important;background:transparent!important;box-shadow:none!important}
+ .hero-visual{display:grid!important;min-height:76px!important;border:0!important;background:transparent!important;box-shadow:none!important}
  .hero-visual:before{display:none}
  .hero-brand-art{width:72px!important}
  .hero-buttons .primary-btn,.hero-buttons .secondary-btn{padding:11px 12px!important;font-size:11px!important}
@@ -1336,7 +1336,7 @@ function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
- const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=&quot;./assets/free-fire-hero.svg&quot;">':'<span>'+item.icon+'</span>';
+ const image=item.image?'<img src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="lazy" decoding="async" onerror="this.onerror=null;this.remove()">':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
