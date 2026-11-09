@@ -372,7 +372,6 @@ async function preflightPriceAndStock(claim: any) {
   };
 
   // Hard stop at zero or negative profit after rounding to the smallest CUP precision.
-  // A positive result can proceed, but a margin below the configured target is surfaced.
   if (roundedProfitCup <= 0) {
     const resultMessage = roundedProfitCup < 0
       ? "Resultado: pérdida de " + Math.abs(roundedProfitCup).toFixed(2) + " CUP."
@@ -390,6 +389,24 @@ async function preflightPriceAndStock(claim: any) {
       price_check: priceCheck,
     };
   }
+
+  // The configured markup is a hard minimum. If the live provider cost rises
+  // after checkout, do not accept a lower-profit sale just because it remains positive.
+  if (actualMarkup + 0.000001 < markup) {
+    return {
+      ok:false,
+      code:"provider_cost_below_target_markup",
+      message:"El coste mayorista de Central One cambió y este pedido dejaría un recargo de " +
+        actualMarkup.toFixed(2) + " %, por debajo del mínimo configurado de " +
+        markup.toFixed(2) + " %. La orden NO se enviará a Central One ni se consumirá saldo del proveedor. " +
+        "Revisa el precio y gestiona con el cliente la solución correspondiente antes de crear otro pedido.",
+      wholesale_price: String(item.reseller_price),
+      required_retail_cup: Number(requiredRetailCup.toFixed(2)),
+      actual_retail_cup: Number(retailCup.toFixed(2)),
+      price_check: priceCheck,
+    };
+  }
+
   const balanceCheck = await checkProviderAvailableBalance(wholesale);
   const auditedPriceCheck = {
     ...priceCheck,
