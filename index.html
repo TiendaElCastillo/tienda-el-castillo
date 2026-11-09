@@ -505,6 +505,26 @@ input,select,textarea{font-size:16px}
 #admin .admin-shortcut:hover{border-color:#a9c9ef!important;background:#f5f9ff!important}
 #admin .order-card .order-detail{background:#f4f7fc!important;color:#60718a!important}
 #admin .admin-order-search{border-color:#e2e9f3!important}
+/* Uniformar autenticación, compra y membresías con la misma paleta azul. */
+.auth-visual{background:linear-gradient(145deg,#10243e 0%,#17477f 58%,#286ed3 100%)!important;color:#f4f8ff!important}
+.auth-visual .orb{background:rgba(255,255,255,.10)!important;border-color:rgba(183,218,255,.55)!important}
+.auth-visual .eyebrow{color:#cce5ff!important;border-color:rgba(170,211,255,.35)!important}
+.auth-visual p,.auth-benefits{color:#d7e8fb!important}
+.auth-panel{background:#fff!important;border-color:#e1e9f3!important}
+.auth-panel h2{color:#203551!important}
+.auth-tabs{background:#edf3fb!important}
+.auth-tabs button{color:#667a96!important}
+.auth-tabs button.active{color:#245fbe!important;background:#fff!important;box-shadow:0 2px 9px rgba(28,66,117,.09)!important}
+.checkout-stepper li.active{border-color:#8fb9ee!important;background:#edf4ff!important;color:#245fbd!important}
+.checkout-stepper li.active b,.checkout-stepper li.done b{background:linear-gradient(135deg,#4b91ec,#2464ce)!important;color:#fff!important;box-shadow:0 3px 9px rgba(39,103,220,.18)!important}
+.checkout-stepper li.done{border-color:#cfe7db!important;background:#f1faf5!important;color:#267a54!important}
+.checkout-stage-title{border-color:#dce8f7!important;background:#f2f7fe!important;color:#243c5a!important}
+.checkout-method-choice.active{border-color:#81afea!important;background:#edf4ff!important;color:#235fbd!important;box-shadow:0 4px 13px rgba(39,103,220,.10)!important}
+.checkout-method-icon{background:#eaf2fd!important;color:#2868cf!important}
+.player-name-wrap.is-valid input,.player-name-wrap.is-valid .player-validation-icon{border-color:#78c79b!important}
+.product-art-ff-membership{position:relative!important;overflow:hidden!important;aspect-ratio:300/171;background-color:#101b2d!important}
+.product-art-ff-membership:before,.product-art-ff-membership:after{display:none!important}
+.product-art-ff-membership .product-art-caption{left:0!important;right:0!important;bottom:0!important;min-height:40px!important;border:0!important;border-top:1px solid rgba(159,204,248,.7)!important;border-radius:0!important;flex-direction:column!important;gap:2px!important;padding:5px 8px!important}
 @media(hover:hover){
  .game-tile:hover .game-art-image{transform:scale(1.025);transition:transform .35s ease}
  .primary-btn:hover{filter:brightness(1.04)}
@@ -1345,7 +1365,7 @@ function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
- const image=item.image?'<img class="game-detail-image" src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="eager" fetchpriority="high" decoding="async" referrerpolicy="no-referrer"'+(item.fallbackImage?' data-fallback="'+clean(item.fallbackImage)+'" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback}else{this.remove()}"':' onerror="this.onerror=null;this.remove()"')+'>':'<span>'+item.icon+'</span>';
+ const image=item.image?'<img class="game-detail-image" src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="eager" fetchpriority="high" decoding="async"'+(item.fallbackImage?' data-fallback="'+clean(item.fallbackImage)+'" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback}else{this.remove()}"':' onerror="this.onerror=null;this.remove()"')+'>':'<span>'+item.icon+'</span>';
  $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
