@@ -247,7 +247,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  .mlbb-plan-price{font-size:15px}
  .mlbb-plan-buy{font-size:11px;padding:8px}
 }
-</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=26">
+</style><link rel="preload" as="image" href="./assets/free-fire-hero.svg" type="image/svg+xml"><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=27">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -2685,13 +2685,14 @@ async function sendAdminOrderNotice(button){
  button.disabled=true;button.textContent="Enviando aviso…";
  if(feedback)feedback.textContent="";
  try{
-  const orderCode=String(button.closest(".order-card")?.querySelector("b")?.textContent||"");
   const {data,error}=await db.rpc("admin_warn_customer",{
    p_user_id:userId,p_order_id:orderId,p_message:message
   });
   if(error)throw new Error(error.message);
   if(!data)throw new Error("Supabase no confirmó el envío.");
   input.value="";
+  const warningCounter=button.closest(".order-card")?.querySelector("[data-warning-count]");
+  if(warningCounter)warningCounter.textContent=String(Number(warningCounter.textContent||0)+1);
   if(feedback)feedback.textContent="Advertencia enviada al buzón privado y registrada en el historial de seguridad.";
  }catch(error){
   if(feedback)feedback.textContent="No se pudo enviar el aviso: "+(error.message||"comprueba la conexión.");
