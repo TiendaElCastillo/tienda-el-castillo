@@ -29,7 +29,10 @@
         typeof draft.playerId === "string" &&
         typeof draft.paymentMethod === "string" &&
         Number.isFinite(draft.savedAt) && Number.isFinite(draft.expiresAt) &&
-        draft.savedAt <= Date.now() + 60000 && Date.now() - draft.savedAt <= DRAFT_TTL_MS;
+        draft.savedAt > 0 && draft.savedAt <= Date.now() + 60000 &&
+        draft.expiresAt > draft.savedAt &&
+        draft.expiresAt - draft.savedAt <= DRAFT_TTL_MS &&
+        Date.now() - draft.savedAt <= DRAFT_TTL_MS;
       if (!valid || draft.expiresAt <= Date.now()) {
         localStorage.removeItem(DRAFT_KEY);
         return null;
