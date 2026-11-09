@@ -303,7 +303,14 @@ async function preflightPriceAndStock(claim: any) {
     const err = providerError(catalogData);
     return { ok:false, code:err.code, message:"No pudimos actualizar el catálogo de Central One: " + err.message };
   }
-  const catalogItems = Array.isArray(catalogData?.items) ? catalogData.items : [];
+  // Accept both documented response envelopes used by Central One integrations.
+  // The catalog sync already normalizes these two shapes; the order preflight must
+  // use the same normalization or it could falsely reject a product that is present.
+  const catalogItems = Array.isArray(catalogData?.items)
+    ? catalogData.items
+    : Array.isArray(catalogData?.data?.items)
+      ? catalogData.data.items
+      : [];
   const item = catalogItems.find((x: any) => x?.product_id === claim.provider_product_id);
   if (!item || item.status !== "active" || item.in_stock !== true) {
     return { ok:false, code:"provider_product_unavailable", message:"Central One no tiene este paquete disponible ahora. No se ha enviado ni cobrado la recarga." };
