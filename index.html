@@ -2053,6 +2053,16 @@ async function placeOrder(){
  if(button){button.disabled=true;button.textContent="Creando pedido…";}
  $("ordermsg").textContent="";
  try{
+  if(!isWallet){
+   const pendingReview=await db.from("orders").select("id",{count:"exact",head:true})
+    .eq("user_id",currentUser.id).eq("payment_source","direct").in("status",["pending","payment_review"]);
+   if(pendingReview.error)throw new Error("No pudimos comprobar cuántas operaciones tienes en revisión. Comprueba la conexión antes de volver a intentarlo.");
+   if(Number(pendingReview.count||0)>=4){
+    $("ordermsg").textContent="Has alcanzado el límite de 4 operaciones en revisión por cuenta. Espera a que la tienda resuelva alguna antes de crear otro pedido.";
+    await loadMyOrders();
+    return;
+   }
+  }
   const result=await db.from("orders").insert({user_id:currentUser.id,product_id:product.id,player_id:player,player_name:validatedPlayerCheckout?.playerName||$("playername").value.trim(),payment_method:method,status:"pending",provider_product_id:product.provider_product_id||null,provider_region:product.provider_region||null,player_id_validation_token:product.provider_product_id?validatedPlayerCheckout?.token||null:null,privacy_consent_at:new Date().toISOString(),privacy_policy_version:"2026-11-06-v1"}).select("id,order_code,price,payment_method").single();
   if(result.error){$("ordermsg").textContent="No pudimos crear el pedido: "+result.error.message;return;}
   const data=result.data;
@@ -2676,19 +2686,50 @@ async function sendAdminOrderNotice(button){
  if(feedback)feedback.textContent="";
  try{
   const orderCode=String(button.closest(".order-card")?.querySelector("b")?.textContent||"");
-  const {data,error}=await db.rpc("admin_send_user_notification",{
-   p_user_id:userId,p_order_id:orderId,
-   p_title:"Aviso sobre el pedido "+orderCode,
-   p_message:message
+  const {data,error}=await db.rpc("admin_warn_customer",{
+   p_user_id:userId,p_order_id:orderId,p_message:message
   });
   if(error)throw new Error(error.message);
   if(!data)throw new Error("Supabase no confirmó el envío.");
   input.value="";
-  if(feedback)feedback.textContent="Aviso enviado al buzón privado del cliente.";
+  if(feedback)feedback.textContent="Advertencia enviada al buzón privado y registrada en el historial de seguridad.";
  }catch(error){
   if(feedback)feedback.textContent="No se pudo enviar el aviso: "+(error.message||"comprueba la conexión.");
  }finally{
   button.disabled=false;button.textContent="Enviar al buzón del cliente";
+ }
+}
+
+async function toggleCustomerBlock(button){
+ if(currentProfile?.role!=="admin"||!currentUser||!button)return;
+ const userId=button.dataset.userId;
+ const wasBlocked=button.dataset.accountBlocked==="true";
+ if(!userId)return;
+ let reason=null;
+ if(wasBlocked){
+  if(!window.confirm("DESBLOQUEAR CUENTA\\n\\nLa cuenta podrá volver a crear pedidos. ¿Deseas retirar la restricción?"))return;
+ }else{
+  reason=window.prompt("Motivo del bloqueo (se notificará al cliente):","Actividad fraudulenta confirmada mediante pedidos o comprobantes falsos.");
+  if(reason===null)return;
+  reason=String(reason).trim();
+  if(reason.length<5||reason.length>500){window.alert("El motivo debe tener entre 5 y 500 caracteres.");return;}
+  if(!window.confirm("BLOQUEAR CUENTA\\n\\nSe impedirá crear nuevos pedidos desde esta cuenta. Los pedidos anteriores no se borrarán ni se cancelarán automáticamente. ¿Confirmas el bloqueo?"))return;
+ }
+ const oldText=button.textContent;
+ button.disabled=true;button.textContent=wasBlocked?"Reactivando…":"Bloqueando…";
+ try{
+  const {data,error}=await db.rpc("admin_set_customer_blocked",{
+   p_user_id:userId,p_blocked:!wasBlocked,p_reason:reason
+  });
+  if(error)throw new Error(error.message);
+  if(!data?.ok||data.blocked!==!wasBlocked)throw new Error("Supabase no confirmó el cambio de estado.");
+  $("orderadminmsg").textContent=wasBlocked
+   ?"La cuenta fue desbloqueada y el cliente recibió una notificación."
+   :"La cuenta fue restringida y el cliente recibió una notificación. Sus pedidos anteriores permanecen intactos.";
+  await loadAllOrders({silent:true});
+ }catch(error){
+  button.disabled=false;button.textContent=oldText;
+  $("orderadminmsg").textContent="No se pudo cambiar el estado de la cuenta: "+(error.message||"Comprueba la conexión.");
  }
 }
 
@@ -3186,9 +3227,28 @@ async function loadAllOrders(options={}){
  const {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
  if(error){if(!options.silent)container.textContent="Error: "+error.message;return;}
  notifyNewPaymentReviews(data||[]);
+ const accountUserIds=[...new Set((data||[]).map(order=>String(order.user_id||"")).filter(Boolean))];
+ const securityByUser=new Map();
+ let securitySummaryError=null;
+ if(accountUserIds.length){
+  const securityResult=await db.rpc("admin_get_user_security_summary",{p_user_ids:accountUserIds});
+  if(securityResult.error)securitySummaryError=securityResult.error.message||"No se pudo consultar la seguridad de las cuentas.";
+  else (securityResult.data||[]).forEach(row=>securityByUser.set(String(row.user_id),row));
+ }
  if(!(data||[]).length){container.textContent="No hay pedidos todavía.";return;}
  const cards=(await Promise.all((data||[]).map(async(o,i)=>{
   const selectId="order-status-"+i;
+  const accountSecurity=securityByUser.get(String(o.user_id))||null;
+  const accountSecurityHtml=accountSecurity
+   ?'<div class="admin-account-security"><strong>Seguridad de la cuenta:</strong> '+(accountSecurity.is_blocked===true?'RESTRINGIDA':'Activa')+
+    ' · Advertencias registradas: <strong data-warning-count>'+Number(accountSecurity.warning_count||0)+'</strong>'+
+    ' · Operaciones en revisión: <strong>'+Number(accountSecurity.open_review_count||0)+'/4</strong>'+
+    (accountSecurity.block_reason?'<p class="track-note">Motivo de restricción: '+clean(accountSecurity.block_reason)+'</p>':"")+
+    '</div>'
+   :'<p class="track-note">No se pudo cargar el estado antifraude de esta cuenta. '+clean(securitySummaryError||"Actualiza el panel para volver a comprobarlo.")+'</p>';
+  const accountSecurityAction=accountSecurity
+   ?'<div class="order-actions"><button type="button" class="secondary-btn" data-toggle-customer-block data-user-id="'+clean(o.user_id)+'" data-account-blocked="'+(accountSecurity.is_blocked===true?'true':'false')+'">'+(accountSecurity.is_blocked===true?'Desbloquear cuenta':'Bloquear cuenta')+'</button><small>La restricción se aplica a todas las compras nuevas de esta cuenta.</small></div>'
+   :"";
   const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
   const options=allowed.map(value=>{const item=orderStatuses.find(s=>s.value===value);return '<option value="'+value+'">'+(item?.label||value)+'</option>';}).join("");
   const actionLabel=o.status==="payment_review"?"Confirmar pago recibido":"Rechazar pedido";
@@ -3262,9 +3322,10 @@ async function loadAllOrders(options={}){
     ?'<div class="order-actions"><button type="button" data-provider-refresh data-order-id="'+clean(o.id)+'">Actualizar estado en Central One</button></div>'
     :"";
   const noticeId="order-notice-"+String(o.id);
-  const noticeComposer='<details class="admin-notice-compose"><summary>Enviar aviso privado al cliente</summary><label for="'+noticeId+'">Mensaje (3 a 1000 caracteres)</label><textarea id="'+noticeId+'" maxlength="1000" rows="3" placeholder="Escribe una advertencia o una actualización importante sobre este pedido."></textarea><button type="button" class="secondary-btn" data-send-user-notice data-order-id="'+clean(o.id)+'" data-user-id="'+clean(o.user_id)+'" data-message-input="'+noticeId+'" data-feedback-id="'+noticeId+'-feedback">Enviar al buzón del cliente</button><p id="'+noticeId+'-feedback" class="msg" role="status"></p></details>';
+  const noticeComposer='<details class="admin-notice-compose"><summary>Enviar advertencia privada al cliente</summary><label for="'+noticeId+'">Mensaje de advertencia (3 a 1000 caracteres)</label><textarea id="'+noticeId+'" maxlength="1000" rows="3" placeholder="Te pedimos que detengas el envío de pedidos o comprobantes falsos. Si continúa, podremos restringir tu cuenta."></textarea><button type="button" class="secondary-btn" data-send-user-notice data-order-id="'+clean(o.id)+'" data-user-id="'+clean(o.user_id)+'" data-message-input="'+noticeId+'" data-feedback-id="'+noticeId+'-feedback">Enviar y registrar advertencia</button><p id="'+noticeId+'-feedback" class="msg" role="status"></p></details>';
   return '<article class="order-card" data-order-status="'+clean(o.status)+'" data-provider-status="'+clean(providerStatus)+'" data-provider-id="'+clean(o.central_one_order_id||"")+'">'+
    '<div class="admin-order-header"><strong class="admin-order-code">'+clean(o.order_code)+'</strong><span class="status">'+statusText(o.status)+'</span></div>'+
+   accountSecurityHtml+accountSecurityAction+
    '<div class="admin-order-detail-grid">'+
     '<div class="admin-order-field"><span>Juego y paquete</span><strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong></div>'+
     '<div class="admin-order-field"><span>Jugador</span><strong>'+clean(o.player_id)+' '+(o.player_name?"("+clean(o.player_name)+")":"")+'</strong></div>'+
@@ -3280,7 +3341,7 @@ async function loadAllOrders(options={}){
    (o.payment_confirmed_at?'<p class="track-note">Pago confirmado: '+new Date(o.payment_confirmed_at).toLocaleString("es-CU")+'</p>':"")+
   '</article>';
  }))).join("");
- container.innerHTML=cards;
+ container.innerHTML=(securitySummaryError?'<p class="track-note">Aviso: no se pudo cargar el resumen antifraude: '+clean(securitySummaryError)+'</p>':"")+cards;
  container.querySelectorAll("[data-proof-preview]").forEach(link=>{
   link.addEventListener("click",async event=>{
    event.preventDefault();
@@ -3321,6 +3382,9 @@ async function loadAllOrders(options={}){
  });
  container.querySelectorAll("[data-send-user-notice]").forEach(button=>{
   button.addEventListener("click",()=>sendAdminOrderNotice(button));
+ });
+ container.querySelectorAll("[data-toggle-customer-block]").forEach(button=>{
+  button.addEventListener("click",()=>toggleCustomerBlock(button));
  });
 }
 async function logout(){
