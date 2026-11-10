@@ -2812,7 +2812,7 @@ function resetPlayerValidation(){
  const p=products.find(item=>String(item.id)===$("product")?.value);
  const target=providerPlayerTargetConfig(p);
  if(requiresPlayerValidation(p)&&!target.ok){
-  setPlayerValidationDisplay("is-error","!","El proveedor no ha definido un formato compatible de ID y servidor para este paquete. No pagues ni continúes.","Datos de cuenta no compatibles");
+  setPlayerValidationDisplay("is-error","!","Los datos de ID y servidor de este paquete todavía no se pueden comprobar. No pagues ni continúes; avisa a la tienda.","Datos de cuenta no compatibles");
  }else if(requiresPlayerValidation(p)&&p?.provider_product_id&&p.provider_validation_supported===true){
   setPlayerValidationDisplay("","•",target.zoneKey?"La comprobación comenzará cuando completes el ID del jugador y el Zone ID.":"La comprobación comenzará automáticamente cuando salgas del campo del ID.","Esperando ID…");
  }else if(requiresPlayerValidation(p)){
@@ -2835,7 +2835,7 @@ function syncPlayerRegionUI(){
    $("playerRegionNote").textContent="Este paquete no está disponible para verificar la cuenta. No pagues ni continúes; avisa a la tienda.";
    setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete en este momento. Avisa a la tienda para que lo revisemos.","Validación no disponible");
   }else if(needsValidation&&!target.ok){
-   $("playerRegionNote").textContent="El proveedor no ha definido un formato compatible para verificar los datos de esta cuenta.";
+   $("playerRegionNote").textContent="Los datos de esta cuenta todavía no se pueden comprobar con este paquete.";
    setPlayerValidationDisplay("is-error","!","La estructura de ID/servidor de este paquete no está soportada. No realices el pago.","Formato no compatible");
   }else if(providerProduct){
    const supported=p.provider_validation_supported===true;
@@ -2880,7 +2880,7 @@ async function validatePlayerId(){
  }
  if(!target.ok){
   validatedPlayerCheckout=null;
-  setPlayerValidationDisplay("is-error","!","El proveedor no ha definido campos compatibles de ID y servidor para este paquete. No realices el pago.","Datos no compatibles");
+  setPlayerValidationDisplay("is-error","!","Los datos de ID y servidor de este paquete no se pueden comprobar. No realices el pago y avisa a la tienda.","Datos no compatibles");
   return;
  }
  if(p.provider_validation_supported!==true){
