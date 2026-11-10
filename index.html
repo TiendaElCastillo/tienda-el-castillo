@@ -611,6 +611,35 @@ input,select,textarea{font-size:16px}
  .logout-btn{min-height:46px!important}
 }
 </style>
+
+<style id="order-tracking-region-polish">
+.game-region-badge{display:inline-flex;align-items:center;gap:7px;margin:9px 0 0;padding:7px 11px;border:1px solid rgba(163,202,255,.36);border-radius:999px;background:rgba(236,245,255,.13);color:#edf5ff;font-size:11px;font-weight:850;letter-spacing:.025em}
+.game-region-indicator{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#63e0a0;box-shadow:0 0 0 3px rgba(99,224,160,.15)}
+.order-region-pill{display:inline-flex;align-items:center;margin:8px 0 2px;padding:5px 9px;border-radius:999px;background:#edf4ff;color:#2459ad;font-size:10px;font-weight:850}
+.order-player-box{display:grid;gap:3px;margin:9px 0;padding:10px 12px;border:1px solid #e2eaf6;border-radius:12px;background:linear-gradient(135deg,#f8fbff,#f1f6ff)}
+.order-player-box>span{color:#6d7b92;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.order-player-box>strong{color:#1c3156;font-size:13px;overflow-wrap:anywhere}
+.order-player-box>small{color:#61718a;font-size:11px;overflow-wrap:anywhere}
+.order-progress-wrap{padding:13px 11px;border:1px solid #e2eaf5;border-radius:15px;background:linear-gradient(180deg,#fbfdff,#f5f8fd);overflow:hidden}
+.order-progress{gap:0;align-items:start}
+.order-progress-step{position:relative;z-index:1;gap:6px;padding:0 2px}
+.order-progress-step:not(:last-child)::after{content:"";position:absolute;z-index:-1;top:13px;left:calc(50% + 16px);right:calc(-50% + 16px);height:3px;border-radius:9px;background:#e2eaf4}
+.order-progress-step.is-done:not(:last-child)::after{background:#36a56a}
+.order-progress-dot{position:relative;z-index:2;transition:transform .18s ease,box-shadow .18s ease}
+.order-progress-step.is-current .order-progress-dot{box-shadow:0 0 0 5px rgba(36,104,242,.1),0 5px 12px rgba(36,104,242,.16)}
+.order-progress-step.is-done .order-progress-dot{box-shadow:0 3px 8px rgba(34,139,83,.12)}
+.order-progress-label{font-size:10px;min-height:26px}
+.order-progress-time{display:block;min-height:12px;color:#7d8aa0;font-size:9px;font-weight:650;line-height:1.25}
+.order-progress-final-date{display:block;margin-top:8px;color:#8b3540;font-size:10px;font-weight:750}
+.order-progress-exception.is-error{border-color:#f0c9ce;background:linear-gradient(135deg,#fff7f7,#fff0f1)}
+.order-progress-exception.is-error>strong{color:#a52c3c}
+.order-progress-exception.is-error .track-note{color:#75464e}
+.order-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.order-card:hover{border-color:#cbdaf0;box-shadow:0 9px 24px rgba(21,49,91,.07);transform:translateY(-1px)}
+@media(max-width:390px){.order-progress-wrap{padding:11px 7px}.order-progress-step{padding:0 1px}.order-progress-label{font-size:8.5px}.order-progress-time{font-size:8px}.order-progress-step:not(:last-child)::after{left:calc(50% + 14px);right:calc(-50% + 14px)}}
+@media(prefers-reduced-motion:reduce){.order-card,.order-progress-dot{transition:none}}
+</style>
+
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -1416,12 +1445,18 @@ function gamePlanCard(p,item,method){
  '<div class="plan-price"><strong>'+money(price)+'</strong><small>'+clean(gamePaymentCatalog.find(x=>x.name===method)?.unit||"")+'</small></div>'+
  '<button class="primary-btn plan-buy" type="button" onclick="return openGamePlanCheckout(this)" data-buy-product="'+id+'" data-payment-method="'+pay+'">Comprar <span aria-hidden="true">→</span></button></article>';
 }
+function gameRegionBadge(rows){
+ const regions=[...new Set((rows||[]).map(product=>String(product?.provider_region||"").trim().toUpperCase()).filter(Boolean))];
+ if(!regions.length)return "";
+ const label=regions.length===1?"Región de recarga · "+regions[0]:"Regiones disponibles · "+regions.join(" / ");
+ return '<span class="game-region-badge"><span class="game-region-indicator" aria-hidden="true"></span>'+clean(label)+'</span>';
+}
 function renderGameDetail(){
  const item=gameFor(activeGameFilter);if(!item)return;
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
  const image=item.image?'<img class="game-detail-image" src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="eager" fetchpriority="high" decoding="async"'+(item.fallbackImage?' data-fallback="'+clean(item.fallbackImage)+'" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback}else{this.remove()}"':' onerror="this.onerror=null;this.remove()"')+'>':'<span>'+item.icon+'</span>';
- $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span></div></div>';
+ $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span>'+gameRegionBadge(rows)+'</div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
  if(fold(item.name)==="free fire"){
@@ -1939,7 +1974,7 @@ function updateCheckoutSummary(){
  const raw=prices[method],isWallet=method==="Saldo de Tienda El Castillo";
  const unit=isWallet?"USD":method==="USDT"?"USDT":"CUP";
  const amount=Number(raw)>0?(isWallet?moneyUSD(raw):money(raw)):"—",label=Number(raw)>0?unit:"Sin métodos configurados";
- const regionLine=requiresPlayerValidation(p)?'<small>Región '+clean(p.provider_region||"")+' · Comprobación de ID obligatoria</small>':'<small>Precio final según el método de pago</small>';
+ const regionLine=p.provider_region?'<small>Región de recarga '+clean(p.provider_region)+(requiresPlayerValidation(p)?' · Comprobación de ID obligatoria':'')+'</small>':'<small>Precio final según el método de pago</small>';
  $("checkoutSummary").innerHTML='<div><strong>'+clean(p.game)+' · '+clean(p.name)+'</strong>'+regionLine+'</div><div class="checkout-total"><strong>'+amount+'</strong><small>'+label+'</small></div>';
  syncPlayerRegionUI();
  const walletNote=$("walletCheckoutNote");
@@ -2454,6 +2489,13 @@ async function cancelUnsubmittedOrder(orderId,orderCode,button){
 async function loadMyOrders(){
  if(!currentUser)return;
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
+ const noticesResult=await db.from("user_notifications").select("order_id,title,message,created_at").eq("user_id",currentUser.id).eq("kind","order_status").order("created_at",{ascending:false}).limit(100);
+ const orderEventsById=new Map();
+ if(!noticesResult.error)(noticesResult.data||[]).forEach(event=>{
+  const key=String(event.order_id||"");if(!key)return;
+  if(!orderEventsById.has(key))orderEventsById.set(key,[]);
+  orderEventsById.get(key).push(event);
+ });
  $("myorders").innerHTML=error?"Error: "+clean(error.message):
  (data||[]).length?(data||[]).map(o=>{
   const canRetryDirectProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.payment_confirmed_at&&!o.central_one_order_id&&["Transferencia CUP","Saldo móvil","USDT"].includes(o.payment_method);
@@ -2496,13 +2538,15 @@ async function loadMyOrders(){
   const wasCancelledBeforeProof=o.status==="cancelled"&&o.payment_source==="direct"&&!o.proof_path&&!o.central_one_order_id;
   const progress=wasCancelledBeforeProof
    ?'<p class="track-note">Este pedido se canceló antes de enviar el comprobante. No se autorizó ninguna recarga. Puedes crear un pedido nuevo desde la tienda si todavía necesitas el paquete.</p>'
-   :customerOrderProgress(o.status);
+   :customerOrderProgress(o,orderEventsById.get(String(o.id))||[]);
   const retryProofBlock=canRetryDirectProof?renderOrderProofRetryForm(o):"";
   const cancelBlock=canCancelWithoutProof
    ?'<div class="order-actions"><button type="button" class="secondary-btn" data-cancel-unsubmitted data-order-id="'+clean(o.id)+'" data-order-code="'+clean(o.order_code)+'">Cancelar pedido incompleto</button></div><p class="track-note">Úsalo solo si no has pagado ni enviado dinero. No cancela transferencias ni devuelve pagos.</p>'
    :"";
   return '<article class="order-card" data-order-card-id="'+clean(o.id)+'"><div class="order-code">Pedido '+clean(o.order_code)+'</div>'+
    '<strong>'+clean(o.game)+' · '+clean(o.package_name)+'</strong>'+
+   (o.provider_region?'<span class="order-region-pill">🌐 Región de recarga · '+clean(o.provider_region)+'</span>':"")+
+   '<div class="order-player-box"><span>Cuenta destinataria</span><strong>'+clean(o.player_name||"Nombre no disponible")+'</strong><small>ID de jugador: '+clean(o.player_id||"No disponible")+'</small></div>'+
    '<div class="order-detail">'+money(o.price)+' '+clean(o.payment_method)+(o.payment_source==="wallet"?" · USD":"")+'<br>'+(o.payment_source==="wallet"?"Pago descontado de billetera<br>":"")+'Creado: '+new Date(o.created_at).toLocaleString("es-CU")+'</div>'+
    '<span class="status">'+statusText(o.status)+'</span>'+progress+proofNote+providerInfo+retryProofBlock+cancelBlock+'</article>';
  }).join(""):"Todavía no tienes pedidos.";
@@ -2871,13 +2915,43 @@ const orderStatuses=[
  {value:"rejected",label:"Pedido rechazado"},
  {value:"cancelled",label:"Cancelado"}
 ];
-function customerOrderProgress(status){
- const exceptions={
-  rejected:'<div class="order-progress-exception"><strong>No se pudo aceptar el pedido</strong><p class="track-note">No realices otro pago por esta misma compra. Revisa «Mensajes» y conserva el folio y el comprobante para solicitar una revisión.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
-  failed:'<div class="order-progress-exception"><strong>La recarga no se completó</strong><p class="track-note">No vuelvas a pagar ni crees un pedido duplicado. La incidencia debe revisarse con el folio y el comprobante. Revisa «Mensajes» o consulta cómo contactar con soporte.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
-  cancelled:'<div class="order-progress-exception"><strong>Pedido cancelado</strong><p class="track-note">Si ya habías enviado el pago, no hagas otra transferencia. Conserva el folio y el comprobante y contacta con la tienda para revisar el caso.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>'
+function customerOrderProgress(order,statusEvents=[]){
+ const orderData=order&&typeof order==="object"?order:{};
+ const status=typeof order==="string"?order:String(orderData.status||"pending");
+ const eventRules={
+  payment_review:/(?:estado:\s*Pago en revisión|Comprobante recibido)/i,
+  processing:/estado:\s*Pago confirmado/i,
+  completed:/(?:estado:\s*Recarga completada|¡Tu recarga está lista!)/i,
+  rejected:/Pedido rechazado/i,
+  failed:/Recarga fallida/i,
+  cancelled:/Pedido cancelado/i
  };
- if(exceptions[status])return exceptions[status];
+ const statusEventDate=value=>{
+  const rule=eventRules[value];if(!rule)return null;
+  const event=(statusEvents||[]).find(item=>rule.test(String(item.message||"")+" "+String(item.title||"")));
+  return event?.created_at||null;
+ };
+ const formatDate=value=>{
+  if(!value)return "";
+  const date=new Date(value);if(!Number.isFinite(date.getTime()))return "";
+  return date.toLocaleString("es-CU",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+ };
+ const stepDate=value=>{
+  if(value==="pending")return orderData.created_at||null;
+  if(value==="payment_review")return statusEventDate(value);
+  if(value==="processing")return statusEventDate(value)||orderData.payment_confirmed_at||(orderData.payment_source==="wallet"?orderData.paid_at:null);
+  if(value==="completed")return statusEventDate(value);
+  return null;
+ };
+ const exceptions={
+  rejected:'<div class="order-progress-exception is-error"><strong>No se pudo aceptar el pedido</strong><p class="track-note">No realices otro pago por esta misma compra. Revisa «Mensajes» y conserva el folio y el comprobante para solicitar una revisión.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
+  failed:'<div class="order-progress-exception is-error"><strong>La recarga no se completó</strong><p class="track-note">No vuelvas a pagar ni crees un pedido duplicado. La incidencia debe revisarse con el folio y el comprobante. Revisa «Mensajes» o consulta cómo contactar con soporte.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
+  cancelled:'<div class="order-progress-exception is-error"><strong>Pedido cancelado</strong><p class="track-note">Si ya habías enviado el pago, no hagas otra transferencia. Conserva el folio y el comprobante y contacta con la tienda para revisar el caso.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>'
+ };
+ if(exceptions[status]){
+  const date=statusEventDate(status);
+  return '<div class="order-progress-wrap">'+exceptions[status]+(date?'<small class="order-progress-final-date">Actualizado: '+clean(formatDate(date))+'</small>':"")+'</div>';
+ }
  const steps=[
   {value:"pending",label:"Recibido"},
   {value:"payment_review",label:"Pago en revisión"},
@@ -2890,7 +2964,8 @@ function customerOrderProgress(status){
   const active=index===currentIndex&&status!=="completed";
   const state=done?"is-done":active?"is-current":"";
   const marker=done?"✓":String(index+1);
-  return '<li class="order-progress-step '+state+'"'+(active?' aria-current="step"':'')+'><span class="order-progress-dot" aria-hidden="true">'+marker+'</span><span class="order-progress-label">'+step.label+'</span></li>';
+  const date=formatDate(stepDate(step.value));
+  return '<li class="order-progress-step '+state+'"'+(active?' aria-current="step"':'')+'><span class="order-progress-dot" aria-hidden="true">'+marker+'</span><span class="order-progress-label">'+step.label+'</span><small class="order-progress-time">'+(date?clean(date):"")+'</small></li>';
  }).join("");
  const notes={
   pending:"El pedido está creado, pero el pago todavía no aparece como confirmado. Comprueba que el comprobante se haya enviado. Si ya pagaste y no aparece, pide ayuda antes de transferir otra vez.",
