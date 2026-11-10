@@ -390,22 +390,12 @@ async function preflightPriceAndStock(claim: any) {
     };
   }
 
-  // The configured markup is a hard minimum. If the live provider cost rises
-  // after checkout, do not accept a lower-profit sale just because it remains positive.
-  if (actualMarkup + 0.000001 < markup) {
-    return {
-      ok:false,
-      code:"provider_cost_below_target_markup",
-      message:"El coste mayorista de Central One cambió y este pedido dejaría un recargo de " +
-        actualMarkup.toFixed(2) + " %, por debajo del mínimo configurado de " +
-        markup.toFixed(2) + " %. La orden NO se enviará a Central One ni se consumirá saldo del proveedor. " +
-        "Revisa el precio y gestiona con el cliente la solución correspondiente antes de crear otro pedido.",
-      wholesale_price: String(item.reseller_price),
-      required_retail_cup: Number(requiredRetailCup.toFixed(2)),
-      actual_retail_cup: Number(retailCup.toFixed(2)),
-      price_check: priceCheck,
-    };
-  }
+  // The configured markup is used to calculate storefront prices, not as a
+  // retroactive cancellation threshold after a customer has paid.
+  // A live provider price increase may reduce the expected markup; continue
+  // whenever the order still produces positive gross profit. The zero/negative
+  // profit hard stop above remains in force.
+
 
   const balanceCheck = await checkProviderAvailableBalance(wholesale);
   const auditedPriceCheck = {
