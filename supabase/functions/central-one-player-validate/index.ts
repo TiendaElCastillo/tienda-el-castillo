@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
 
     const productUrl = new URL(`${SUPABASE_URL}/rest/v1/products`);
     productUrl.searchParams.set("id", `eq.${productId}`);
-    productUrl.searchParams.set("select", "id,game,name,active,provider_product_id,provider_region,provider_status,provider_in_stock,provider_requires_target,provider_target_fields,provider_target_schema,provider_validation_supported");
+    productUrl.searchParams.set("select", "id,game,name,active,storefront_visible,provider_product_id,provider_region,provider_status,provider_in_stock,provider_requires_target,provider_target_fields,provider_target_schema,provider_validation_supported");
     productUrl.searchParams.set("limit", "1");
     const productResponse = await fetch(productUrl, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}` },
@@ -125,7 +125,7 @@ Deno.serve(async (req: Request) => {
     if (!productResponse.ok) return reply(503, { error: "product_lookup_failed" });
     const products = await productResponse.json();
     const product = Array.isArray(products) ? products[0] : null;
-    if (!product || !product.active || !product.provider_product_id) {
+    if (!product || !product.active || product.storefront_visible !== true || !product.provider_product_id) {
       return reply(404, { error: "product_unavailable", message: "Este paquete no está disponible para pedidos." });
     }
     if (!product.provider_validation_supported) {
