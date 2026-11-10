@@ -16,7 +16,7 @@
 .admin-shortcut:active{transform:scale(.985);border-color:#a9c5f4;box-shadow:0 7px 17px rgba(20,45,90,.08)}
 .admin-shortcut strong{font-size:14px}.admin-shortcut span{font-size:11px;color:#74839b;line-height:1.45}
 .admin-overview .track-note{margin-top:17px;padding:13px 15px;border:1px solid #dbe8ff;border-radius:14px;background:#f3f7ff;color:#36547f;line-height:1.5}
-.admin-order-filters{display:flex;gap:7px;overflow-x:auto;padding:8px 0 13px;margin:0 0 8px;scrollbar-width:thin}
+.admin-order-filters{display:flex;flex-wrap:wrap;gap:7px;overflow:visible;padding:8px 0 13px;margin:0 0 8px;scrollbar-width:none}
 .admin-order-filter{flex:0 0 auto;border:1px solid #e3eaf4;border-radius:30px;padding:9px 12px;background:#f8faff;color:#53627b;font-size:11px;font-weight:850;white-space:nowrap}
 .admin-order-filter.active{background:#e8f0ff;border-color:#b9d0ff;color:#1e5bc5}
 .admin-filter-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:20px;background:rgba(20,45,90,.08);margin-left:4px;font-size:10px}
