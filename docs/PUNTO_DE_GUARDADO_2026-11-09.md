@@ -236,3 +236,12 @@ Objetivo solicitado: que la tienda se vea como una plataforma de recargas profes
 4. Abrir un paquete de Free Fire y uno de Mobile Legends Global.
 5. Comprobar métodos de pago, formulario de ID y resumen de compra sin enviar un pago real.
 6. Abrir «Mis pedidos» y el panel admin, verificando que botones y textos sigan visibles.
+
+
+## Ajuste de contraste móvil — 10 de noviembre de 2026
+- La captura compartida por el usuario muestra la pantalla de acceso mobile-first: título “Tu tienda de recargas, a un toque”, tarjetas de Free Fire y Mobile Legends Global y panel de inicio de sesión. La portada con el texto “Tu próxima recarga empieza aquí” corresponde a la vista de tienda después de iniciar sesión; no debe confundirse con la pantalla de acceso.
+- Se detectó una regla CSS demasiado amplia en `.secondary-btn`: el tema visual aplicaba texto blanco y fondo translúcido a todos los botones secundarios, incluso dentro de paneles blancos. Eso hacía casi invisible el botón «¿Olvidaste tu contraseña?» y otros botones secundarios en superficies claras.
+- Commit `9d366101526628e40d47e19df1b731806c74c124`: la regla de color claro quedó limitada a `.hero-buttons .secondary-btn`; los botones secundarios en paneles claros recuperan el estilo de fondo pálido y texto oscuro.
+- Commit `dc95548c79a6e09b73ec65573a4971ff493e5223`: service worker actualizado a `el-castillo-shell-v110` para invalidar la caché móvil anterior.
+- Verificación en `main`: la regla global problemática ya no existe; la regla del banner oscuro está acotada; se conservan las dos vistas y sus textos correctos. SHA de `index.html`: `95e5ae05542d2b1696e009856bd716f51c1f06a0`. SHA de `sw.js`: `94b121060d79563d4b630cd893a5537f7c2945a8`.
+- Pendiente de confirmar: estado final del workflow disparado por los cambios de contraste y caché, y revisión visual del teléfono después de que GitHub Pages los publique.
