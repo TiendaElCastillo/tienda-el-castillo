@@ -787,6 +787,67 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
 }
 
 </style>
+<style id="search-and-featured-layout-fix">
+/* Buscador: campo cómodo, borrado rápido y resultados claros */
+.top-search{max-width:900px;margin:17px auto 19px;padding:0 1px}
+.search-wrap{min-width:0}
+.search-wrap:before{top:50%;transform:translateY(-50%);font-size:25px;line-height:1;z-index:1}
+.search-input{height:53px!important;min-height:53px!important;padding:0 48px 0 43px!important;border:1px solid #d9e4f2!important;border-radius:16px!important;background:#fff!important;box-shadow:0 7px 20px rgba(23,52,94,.065)!important;font-size:15px!important}
+.search-input:focus{border-color:#7ea9e9!important;box-shadow:0 0 0 4px rgba(40,104,223,.1),0 8px 22px rgba(23,52,94,.07)!important}
+.search-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);z-index:2;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:10px;background:#edf3fc;color:#526985;font-size:23px;line-height:1;cursor:pointer}
+.search-clear[hidden]{display:none!important}
+.search-clear:active{transform:translateY(-50%) scale(.94)}
+.search-meta{min-height:18px;margin:7px 0 12px!important;font-size:12px!important;line-height:1.5}
+#searchProducts{align-items:stretch}
+#searchProducts>.empty-note{grid-column:1/-1;margin:0;padding:24px 15px;border:1px dashed #d5e1f1;border-radius:16px;background:#f8fbff;text-align:center;line-height:1.6}
+#searchView .panel{padding:22px}
+#searchView .panel>h2{margin-bottom:5px;letter-spacing:-.035em}
+#searchProducts .catalog-product{height:100%;min-width:0}
+#searchProducts .product-head{min-width:0;flex-wrap:wrap}
+#searchProducts .product-game{overflow-wrap:anywhere;min-width:0}
+#searchProducts .product-badge{flex:0 0 auto}
+/* Tarjetas de inicio: evitar que precios, nombres o insignias se compriman */
+#homeFeaturedProducts{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+#homeFeaturedProducts .catalog-product{display:flex;flex-direction:column;height:100%;min-width:0;width:100%;overflow:hidden}
+#homeFeaturedProducts .product-head{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;min-width:0;flex-wrap:wrap}
+#homeFeaturedProducts .product-game{min-width:0;max-width:100%;overflow-wrap:anywhere;line-height:1.35}
+#homeFeaturedProducts .product-badge{flex:0 0 auto;white-space:nowrap}
+#homeFeaturedProducts .provider-region-tag{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+#homeFeaturedProducts .product-art{width:100%;max-width:100%;min-width:0;flex:0 0 auto}
+#homeFeaturedProducts .product-art img{max-width:100%;min-width:0}
+#homeFeaturedProducts .product-art-caption{max-width:100%;overflow-wrap:anywhere;text-align:center}
+#homeFeaturedProducts h3{min-width:0;overflow-wrap:anywhere;line-height:1.3}
+#homeFeaturedProducts .catalog-product>p{min-width:0;overflow-wrap:anywhere;line-height:1.5}
+#homeFeaturedProducts .product-prices{width:100%;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:6px;margin-top:auto}
+#homeFeaturedProducts .price-option{min-width:0;overflow:hidden;padding:8px 6px}
+#homeFeaturedProducts .price-option small{white-space:nowrap}
+#homeFeaturedProducts .price-option strong{min-width:0;overflow-wrap:anywhere;word-break:normal;line-height:1.3}
+#homeFeaturedProducts .primary-btn{width:100%;min-width:0;min-height:43px;padding:11px 9px;white-space:normal;line-height:1.25}
+@media(max-width:900px){
+ #homeFeaturedProducts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ .top-search{margin:12px 0 15px}
+ .search-input{height:50px!important;min-height:50px!important;font-size:14px!important}
+ #searchView .panel{padding:15px}
+ #searchProducts{grid-template-columns:1fr!important;gap:12px}
+ #homeFeaturedProducts{grid-template-columns:1fr!important;gap:12px}
+ #homeFeaturedProducts .catalog-product{padding:14px}
+ #homeFeaturedProducts .product-art{height:100px;max-height:170px}
+ #homeFeaturedProducts .product-prices{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ #homeFeaturedProducts .price-option{padding:9px 8px}
+ #homeFeaturedProducts .price-option strong{font-size:11px;overflow-wrap:anywhere}
+ #homeFeaturedProducts h3{font-size:16px}
+ #homeFeaturedProducts .catalog-product>p{font-size:12px}
+}
+@media(max-width:370px){
+ #homeFeaturedProducts .product-prices{gap:4px}
+ #homeFeaturedProducts .price-option{padding:8px 5px}
+ #homeFeaturedProducts .price-option small{font-size:8px}
+ #homeFeaturedProducts .price-option strong{font-size:10px}
+}
+</style>
+
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -843,7 +904,7 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
 </section>
 <section id="store" class="hidden">
  <div class="promo-strip"><span><span class="promo-crown" aria-hidden="true">♛</span> <strong>TIENDA EL CASTILLO</strong> · Tu tienda de recargas</span><span class="promo-live"><i></i> Catálogo Free Fire</span></div>
- <div class="top-search"><div class="search-wrap"><input class="search-input" id="productSearch" type="search" placeholder="Buscar un juego o una tarjeta..." onfocus="showView('search')" oninput="renderSearchProducts()"></div></div>
+ <div class="top-search"><div class="search-wrap"><input class="search-input" id="productSearch" type="search" aria-label="Buscar juegos y paquetes" aria-controls="searchProducts" autocomplete="off" placeholder="Busca Free Fire, MLBB, 110 diamantes, pases..." onfocus="showView('search')" oninput="renderSearchProducts()"><button class="search-clear" id="clearProductSearch" type="button" aria-label="Borrar búsqueda" title="Borrar búsqueda" hidden onclick="clearProductSearch()">×</button></div></div>
  <section id="homeView" class="store-view">
   <div class="hero"><div class="hero-copy"><span class="hero-eyebrow"><span aria-hidden="true">✦</span> RECARGAS DIGITALES · CUBA</span><h1>Recargar tu juego favorito nunca había sido tan fácil y económico.</h1><p>Encuentra diamantes, pases y membresías de Free Fire y Mobile Legends: Bang Bang (Global), con precios competitivos. Elige tu paquete, completa los datos de jugador y sigue tu pedido desde tu cuenta.</p><div class="hero-buttons"><button class="primary-btn" type="button" onclick="showView('games')">Ver paquetes <span aria-hidden="true">→</span></button><button class="secondary-btn" type="button" onclick="scrollToHowItWorks()">Cómo funciona</button><button class="secondary-btn" type="button" onclick="shareStore()">Compartir tienda ↗</button></div><p id="shareStoreMsg" class="msg" role="status" aria-live="polite"></p><div class="payment-pills"><span class="payment-pill"><span aria-hidden="true">▣</span> Transferencia CUP</span><span class="payment-pill"><span aria-hidden="true">▰</span> Saldo móvil</span></div></div><div class="hero-visual" role="img" aria-label="Emblema de Tienda El Castillo"><img class="hero-brand-art" src="./assets/castle-logo.webp" alt="" width="256" height="256" loading="eager" decoding="async"></div></div>
   <div class="benefit-row"><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3 7.8 7.5 9.5 4.5-1.7 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><div><strong>Sin contraseña del juego</strong><span>Solo solicitamos los datos del pedido</span></div></div><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4.5 7.8 7.5 4.4 7.5-4.4M12 12.2V21"/></svg></span><div><strong>Revisión del pago</strong><span>Comprobamos el comprobante recibido</span></div></div><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><div><strong>Seguimiento del pedido</strong><span>Consulta su estado desde tu cuenta</span></div></div></div>
@@ -863,7 +924,7 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
   <div id="gamesProducts" class="hidden"></div><h2 id="gamesProductsTitle" class="hidden">Paquetes disponibles</h2>
  </section>
  <section id="giftcardsView" class="store-view hidden"><div class="panel"><div class="section-head"><div><h2>Gift Cards</h2><p>Elige la plataforma que buscas</p></div></div><div id="giftTiles" class="gift-grid"></div></div><div class="panel"><h2 id="giftProductsTitle">Tarjetas disponibles</h2><div id="giftProducts" class="product-grid"><p class="empty-note">Cargando catálogo...</p></div></div></section>
- <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, paquete o plataforma.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Escribe para buscar en el catálogo.</p></div></div></section>
+ <section id="searchView" class="store-view hidden"><div class="panel"><h2>Buscar productos</h2><p class="subtle">Busca por juego, cantidad, pase, región o método de pago.</p><p id="productSearchMeta" class="search-meta subtle" aria-live="polite">Escribe algo para comenzar.</p><div id="searchProducts" class="product-grid"><p class="empty-note">Prueba con «Free Fire», «MLBB» o «110 diamantes».</p></div></div></section>
  <section id="checkoutView" class="store-view hidden"><div class="panel">
  <div class="section-head"><div><h2>Completa tu pedido</h2><p>Comprueba tu cuenta y luego realiza el pago</p></div><button class="text-link" type="button" onclick="showView('games')">← Salir y elegir otro</button></div>
  <ol class="checkout-stepper" id="checkoutStepper" aria-label="Pasos de compra">
@@ -1740,7 +1801,102 @@ async function shareStore(){
   if(msg)msg.textContent="No se pudo abrir el menú de compartir. Puedes copiar este enlace: "+url;
  }
 }
- function renderSearchProducts(){const term=fold($("productSearch")?.value||"");const matches=sortPackages(products.filter(p=>isStorefrontVisibleProduct(p)&&!isLevelUpPackage(p)&&fold(String(p.game||"")+" "+String(p.name||"")+" "+String(p.description||"")).includes(term)));$("searchProducts").innerHTML=matches.length?matches.map(productCard).join():'<p class="empty-note">'+(term?"No encontramos productos con ese nombre.":"Escribe para buscar en el catálogo.")+'</p>'}
+const productSearchSynonyms={
+ ff:["free","fire"],freefire:["free","fire"],
+ mlbb:["mobile","legends"],ml:["mobile","legends"],mobilelegends:["mobile","legends"],
+ diamond:["diamantes"],diamonds:["diamantes"],diamante:["diamantes"],
+ pass:["pase"],passes:["pase"],weekly:["semanal"],monthly:["mensual"],
+ membership:["membresia"],memberships:["membresia"],member:["membresia"],
+ giftcard:["gift","card"],giftcards:["gift","card"],tarjetas:["tarjeta"],
+ xbox:["xbox"],apple:["apple"],global:["global"],latam:["latam"]
+};
+function normalizeProductSearch(value){
+ return fold(String(value||"")).replace(/[^a-z0-9]+/g," ").trim().replace(/\\s+/g," ");
+}
+function productSearchHaystack(product){
+ const game=String(product?.game||"");
+ const name=String(product?.name||"");
+ const description=String(product?.description||"");
+ const pieces=[game,name,description,product?.amount,product?.provider_region,"recarga digital"];
+ if(Number(product?.price_transfer)>0)pieces.push("transferencia cup cup");
+ if(Number(product?.price_mobile)>0)pieces.push("saldo movil saldo");
+ if(Number(product?.price_usdt)>0)pieces.push("usdt tether");
+ const foldedGame=fold(game);
+ if(foldedGame.includes("free fire")){
+  pieces.push("free fire ff");
+  const group=freeFirePackageGroup(product);
+  if(group==="diamonds")pieces.push("diamantes diamond diamonds");
+  if(group==="passes")pieces.push("pase pases membresia membership semanal weekly");
+  if(group==="booyah")pieces.push("booyah pase premium");
+  if(group==="levels")pieces.push("nivel level up");
+ }
+ if(foldedGame.includes("mobile legends")){
+  pieces.push("mobile legends mlbb");
+  const category=mobileLegendsCatalogCategory(product);
+  if(category==="diamonds")pieces.push("diamantes diamonds");
+  if(category==="passes")pieces.push("pase pases pass weekly semanal");
+  if(category==="memberships")pieces.push("membresia membresias membership mensual twilight");
+ }
+ if(isGiftCard(product))pieces.push("gift card tarjeta regalo tarjetas digitales");
+ return normalizeProductSearch(pieces.filter(value=>value!==undefined&&value!==null).join(" "));
+}
+function productSearchScore(product,query,haystack){
+ const name=normalizeProductSearch(product?.name);
+ const game=normalizeProductSearch(product?.game);
+ let score=0;
+ if(name===query)score+=100;
+ else if(name.includes(query))score+=45;
+ if(game===query)score+=35;
+ else if(game.includes(query))score+=22;
+ const queryTokens=query.split(" ").filter(Boolean);
+ for(const token of queryTokens){
+  if(name.split(" ").includes(token))score+=8;
+  else if(name.includes(token))score+=5;
+  if(game.includes(token))score+=4;
+  if(haystack.includes(token))score+=1;
+ }
+ return score;
+}
+function clearProductSearch(){
+ const input=$("productSearch");
+ if(!input)return;
+ input.value="";
+ renderSearchProducts();
+ input.focus({preventScroll:true});
+}
+function renderSearchProducts(){
+ const input=$("productSearch");
+ const output=$("searchProducts");
+ if(!output)return;
+ const query=normalizeProductSearch(input?.value||"");
+ const clear=$("clearProductSearch");
+ const meta=$("productSearchMeta");
+ if(clear)clear.hidden=!query;
+ if(!query){
+  output.innerHTML='<p class="empty-note">Prueba con «Free Fire», «MLBB» o «110 diamantes».</p>';
+  if(meta)meta.textContent="Puedes buscar por juego, cantidad, tipo de paquete, región o pago.";
+  return;
+ }
+ const tokens=query.split(" ").filter(token=>token.length>0);
+ const expanded=tokens.flatMap(token=>productSearchSynonyms[token]||[token]);
+ const candidates=sortPackages(products.filter(product=>
+  isStorefrontVisibleProduct(product)&&
+  !isLevelUpPackage(product)&&
+  Number(product.active===undefined?1:product.active)!==0
+ ));
+ const matches=candidates.map(product=>{
+  const haystack=productSearchHaystack(product);
+  const matched=expanded.every(token=>haystack.includes(token));
+  return matched?{product,score:productSearchScore(product,query,haystack)}:null;
+ }).filter(Boolean).sort((a,b)=>b.score-a.score);
+ output.innerHTML=matches.length
+  ?matches.map(item=>productCard(item.product)).join("")
+  :'<p class="empty-note">No encontramos coincidencias. Prueba con el nombre del juego, la cantidad de diamantes o «pase semanal».</p>';
+ if(meta)meta.textContent=matches.length
+  ?(matches.length+" "+(matches.length===1?"resultado encontrado":"resultados encontrados")+" para «"+(input?.value||"").trim()+"».")
+  :"No hay resultados para «"+(input?.value||"").trim()+"». Prueba con otra palabra.";
+}
+
 function updateCheckoutStage(stage){
  const current=["player","payment","review"].includes(stage)?stage:"player";
  $("checkoutStagePlayer")?.classList.toggle("hidden",current!=="player");
