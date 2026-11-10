@@ -2215,7 +2215,6 @@ function isGlobalMobileLegendsProduct(product){
  const game=fold(product?.game||"");
  return !game.includes("mobile legends")||String(product?.provider_region||"").trim().toUpperCase()==="GLOBAL";
 }
-const mobileLegendsDiamondAmounts=new Set([55,172,275,565,706,2195,3688]);
 const mobileLegendsExtraCategories={
  "mobile legends · paquete elite semanal":"passes",
  "mobile legends · pase semanal":"passes",
@@ -2232,7 +2231,8 @@ function mobileLegendsCatalogCategory(product){
  const name=fold(product?.name||"").trim();
  if(Object.prototype.hasOwnProperty.call(mobileLegendsExtraCategories,name))return mobileLegendsExtraCategories[name];
  const diamond=name.match(/^mobile legends · (\d+) diamantes$/);
- if(diamond&&mobileLegendsDiamondAmounts.has(Number(diamond[1])))return "diamonds";
+ if(diamond&&Number(diamond[1])>0)return "diamonds";
+ if(/elite|pase|pass|subscription|suscripcion/.test(name))return "passes";
  return null;
 }
 function isStorefrontVisibleProduct(product){
