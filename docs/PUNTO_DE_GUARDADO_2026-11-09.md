@@ -200,3 +200,39 @@ Objetivo: comprobar que una compra de prueba, un pedido rechazado o una solicitu
 - Riesgo residual: el sistema no distingue semánticamente “pedido de prueba” de “pedido real”. Si un administrador confirma manualmente como pagado un pedido de prueba y luego autoriza conscientemente la recarga, el backend lo trataría como real. Se recomienda valorar un interruptor general de “Bloquear envíos reales a Central One” para las sesiones de pruebas; debe estar activado por defecto cuando se quiera probar y solo el administrador puede desactivarlo antes de procesar pedidos reales.
 - No se realizaron llamadas POST a Central One, no se crearon pedidos de proveedor, no se alteró saldo, no se cambiaron datos ni estados de pedidos y no se modificaron migraciones durante esta auditoría.
 - Supabase Security Advisor: un aviso pendiente de nivel WARN: “Leaked Password Protection Disabled”. Activar protección contra contraseñas comprometidas desde Auth > Password Security cuando se continúe la configuración.
+
+
+## Renovación visual mobile-first — 10 de noviembre de 2026
+Objetivo solicitado: que la tienda se vea como una plataforma de recargas profesional y esté diseñada primero para compradores que navegan desde teléfonos.
+
+### Cambios publicados en la interfaz
+- `310305ca65e3bade74a20b5b4dda001aa33cf066` — nueva portada mobile-first: mensaje principal más corto, CTA principal, acceso a «Cómo comprar», compartir tienda, barra informativa con los dos juegos y beneficios resumidos.
+- `b7b73c204dc645095032f2f5074e40d4f5cedb74` — refinamiento móvil de acceso/registro, selección de juegos, detalle del juego, métodos de pago y checkout.
+- `aef96f977334f1e184ca1609b2ad0b48ec955ea1` — ajuste final para alinear «Cómo comprar» y «Compartir» en dos botones equilibrados en el banner móvil.
+- `8fdf27a90da66ca03679f62220f99038e5025864` — actualiza caché del service worker a `el-castillo-shell-v109` para refrescar la versión de la tienda en dispositivos móviles.
+
+### Dirección visual
+- Conserva el logo original del castillo.
+- Paleta azul noche, índigo y violeta con acentos lavanda, superficies claras y tarjetas suaves.
+- La portada comunica rápidamente que se ofrecen Free Fire y Mobile Legends: Bang Bang Global.
+- El catálogo prioriza dos tarjetas de juego en móvil; los paquetes destacados mantienen precios por método y un botón de acción amplio.
+- Se unificó la presentación del acceso, catálogo, detalle del juego y checkout para evitar que la compra parezca una página distinta.
+- Se reforzaron tamaños táctiles, márgenes y adaptación para pantallas de 320–430 px; también hay ajustes específicos para móviles muy estrechos de hasta 340–360 px.
+- Se conservaron la búsqueda, los IDs del DOM, handlers, checkout, pagos, validación de jugador, orden de productos, regiones, panel admin y toda la lógica de negocio.
+- No se añadieron dependencias externas, bibliotecas ni imágenes pesadas; se reutilizan imágenes locales existentes.
+
+### Verificaciones realizadas
+- Los scripts JavaScript inline pasaron comprobación sintáctica.
+- Las etiquetas `<style>` están equilibradas.
+- Los dos nuevos bloques CSS están balanceados en llaves.
+- Se verificó que permanecen los IDs clave de portada, juegos, checkout, búsqueda y navegación.
+- La publicación de la portada inicial tuvo build y deploy exitosos para `310305ca65e3bade74a20b5b4dda001aa33cf066`; los cambios posteriores actualizaron la portada de nuevo y deben comprobarse en el workflow final correspondiente.
+- Pendiente: inspección visual real desde un teléfono Android de 320–430 px. El código no permite confirmar por sí solo cómo se ve en la pantalla física.
+
+### Próxima revisión manual recomendada
+1. Abrir la página en el teléfono y recargarla con conexión activa para recibir la nueva versión.
+2. Revisar encabezado, banner y botones.
+3. Comprobar que ambas tarjetas de juegos tienen buena escala e imágenes.
+4. Abrir un paquete de Free Fire y uno de Mobile Legends Global.
+5. Comprobar métodos de pago, formulario de ID y resumen de compra sin enviar un pago real.
+6. Abrir «Mis pedidos» y el panel admin, verificando que botones y textos sigan visibles.
