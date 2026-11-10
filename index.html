@@ -911,6 +911,12 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
  content:"✦";display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;
  border-radius:10px;background:#e7f0ff;color:#2e6bd0;font-size:15px;
 }
+#homeFeaturedProducts>.empty-note,#giftProducts>.empty-note{
+ background:linear-gradient(105deg,#f8fbff 25%,#eef4fd 42%,#f8fbff 62%);
+ background-size:220% 100%;
+ animation:castle-loading-shine 1.9s ease-in-out infinite;
+}
+@keyframes castle-loading-shine{0%{background-position:100% 0}100%{background-position:-100% 0}}
 .empty-note{line-height:1.6}
 #castlePaymentAlertToast{
  border:1px solid rgba(255,255,255,.2)!important;
