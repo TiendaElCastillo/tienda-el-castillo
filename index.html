@@ -2678,7 +2678,7 @@ async function continueToPayment(){
  if(requiresPlayerValidation(p)&&!target.ok){if(message)message.textContent="El paquete no tiene una estructura de verificación compatible. No realices el pago.";return}
  if(target.zoneKey&&(!zoneId||zoneId.length>24)){if(message)message.textContent="Escribe el Zone ID del servidor antes de continuar."; $("playerZone")?.focus();return}
  if(requiresPlayerValidation(p)){
-  if(!p.provider_product_id){if(message)message.textContent="Este paquete no está vinculado correctamente con Central One. No realices ninguna transferencia.";return}
+  if(!p.provider_product_id){if(message)message.textContent="Este paquete no está disponible para verificar la cuenta. No realices ninguna transferencia y avisa a la tienda.";return}
   if(p.provider_validation_supported!==true){if(message)message.textContent="La verificación de ID no está disponible para esta región. No realices ninguna transferencia.";return}
   if(!isPlayerValidationCurrent(p.id,player)){
    if(message)message.textContent="Los datos de la cuenta todavía no están verificados. Estamos comprobándolos; no realices el pago hasta ver la confirmación.";
@@ -2689,7 +2689,7 @@ async function continueToPayment(){
     else await validatePlayerId();
    }catch(e){}
    if(!isPlayerValidationCurrent(p.id,player)){
-    if(message&&!message.textContent.includes("Central One no confirmó"))message.textContent="No se pudo verificar la cuenta. Comprueba el ID, el Zone ID y la conexión; no hagas ninguna transferencia.";
+    if(message)message.textContent="No se pudo verificar la cuenta. Comprueba el ID, el Zone ID y la conexión; no hagas ninguna transferencia.";
     if(button){button.disabled=false;button.textContent="Continuar al pago →";}
     return;
    }
@@ -2832,8 +2832,8 @@ function syncPlayerRegionUI(){
  if($("playerZoneLabel"))$("playerZoneLabel").textContent="Zone ID / ID del servidor";
  if($("playerRegionNote")){
   if(needsValidation&&!providerProduct){
-   $("playerRegionNote").textContent="Este paquete no está correctamente vinculado con Central One. No pagues ni continúes; avisa a la tienda.";
-   setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete porque falta la vinculación con Central One.","Validación no disponible");
+   $("playerRegionNote").textContent="Este paquete no está disponible para verificar la cuenta. No pagues ni continúes; avisa a la tienda.";
+   setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete en este momento. Avisa a la tienda para que lo revisemos.","Validación no disponible");
   }else if(needsValidation&&!target.ok){
    $("playerRegionNote").textContent="El proveedor no ha definido un formato compatible para verificar los datos de esta cuenta.";
    setPlayerValidationDisplay("is-error","!","La estructura de ID/servidor de este paquete no está soportada. No realices el pago.","Formato no compatible");
@@ -2874,7 +2874,7 @@ async function validatePlayerId(){
  if(!p.provider_product_id){
   if(requiresPlayerValidation(p)){
    validatedPlayerCheckout=null;
-   setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete porque falta su vinculación con Central One. No pagues ni continúes.","Validación no disponible");
+   setPlayerValidationDisplay("is-error","!","No podemos comprobar este paquete en este momento. No pagues ni continúes; avisa a la tienda.","Validación no disponible");
   }
   return;
  }
@@ -2930,7 +2930,7 @@ async function validatePlayerId(){
   if(!response.ok||result?.valid!==true){
    if(response.status===422||result?.error==="player_id_not_confirmed"||result?.error==="invalid_player_id"){
     const providerMessage=String(result?.message||"").trim().slice(0,220);
-    setPlayerValidationDisplay("is-invalid","×",providerMessage?"Central One no confirmó los datos: "+providerMessage:"Central One no confirmó los datos de esta cuenta. Revísalos e inténtalo de nuevo.","Datos no confirmados");
+    setPlayerValidationDisplay("is-invalid","×","No pudimos confirmar los datos de esta cuenta. Revísalos e inténtalo de nuevo.","Datos no confirmados");
     return;
    }
    throw new Error("No se pudo comprobar el usuario en este momento.");
@@ -2939,7 +2939,7 @@ async function validatePlayerId(){
   const expiresIn=Math.max(30,Math.min(600,Number(result.expires_in_seconds)||600));
   validatedPlayerCheckout={productId:String(p.id),playerId:canonicalPlayerId,region:String(result.region||p.provider_region||""),playerName:result.player_name||null,token:result.validation_token,validatedAt:new Date().toISOString(),expiresAt:Date.now()+expiresIn*1000};
   nameField.value=result.player_name||"";
-  setPlayerValidationDisplay("is-valid","✓",result.player_name?"Cuenta válida. El ID y el Zone ID corresponden a esta cuenta.":"Cuenta verificada por Central One. El proveedor no devolvió nombre de jugador.","ID verificado");
+  setPlayerValidationDisplay("is-valid","✓",result.player_name?"Cuenta válida. El ID y el Zone ID corresponden a esta cuenta.":"Cuenta verificada correctamente.","ID verificado");
  }catch(e){
   if(!isCurrent())return;
   setPlayerValidationDisplay("is-error","!","No se pudo comprobar ahora. "+(e?.message||"Revisa tu conexión e inténtalo de nuevo."),"No se pudo comprobar");
@@ -3323,7 +3323,7 @@ async function placeOrder(){
  }
  if(requiresPlayerValidation(product)){
   if(!product.provider_product_id||product.provider_validation_supported!==true){
-   $("checkoutPlayerMsg").textContent="Este paquete no tiene una verificación activa de Central One. No se ha creado ningún pedido.";
+   $("checkoutPlayerMsg").textContent="Este paquete no tiene activa la verificación de cuenta. No se ha creado ningún pedido; avisa a la tienda.";
    updateCheckoutStage("player");return;
   }
   if(!isPlayerValidationCurrent(product.id,player)){
@@ -3334,7 +3334,7 @@ async function placeOrder(){
     await waitForCurrentPlayerValidation(product.id,player);
    }
    if(!isPlayerValidationCurrent(product.id,player)){
-    $("checkoutPlayerMsg").textContent="Central One no confirmó este ID. No se creó el pedido ni se subió el comprobante. Conserva el comprobante del banco; no hagas otra transferencia. Corrige el ID o contacta con la tienda si ya pagaste.";
+    $("checkoutPlayerMsg").textContent="No pudimos confirmar este ID. No se creó el pedido ni se subió el comprobante. Conserva el comprobante del banco; no hagas otra transferencia. Corrige el ID o contacta con la tienda si ya pagaste.";
     updateCheckoutStage("player");
     $("player")?.focus();
     return;
@@ -3565,19 +3565,14 @@ function startOrderReviewClock(container){
    if(progress)progress.style.width=Math.min(100,(elapsedMs/(30*60*1000))*100)+"%";
    const guidance=clock.querySelector("[data-review-guidance]");
    const estimate=clock.querySelector(".order-review-estimate");
-   const stage=clock.dataset.reviewStage==="processing"?"processing":"payment_review";
    if(minutes>=30){
     clock.classList.add("is-overdue");
     if(estimate)estimate.textContent="Más de 30 minutos";
-    if(guidance)guidance.textContent=stage==="processing"
-     ?"La recarga está tardando más de lo habitual. Escríbenos desde Mensajes para que revisemos la entrega. No pagues de nuevo ni crees otro pedido."
-     :"La revisión está tardando más de lo habitual. Escríbenos desde Mensajes para que revisemos el pago. No pagues de nuevo ni crees otro pedido.";
+    if(guidance)guidance.textContent="La revisión está tardando más de lo habitual. Tu pedido sigue registrado. Escríbenos desde «Mensajes» para que revisemos el pago. No pagues de nuevo ni crees otro pedido.";
    }else{
     clock.classList.remove("is-overdue");
-    if(estimate)estimate.textContent="Acreditación: 1–30 min";
-    if(guidance)guidance.textContent=stage==="processing"
-     ?"El pago está confirmado y la recarga está en curso. Este contador mide el tiempo desde la confirmación del pago."
-     :"Recibimos tu comprobante y estamos verificando el pago. La estimación de acreditación es orientativa.";
+    if(estimate)estimate.textContent="Atención habitual: hasta 30 min";
+    if(guidance)guidance.textContent="Recibimos tu pedido y comprobante. Nuestro equipo revisará el pago; procuramos atenderlo antes de 30 minutos. No hagas otro pago ni crees otro pedido.";
    }
   });
  };
@@ -3612,26 +3607,23 @@ async function loadMyOrders(){
   const externalRefundReview=o.central_one_response?.external_payment_refund_review;
   let providerInfo="";
   if(o.central_one_order_id){
-   providerInfo='<p class="track-note">Referencia de recarga: <strong>'+clean(o.central_one_reference_code||"Registrada en Central One")+'</strong> · Estado: '+centralOneStatusText(customerProviderStatus)+'</p>';
    if(customerWalletRefund?.refunded===true){
-    providerInfo+='<p class="track-note"><strong>Devolución confirmada:</strong> Central One devolvió el importe y '+money(customerWalletRefund.credited_amount)+' '+clean(customerWalletRefund.currency||"USD")+' ya fue acreditado nuevamente en tu billetera.</p>';
+    providerInfo='<p class="track-note"><strong>Devolución acreditada:</strong> el importe de tu compra ya fue devuelto a tu billetera de Tienda El Castillo.</p>';
    }else if(externalRefundReview?.required===true){
-    providerInfo+='<p class="track-note"><strong>Devolución pendiente de gestión:</strong> Central One confirmó la devolución al proveedor. Como pagaste mediante un método externo, la tienda debe completar la devolución de tu pago. No vuelvas a pagar.</p>';
+    providerInfo='<p class="track-note"><strong>Devolución en revisión:</strong> estamos revisando la devolución de tu compra. Te informaremos desde «Mensajes». No vuelvas a pagar.</p>';
    }else if(["failed","cancelled"].includes(customerProviderStatus)){
-    providerInfo+='<p class="track-note">La recarga no se completó. No realices otro pago ni crees otro pedido. La tienda está revisando la devolución correspondiente.</p>';
+    providerInfo='<p class="track-note">No pudimos completar la recarga. El equipo de Tienda El Castillo está revisando tu pedido y la solución correspondiente. No realices otro pago ni crees otro pedido.</p>';
    }
-  }else if(customerProviderError==="central_one_insufficient_balance"){
-   providerInfo='<p class="track-note"><strong>Pago recibido · saldo del proveedor insuficiente.</strong> Tu pago está registrado. Central One no aceptó la recarga porque la tienda necesita reponer su saldo. Conservamos este pedido para reintentarlo; no vuelvas a pagar ni crees otro.</p>';
   }else if(customerProviderError==="admin_cancelled_before_provider"){
-   providerInfo='<p class="track-note"><strong>Pedido anulado antes del envío.</strong> No se creó ninguna orden en Central One y la tienda no realizó una devolución automática. Si ya pagaste, conserva el comprobante y contacta con la tienda para resolverlo.</p>';
-  }else if(o.central_one_error_message){
-   providerInfo='<p class="track-note"><strong>Incidencia de recarga:</strong> '+clean(o.central_one_error_message)+' No vuelvas a pagar ni crees otro pedido; la tienda revisará este pedido.</p>';
+   providerInfo='<p class="track-note"><strong>Pedido anulado antes de iniciar la recarga.</strong> Si ya pagaste, conserva el comprobante y contacta con Tienda El Castillo para resolver la devolución.</p>';
+  }else if(customerProviderError){
+   providerInfo='<p class="track-note"><strong>Tu pago está registrado.</strong> Existe una demora técnica antes de iniciar la recarga. Tu pedido sigue guardado y el equipo de Tienda El Castillo lo revisará. No vuelvas a pagar ni crees otro pedido.</p>';
   }else if(customerProviderStatus==="unknown"){
-   providerInfo='<p class="track-note"><strong>Respuesta pendiente de confirmar.</strong> Estamos verificando si Central One registró la orden. No pagues de nuevo ni crees otro pedido.</p>';
+   providerInfo='<p class="track-note">Estamos comprobando el estado de tu recarga. Tu pedido sigue registrado. No pagues de nuevo ni crees otro pedido.</p>';
   }else if(customerProviderStatus==="submitting"){
-   providerInfo='<p class="track-note">La autorización está en curso. No necesitas hacer otro pago ni crear otro pedido.</p>';
+   providerInfo='<p class="track-note">Estamos preparando tu recarga. No necesitas hacer otro pago ni crear otro pedido.</p>';
   }else if(customerProviderStatus==="rejected"){
-   providerInfo='<p class="track-note">Central One no aceptó la solicitud. La tienda revisará el motivo y te informará; no realices otro pago.</p>';
+   providerInfo='<p class="track-note">Todavía no pudimos iniciar la recarga. El equipo de Tienda El Castillo revisará tu pedido y te informará. No realices otro pago.</p>';
   }
   const canCancelWithoutProof=o.payment_source==="direct"&&o.status==="pending"&&!o.proof_path&&!o.paid_at&&!o.payment_confirmed_at&&!o.central_one_order_id&&!o.central_one_submitted_at&&!o.central_one_idempotency_key&&(!o.central_one_status||o.central_one_status==="not_submitted");
   const wasCancelledBeforeProof=o.status==="cancelled"&&o.payment_source==="direct"&&!o.proof_path&&!o.central_one_order_id;
@@ -4046,23 +4038,27 @@ function customerOrderProgress(order,statusEvents=[]){
   const date=new Date(value);if(!Number.isFinite(date.getTime()))return "";
   return date.toLocaleString("es-CU",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
  };
+ const providerOrderStarted=Boolean(orderData.central_one_order_id);
  const stepDate=value=>{
   if(value==="pending")return orderData.created_at||null;
-  if(value==="payment_review")return statusEventDate(value);
-  if(value==="processing")return statusEventDate(value)||orderData.payment_confirmed_at||(orderData.payment_source==="wallet"?orderData.paid_at:null);
-  if(value==="completed")return statusEventDate(value);
+  if(value==="payment_review")return statusEventDate(value)||orderData.created_at||null;
+  if(value==="processing"){
+   return providerOrderStarted
+    ?(orderData.central_one_submitted_at||orderData.central_one_checked_at||null)
+    :(orderData.payment_confirmed_at||(orderData.payment_source==="wallet"?orderData.paid_at:null)||statusEventDate("processing"));
+  }
+  if(value==="completed")return orderData.central_one_checked_at||statusEventDate(value);
   return null;
  };
  const reviewStartValue=statusEventDate("payment_review")||orderData.created_at||null;
- const timerStage=status==="payment_review"?"payment_review":status==="processing"?"processing":"";
- const timerStartValue=timerStage==="processing"?stepDate("processing"):reviewStartValue;
- const reviewStartMs=timerStartValue?new Date(timerStartValue).getTime():NaN;
+ const timerStage=status==="payment_review"?"payment_review":"";
+ const reviewStartMs=reviewStartValue?new Date(reviewStartValue).getTime():NaN;
  const reviewClock=timerStage&&Number.isFinite(reviewStartMs)&&reviewStartMs>0
-  ?'<section class="order-review-clock" data-order-review-clock data-review-stage="'+timerStage+'" data-review-start="'+reviewStartMs+'" aria-label="Tiempo de espera del pedido">'+
-    '<div class="order-review-clock-head"><span class="order-review-clock-title">'+(timerStage==="payment_review"?"Tiempo en revisión":"Tiempo de recarga")+'</span><span class="order-review-estimate">Acreditación: 1–30 min</span></div>'+
+  ?'<section class="order-review-clock" data-order-review-clock data-review-stage="payment_review" data-review-start="'+reviewStartMs+'" aria-label="Tiempo de revisión del pedido">'+
+    '<div class="order-review-clock-head"><span class="order-review-clock-title">Tiempo de revisión</span><span class="order-review-estimate">Atención habitual: hasta 30 min</span></div>'+
     '<div class="order-review-clock-main"><span class="order-review-clock-icon" aria-hidden="true">◷</span><div><strong data-review-elapsed>00:00</strong><small>minutos : segundos</small></div><span class="order-review-live"><i></i> En seguimiento</span></div>'+
     '<div class="order-review-track" aria-hidden="true"><span data-review-progress></span></div>'+
-    '<p class="order-review-guidance" data-review-guidance>'+(timerStage==="payment_review"?"Recibimos tu comprobante. Estamos verificando el pago; la estimación es orientativa.":"El pago está confirmado y la recarga está en curso. Contamos desde la confirmación del pago.")+'</p>'+
+    '<p class="order-review-guidance" data-review-guidance>Recibimos tu pedido y comprobante. Nuestro equipo revisará el pago; procuramos atenderlo antes de 30 minutos. No hagas otro pago ni crees otro pedido.</p>'+
    '</section>'
   :"";
 
@@ -4078,7 +4074,7 @@ function customerOrderProgress(order,statusEvents=[]){
  const steps=[
   {value:"pending",label:"Recibido"},
   {value:"payment_review",label:"Pago en revisión"},
-  {value:"processing",label:"Recarga en curso"},
+  {value:"processing",label:providerOrderStarted?"Recarga en curso":"Pago confirmado"},
   {value:"completed",label:"Entregado"}
  ];
  const currentIndex=Math.max(0,steps.findIndex(step=>step.value===status));
@@ -4092,8 +4088,8 @@ function customerOrderProgress(order,statusEvents=[]){
  }).join("");
  const notes={
   pending:"El pedido está creado, pero el pago todavía no aparece como confirmado. Comprueba que el comprobante se haya enviado. Si ya pagaste y no aparece, pide ayuda antes de transferir otra vez.",
-  payment_review:"Recibimos el comprobante y estamos comprobando que el dinero o saldo haya llegado. La captura por sí sola no confirma el pago.",
-  processing:"El pago está confirmado. La recarga está en curso y esperamos la confirmación de entrega. No necesitas crear otro pedido.",
+  payment_review:"Recibimos tu pedido y comprobante. Nuestro equipo está revisando que el pago haya llegado. La captura por sí sola no confirma el pago.",
+  processing:providerOrderStarted?"El pago está confirmado y la recarga está en curso. Te avisaremos cuando esté lista. No necesitas crear otro pedido.":"El pago está confirmado. Nuestro equipo está preparando tu recarga y actualizará el seguimiento cuando comience la entrega. No necesitas hacer nada más.",
   completed:"La entrega fue confirmada. Comprueba que los diamantes o el producto aparezcan en la cuenta indicada."
  };
  return '<div class="order-progress-wrap"><ol class="order-progress" aria-label="Progreso del pedido">'+progress+'</ol>'+reviewClock+'<p class="track-note">'+(notes[status]||"Estamos revisando el estado de tu pedido.")+'</p></div>';
