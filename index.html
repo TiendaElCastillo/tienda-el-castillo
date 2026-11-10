@@ -1091,7 +1091,7 @@ body{min-width:0}
 @media(max-width:390px){
  .order-review-clock{padding:13px;border-radius:15px}
  .order-review-clock-main strong{font-size:27px}
- .order-review-clock-live{font-size:8px}
+ .order-review-live{font-size:8px}
  .order-review-clock-main{gap:9px}
 }
 @media(prefers-reduced-motion:reduce){.order-review-track span{transition:none!important}}
@@ -3066,14 +3066,19 @@ function startOrderReviewClock(container){
    if(progress)progress.style.width=Math.min(100,(elapsedMs/(30*60*1000))*100)+"%";
    const guidance=clock.querySelector("[data-review-guidance]");
    const estimate=clock.querySelector(".order-review-estimate");
+   const stage=clock.dataset.reviewStage==="processing"?"processing":"payment_review";
    if(minutes>=30){
     clock.classList.add("is-overdue");
     if(estimate)estimate.textContent="Más de 30 minutos";
-    if(guidance)guidance.textContent="Tu pedido está tardando más de lo habitual. Escríbenos desde Mensajes para que lo revisemos. No realices otro pago ni crees otro pedido.";
+    if(guidance)guidance.textContent=stage==="processing"
+     ?"La recarga está tardando más de lo habitual. Escríbenos desde Mensajes para que revisemos la entrega. No pagues de nuevo ni crees otro pedido."
+     :"La revisión está tardando más de lo habitual. Escríbenos desde Mensajes para que revisemos el pago. No pagues de nuevo ni crees otro pedido.";
    }else{
     clock.classList.remove("is-overdue");
-    if(estimate)estimate.textContent="Estimado: 1–30 min";
-    if(guidance)guidance.textContent="Contamos desde que recibimos tu comprobante. La estimación es orientativa; el pago se confirma al verificar su recepción.";
+    if(estimate)estimate.textContent="Acreditación: 1–30 min";
+    if(guidance)guidance.textContent=stage==="processing"
+     ?"El pago está confirmado y la recarga está en curso. Este contador mide el tiempo desde la confirmación del pago."
+     :"Recibimos tu comprobante y estamos verificando el pago. La estimación de acreditación es orientativa.";
    }
   });
  };
@@ -3540,13 +3545,15 @@ function customerOrderProgress(order,statusEvents=[]){
   return null;
  };
  const reviewStartValue=statusEventDate("payment_review")||orderData.created_at||null;
- const reviewStartMs=reviewStartValue?new Date(reviewStartValue).getTime():NaN;
- const reviewClock=status==="payment_review"&&Number.isFinite(reviewStartMs)&&reviewStartMs>0
-  ?'<section class="order-review-clock" data-order-review-clock data-review-start="'+reviewStartMs+'" aria-label="Tiempo de revisión del pedido">'+
-    '<div class="order-review-clock-head"><span class="order-review-clock-title">Tiempo en revisión</span><span class="order-review-estimate">Estimado: 1–30 min</span></div>'+
+ const timerStage=status==="payment_review"?"payment_review":status==="processing"?"processing":"";
+ const timerStartValue=timerStage==="processing"?stepDate("processing"):reviewStartValue;
+ const reviewStartMs=timerStartValue?new Date(timerStartValue).getTime():NaN;
+ const reviewClock=timerStage&&Number.isFinite(reviewStartMs)&&reviewStartMs>0
+  ?'<section class="order-review-clock" data-order-review-clock data-review-stage="'+timerStage+'" data-review-start="'+reviewStartMs+'" aria-label="Tiempo de espera del pedido">'+
+    '<div class="order-review-clock-head"><span class="order-review-clock-title">'+(timerStage==="payment_review"?"Tiempo en revisión":"Tiempo de recarga")+'</span><span class="order-review-estimate">Acreditación: 1–30 min</span></div>'+
     '<div class="order-review-clock-main"><span class="order-review-clock-icon" aria-hidden="true">◷</span><div><strong data-review-elapsed>00:00</strong><small>minutos : segundos</small></div><span class="order-review-live"><i></i> En seguimiento</span></div>'+
     '<div class="order-review-track" aria-hidden="true"><span data-review-progress></span></div>'+
-    '<p class="order-review-guidance" data-review-guidance>Contamos desde que recibimos tu comprobante. La estimación es orientativa; el pago se confirma al verificar su recepción.</p>'+
+    '<p class="order-review-guidance" data-review-guidance>'+(timerStage==="payment_review"?"Recibimos tu comprobante. Estamos verificando el pago; la estimación es orientativa.":"El pago está confirmado y la recarga está en curso. Contamos desde la confirmación del pago.")+'</p>'+
    '</section>'
   :"";
 
