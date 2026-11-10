@@ -457,3 +457,50 @@
  #admin .admin-tab,#admin .admin-kpi,#admin .admin-shortcut,#admin .admin-order-filter{transition:none!important}
 }
 
+
+/* v29 — armonía visual con la tienda pública */
+#admin .admin-section-panel,#admin .admin-overview{
+ border-color:#e3ebf5;
+ border-radius:19px;
+ box-shadow:0 10px 28px rgba(18,45,84,.065);
+}
+#admin .admin-kpi{
+ border-color:#e4ebf5;
+ background:linear-gradient(180deg,#fff,#fbfcff);
+}
+#admin .admin-shortcut{
+ border:1px solid #e4ebf5;
+ background:linear-gradient(180deg,#fff,#f9fbff);
+}
+#admin .admin-tab{border:1px solid transparent}
+#admin .admin-tab.active{
+ background:linear-gradient(135deg,#347cf0,#1d5dd5);
+ box-shadow:0 6px 15px rgba(36,104,242,.2);
+}
+#admin .admin-order-filter.active{
+ border-color:#cbdcf5;
+ background:linear-gradient(180deg,#f2f7ff,#e6efff);
+ box-shadow:inset 0 0 0 1px rgba(49,111,211,.035);
+}
+#admin .admin-order-field,#admin .admin-profit-grid>div{
+ border-color:#e6edf6;
+ background:linear-gradient(180deg,#fbfcff,#f5f8fd);
+}
+#admin .admin-order-search,#admin input:not([type=checkbox]),#admin select,#admin textarea{
+ border-color:#dfe7f2;
+ transition:border-color .18s ease,box-shadow .18s ease;
+}
+#admin .admin-order-search:focus,#admin input:not([type=checkbox]):focus,#admin select:focus,#admin textarea:focus{
+ border-color:#8fb4e9;
+ box-shadow:0 0 0 3px rgba(52,124,240,.11);
+}
+#admin .order-card{border-color:#e2eaf4;box-shadow:0 6px 18px rgba(17,41,75,.045)}
+#admin .admin-account-security{border-color:#dce7f5;background:linear-gradient(120deg,#f8faff,#f0f5fd)}
+#admin button{transition:transform .16s ease,box-shadow .18s ease,filter .18s ease}
+@media(hover:hover){
+ #admin button:not(:disabled):hover{filter:brightness(1.025)}
+ #admin .admin-order-search:hover{border-color:#c8d8ed}
+}
+@media(prefers-reduced-motion:reduce){
+ #admin button,#admin .admin-order-search,#admin input,#admin select,#admin textarea{transition:none!important}
+}
