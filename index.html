@@ -1428,6 +1428,129 @@ body{min-width:0}
  #auth .auth-game-card,#checkoutView .checkout-method-choice,#gameDetailPlans .game-plan-card{transition:none!important}
 }
 </style>
+<style id="castle-game-catalog-redesign">
+/* Catálogo de juegos: banner visual, selección clara y menos texto repetido */
+#gamesView #gameDetailPanel{padding:15px}
+#gameDetailHero .game-detail-hero{
+ position:relative;isolation:isolate;display:block;min-height:190px;margin:3px 0 16px;padding:0;
+ overflow:hidden;border:1px solid rgba(194,215,250,.25);border-radius:21px;
+ background:#10243e;box-shadow:0 14px 30px rgba(20,48,91,.15)
+}
+#gameDetailHero .game-detail-art{
+ position:absolute;inset:0;width:100%;height:100%;border-radius:0;box-shadow:none;
+ background-size:cover;background-position:center 34%
+}
+#gameDetailHero .game-detail-art img{width:100%;height:100%;object-fit:cover;object-position:center 34%;filter:saturate(1.06)}
+#gameDetailHero .game-detail-art:after{background:linear-gradient(90deg,rgba(5,16,37,.91) 0%,rgba(5,16,37,.7) 47%,rgba(5,16,37,.12) 100%),linear-gradient(0deg,rgba(5,16,37,.28),transparent 65%)}
+#gameDetailHero .game-detail-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(4,15,36,.28),transparent 78%)}
+#gameDetailHero .game-detail-copy{
+ position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ gap:9px;min-height:190px;max-width:82%;padding:21px 24px;color:#fff
+}
+#gameDetailHero .detail-eyebrow{font-size:10px;letter-spacing:.14em;color:#d6e6ff}
+#gameDetailHero .game-detail-copy h1{margin:0;color:#fff;font-size:clamp(27px,4vw,36px);line-height:1.04;letter-spacing:-.04em}
+#gameDetailHero .game-recharge-mode,#gameDetailHero .game-region-badge{
+ display:inline-flex;align-items:center;gap:7px;width:max-content;max-width:100%;padding:7px 11px;
+ border:1px solid rgba(255,255,255,.25);border-radius:30px;background:rgba(255,255,255,.13);
+ color:#f5f8ff;font-size:11px;font-weight:800;line-height:1.25;backdrop-filter:blur(7px)
+}
+#gameDetailHero .game-recharge-mode>span{font-size:14px}
+#gameDetailHero .game-region-badge{margin:0;background:rgba(255,255,255,.18)}
+#gameDetailHero .game-region-indicator{width:8px;height:8px;border-radius:50%;background:#65dfa5;box-shadow:0 0 0 3px rgba(101,223,165,.15)}
+#gamesView .game-method-section{
+ margin:0 0 17px;padding:14px;border:1px solid #e3eaf3;border-radius:18px;
+ background:#fff;box-shadow:0 6px 18px rgba(20,45,90,.045)
+}
+#gamesView .game-method-section .section-head{margin:0 0 11px}
+#gamesView .game-method-section .section-head h2{font-size:18px;letter-spacing:-.035em}
+#gamesView .game-method-section .section-head p{font-size:11px;margin-top:3px}
+#gamesView .game-payment-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#gamesView .game-method{
+ min-width:0;min-height:66px;display:flex;flex-direction:column;justify-content:center;gap:5px;
+ padding:8px 5px;border:1px solid #e1e8f1;border-radius:14px;background:#fff;
+ color:#40536e;font-size:10px;font-weight:850;line-height:1.2;text-align:center
+}
+#gamesView .game-method .method-icon{
+ display:grid;place-items:center;width:29px;height:29px;border-radius:10px;
+ background:#f0f5fc;color:#2868df;font-size:16px
+}
+#gamesView .game-method.active{border-color:#8eb2f4;background:#edf4ff;color:#245dbd;box-shadow:0 0 0 2px rgba(36,104,242,.08)}
+#gamesView .game-method.active .method-icon{background:#dceaff;color:#205dca}
+#gamesView .game-method:disabled{opacity:.35}
+#gamesView #gameDetailPanel>.section-head{display:none!important}
+#gameDetailPlans{margin-top:3px}
+#gameDetailPlans .ff-browser-head{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 13px;padding:0 1px
+}
+#gameDetailPlans .ff-browser-head h2{margin:0;color:#1c2f4c;font-size:21px;font-weight:900;letter-spacing:-.04em}
+#gameDetailPlans .ff-browser-head p,#gameDetailPlans .ff-eyebrow{display:none!important}
+#gameDetailPlans .ff-total{
+ flex-shrink:0;padding:7px 10px;border:1px solid #dfe8f5;border-radius:30px;
+ background:#f4f7fc;color:#49678f;font-size:10px;font-weight:850
+}
+#gameDetailPlans .ff-compartment{
+ margin:13px 0 17px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none
+}
+#gameDetailPlans .ff-compartment-head{
+ display:flex;align-items:center;gap:9px;margin:0 0 10px;padding:0 2px;border:0;background:transparent
+}
+#gameDetailPlans .ff-compartment-icon{
+ display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid #dce8f7;
+ border-radius:11px;background:#edf4ff;color:#2868df;font-size:17px
+}
+#gameDetailPlans .ff-compartment-copy{min-width:0}
+#gameDetailPlans .ff-compartment-kicker,#gameDetailPlans .ff-compartment-copy p{display:none!important}
+#gameDetailPlans .ff-compartment-copy h3{margin:0;color:#1c304e;font-size:16px;letter-spacing:-.025em}
+#gameDetailPlans .ff-compartment-count{margin-left:auto;min-width:27px;padding:5px 8px;border-radius:20px;background:#eff4fb;color:#52709b;font-size:10px;font-weight:850;text-align:center}
+#gameDetailPlans .ff-compartment-body{padding:0;border:0;background:transparent}
+#gameDetailPlans .ff-subgroup{margin:12px 0}
+#gameDetailPlans .ff-subgroup h4{margin:0 0 9px;color:#526987;font-size:12px;font-weight:800}
+#gameDetailPlans .ff-package-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#gameDetailPlans .game-plan-card{
+ min-width:0;display:grid;grid-template-columns:49px minmax(0,1fr);grid-template-rows:auto auto auto;
+ gap:5px 9px;align-items:center;padding:10px;border:1px solid #e1e8f2;border-radius:16px;
+ background:#fff;box-shadow:0 5px 15px rgba(20,45,84,.045)
+}
+#gameDetailPlans .plan-currency{grid-column:1;grid-row:1/3;width:49px;height:49px;border-radius:12px}
+#gameDetailPlans .plan-icon-emoji{font-size:21px}
+#gameDetailPlans .plan-info{grid-column:2;grid-row:1;min-width:0}
+#gameDetailPlans .plan-info strong{font-size:12px;line-height:1.22;overflow-wrap:anywhere}
+#gameDetailPlans .plan-info small{font-size:9px;line-height:1.25;margin-top:2px}
+#gameDetailPlans .plan-price{grid-column:2;grid-row:2;text-align:left;min-width:0}
+#gameDetailPlans .plan-price strong{font-size:15px;line-height:1.1;color:#205fc9}
+#gameDetailPlans .plan-price small{font-size:8px}
+#gameDetailPlans .plan-buy{grid-column:1/-1;grid-row:3;min-height:38px;margin:2px 0 0;padding:8px 9px;border-radius:11px;font-size:11px}
+#gameDetailPlans .mlbb-category-tabs{margin:12px 0}
+#gameDetailPlans .mlbb-plan-card{border:1px solid #e1e8f2;box-shadow:0 5px 15px rgba(20,45,84,.045)}
+@media(max-width:560px){
+ #gamesView #gameDetailPanel{padding:11px}
+ #gameDetailHero .game-detail-hero{min-height:174px;margin:2px 0 13px;border-radius:18px}
+ #gameDetailHero .game-detail-copy{min-height:174px;max-width:100%;gap:8px;padding:17px}
+ #gameDetailHero .game-detail-copy h1{font-size:clamp(24px,7vw,30px)}
+ #gameDetailHero .detail-eyebrow{font-size:9px}
+ #gameDetailHero .game-recharge-mode,#gameDetailHero .game-region-badge{padding:6px 9px;font-size:10px}
+ #gamesView .game-method-section{padding:12px;margin-bottom:14px}
+ #gamesView .game-method-section .section-head h2{font-size:16px}
+ #gamesView .game-payment-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ #gamesView .game-method{min-height:61px;padding:7px 3px;font-size:9px;border-radius:12px}
+ #gamesView .game-method .method-icon{width:27px;height:27px;font-size:15px}
+ #gameDetailPlans .ff-browser-head h2{font-size:19px}
+ #gameDetailPlans .ff-package-list{gap:8px}
+ #gameDetailPlans .game-plan-card{grid-template-columns:43px minmax(0,1fr);gap:5px 7px;padding:8px;border-radius:14px}
+ #gameDetailPlans .plan-currency{width:43px;height:43px;border-radius:10px}
+ #gameDetailPlans .plan-info strong{font-size:11px}
+ #gameDetailPlans .plan-info small{font-size:8px}
+ #gameDetailPlans .plan-price strong{font-size:14px}
+ #gameDetailPlans .plan-buy{min-height:36px;font-size:10px}
+}
+@media(max-width:360px){
+ #gameDetailHero .game-detail-hero,#gameDetailHero .game-detail-copy{min-height:162px}
+ #gamesView .game-method{font-size:8px}
+ #gameDetailPlans .game-plan-card{grid-template-columns:38px minmax(0,1fr);padding:7px}
+ #gameDetailPlans .plan-currency{width:38px;height:38px}
+}
+@media(prefers-reduced-motion:reduce){#gameDetailPlans .game-plan-card{transition:none!important}}
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -1497,7 +1620,7 @@ body{min-width:0}
   <div class="panel game-detail-panel hidden" id="gameDetailPanel">
    <button class="text-link" type="button" onclick="clearGameFilter()">← Todos los juegos</button>
    <div id="gameDetailHero"></div>
-   <div class="game-method-section"><div class="section-head"><div><h2>¿Cómo quieres pagar?</h2><p>Los paquetes y precios se actualizan según tu selección</p></div></div><div id="gamePaymentChoices" class="game-payment-choices"></div></div>
+   <div class="game-method-section"><div class="section-head"><div><h2>¿Cómo quieres pagar?</h2><p>Selecciona el método y verás los precios actualizados</p></div></div><div id="gamePaymentChoices" class="game-payment-choices"></div></div>
    <div class="section-head"><div><h2 id="gamePlansTitle">Planes disponibles</h2><p id="gamePlansSubtitle">Elige la cantidad que necesitas</p></div></div>
    <div id="gameDetailPlans" class="free-fire-package-browser"></div>
   </div>
@@ -2244,7 +2367,7 @@ function renderGameDetail(){
  const rows=gameProductsFor(item.name),methods=gameMethodsFor(rows),methodNames=methods.map(x=>x.name);
  if(!methodNames.includes(gamePaymentMethod))gamePaymentMethod=methods[0]?.name||"Transferencia CUP";
  const image=item.image?'<img class="game-detail-image" src="'+clean(item.image)+'" alt="'+clean(item.name)+'" loading="eager" fetchpriority="high" decoding="async"'+(item.fallbackImage?' data-fallback="'+clean(item.fallbackImage)+'" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback}else{this.remove()}"':' onerror="this.onerror=null;this.remove()"')+'>':'<span>'+item.icon+'</span>';
- $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><p>Elige tu recarga y paga de forma segura.</p><span class="detail-count">'+rows.length+' paquetes disponibles</span>'+gameRegionBadge(rows)+'</div></div>';
+ $("gameDetailHero").innerHTML='<div class="game-detail-hero"><div class="game-detail-art art-'+item.art+'">'+image+'</div><div class="game-detail-shade" aria-hidden="true"></div><div class="game-detail-copy"><span class="detail-eyebrow">'+clean(item.tag)+'</span><h1>'+clean(item.name)+'</h1><span class="game-recharge-mode"><span aria-hidden="true">↗</span> Recarga por ID</span>'+gameRegionBadge(rows)+'</div></div>';
  $("gamePaymentChoices").innerHTML=methods.length?methods.map(method=>gamePaymentButton(method,rows)).join(""):'<p class="empty-note">'+clean(paymentLoadError||"No hay métodos de pago activos para este juego en este momento.")+'</p>';
  const plans=sortPackages(rows.filter(p=>isPaymentMethodReady(gamePaymentMethod)&&Number(priceForMethod(p,gamePaymentMethod))>0));
  if(fold(item.name)==="free fire"){
@@ -2261,7 +2384,7 @@ function renderGameDetail(){
   const activeCategory=activeFreeFireCategory==="extra"?"extra":"diamonds";
   const totalExtra=passes.length+levels.length;
   $("gameDetailPlans").innerHTML=
-   '<div class="ff-browser-head"><div><span class="ff-eyebrow">CATÁLOGO FREE FIRE</span><h2>Elige tu paquete</h2><p>Precios según el método de pago seleccionado</p></div><span class="ff-total">'+plans.length+' opciones</span></div>'+
+   '<div class="ff-browser-head"><h2>Elige tu paquete</h2><span class="ff-total">'+plans.length+' opciones</span></div>'+
    '<div class="free-fire-category-tabs" role="tablist" aria-label="Categorías de Free Fire">'+
     '<button type="button" class="free-fire-category-tab '+(activeCategory==="diamonds"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="diamonds")+'" aria-controls="freeFireDiamondsPanel" onclick="selectFreeFireCategory(&quot;diamonds&quot;)"><span>💎 Diamantes</span><b>'+diamonds.length+'</b></button>'+
     '<button type="button" class="free-fire-category-tab '+(activeCategory==="extra"?"active":"")+'" role="tab" aria-selected="'+(activeCategory==="extra")+'" aria-controls="freeFireExtraPanel" onclick="selectFreeFireCategory(&quot;extra&quot;)"><span>🎁 Ofertas extra</span><b>'+totalExtra+'</b></button>'+
@@ -2279,12 +2402,12 @@ function renderGameDetail(){
   const activeCategory=["diamonds","passes","memberships"].includes(activeMobileLegendsCategory)?activeMobileLegendsCategory:"diamonds";
   const section=(title,subtitle,list)=>'<section class="mlbb-offer-section"><header class="mlbb-offer-head"><div><strong>'+title+'</strong><small>'+subtitle+'</small></div><b>'+list.length+'</b></header><div class="mlbb-product-grid">'+(list.length?list.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay ofertas disponibles para este pago.</div>')+'</div></section>';
   const tab=(id,label,count)=>'<button type="button" class="mlbb-category-tab '+(activeCategory===id?"active":"")+'" role="tab" aria-selected="'+(activeCategory===id)+'" aria-controls="mlbb-'+id+'-panel" onclick="selectMobileLegendsCategory(&quot;'+id+'&quot;)"><span>'+label+'</span><b>'+count+'</b></button>';
-  $("gameDetailPlans").innerHTML='<div class="ff-browser-head"><div><span class="ff-eyebrow">CATÁLOGO GLOBAL · MOBILE LEGENDS</span><h2>Elige tu recarga</h2><p>Productos para tu cuenta GLOBAL · ID y Zone ID verificados antes del pago</p></div><span class="ff-total">'+plans.length+' opciones</span></div>'+
+  $("gameDetailPlans").innerHTML='<div class="ff-browser-head"><h2>Elige tu paquete</h2><span class="ff-total">'+plans.length+' opciones</span></div>'+
    '<div class="mlbb-category-tabs" role="tablist" aria-label="Categorías de Mobile Legends">'+tab("diamonds","💎 Diamantes",diamonds.length)+tab("passes","🎟️ Pases",passes.length)+tab("memberships","👑 Membresías",memberships.length)+'</div>'+
    '<div id="mlbb-diamonds-panel" class="'+(activeCategory==="diamonds"?"":"hidden")+'" role="tabpanel">'+section("Diamantes","Paquetes con sus bonos incluidos",diamonds)+'</div>'+
    '<div id="mlbb-passes-panel" class="'+(activeCategory==="passes"?"":"hidden")+'" role="tabpanel">'+section("Pases","Pases semanales disponibles",passes)+'</div>'+
    '<div id="mlbb-memberships-panel" class="'+(activeCategory==="memberships"?"":"hidden")+'" role="tabpanel">'+section("Membresías y ofertas especiales","Pases y beneficios de duración limitada",memberships)+'</div>'; }else{
-  $("gameDetailPlans").innerHTML='<div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
+  $("gameDetailPlans").innerHTML='<div class="ff-browser-head"><h2>Elige tu paquete</h2><span class="ff-total">'+plans.length+' opciones</span></div><div class="ff-package-list">'+(plans.length?plans.map(p=>gamePlanCard(p,item,gamePaymentMethod)).join(""):'<div class="game-empty-state">No hay paquetes disponibles.</div>')+'</div>';
  }
  $("gamePlansTitle").textContent=fold(item.name)==="free fire"?"Paquetes de Free Fire":"Planes disponibles";
  $("gamePlansSubtitle").textContent=methods.length?"Precios en "+gamePaymentMethod:"Sin métodos de pago disponibles";
