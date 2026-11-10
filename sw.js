@@ -28,7 +28,7 @@ const APP_SHELL = [
   "./assets/games/mlbb-weekly.svg",
   "./assets/games/mlbb-monthly.svg",
   "./assets/games/mlbb-twilight.svg",
-  "./assets/admin-panel.css?v=30",
+  "./assets/admin-panel.css?v=31",
   "./assets/offline-guard.js?v=2",
   "./assets/admin-panel.js?v=16",
   "./assets/diamond-pile.svg",
