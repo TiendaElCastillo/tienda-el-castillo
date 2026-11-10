@@ -247,7 +247,7 @@ body{background:radial-gradient(ellipse at 50% -15%,#e8effd 0,transparent 48%),v
  .mlbb-plan-price{font-size:15px}
  .mlbb-plan-buy{font-size:11px;padding:8px}
 }
-</style><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=28">
+</style><link rel="preload" as="image" href="./assets/castle-logo.webp" type="image/webp"><link rel="stylesheet" href="./assets/admin-panel.css?v=30">
 <script>
 /* Salvavidas independiente: incluso si falla otro script externo, la pantalla inicial no queda bloqueada. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -1055,6 +1055,46 @@ body{min-width:0}
  .product-art-mobile-legends,
  .product-art.product-art-official{height:100px!important;max-height:120px!important}
 }
+</style>
+
+
+<style id="castle-order-review-clock">
+.order-review-clock{
+ margin:13px 0 12px;
+ padding:15px;
+ border:1px solid #d8e5f8;
+ border-radius:17px;
+ background:radial-gradient(circle at 100% 0,rgba(91,151,245,.14),transparent 42%),linear-gradient(145deg,#f8fbff,#edf4ff);
+ box-shadow:0 7px 18px rgba(34,78,143,.06);
+ overflow:hidden;
+}
+.order-review-clock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.order-review-clock-title{font-size:12px;font-weight:900;letter-spacing:.025em;color:#29466f}
+.order-review-estimate{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid #d5e4fb;border-radius:30px;background:#fff;color:#3165ad;font-size:10px;font-weight:850;white-space:nowrap}
+.order-review-clock-main{display:flex;align-items:center;gap:11px;margin:12px 0 10px}
+.order-review-clock-icon{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border:1px solid #d0e1fa;border-radius:14px;background:linear-gradient(145deg,#e4efff,#d6e6ff);color:#2868df;font-size:27px;line-height:1}
+.order-review-clock-main>div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.order-review-clock-main strong{color:#193f79;font-size:29px;line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.order-review-clock-main small{color:#73839b;font-size:9px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.order-review-live{display:inline-flex;align-items:center;gap:5px;margin-left:auto;color:#397b61;font-size:9px;font-weight:850;white-space:nowrap}
+.order-review-live i{width:7px;height:7px;border-radius:50%;background:#35a66d;box-shadow:0 0 0 4px rgba(53,166,109,.12)}
+.order-review-track{height:7px;width:100%;border-radius:30px;background:#dce7f7;overflow:hidden}
+.order-review-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#62a5f8,#2868df);transition:width .8s ease}
+.order-review-guidance{margin:10px 0 0;color:#657892;font-size:11px;line-height:1.5}
+.order-review-clock.is-overdue{border-color:#ecd4b6;background:radial-gradient(circle at 100% 0,rgba(226,170,88,.14),transparent 42%),linear-gradient(145deg,#fffaf3,#fff5e8)}
+.order-review-clock.is-overdue .order-review-estimate{border-color:#efd9b9;color:#925b20;background:#fff}
+.order-review-clock.is-overdue .order-review-clock-icon{border-color:#efddc2;background:#fff1dc;color:#a56b2c}
+.order-review-clock.is-overdue .order-review-clock-main strong{color:#8d5b27}
+.order-review-clock.is-overdue .order-review-live{color:#9a6a34}
+.order-review-clock.is-overdue .order-review-live i{background:#d69a49;box-shadow:0 0 0 4px rgba(214,154,73,.12)}
+.order-review-clock.is-overdue .order-review-track span{background:linear-gradient(90deg,#dca85d,#bd7b35)}
+@media(max-width:390px){
+ .order-review-clock{padding:13px;border-radius:15px}
+ .order-review-clock-main strong{font-size:27px}
+ .order-review-clock-live{font-size:8px}
+ .order-review-clock-main{gap:9px}
+}
+@media(prefers-reduced-motion:reduce){.order-review-track span{transition:none!important}}
 </style>
 
 </head>
@@ -2998,6 +3038,49 @@ async function cancelUnsubmittedOrder(orderId,orderCode,button){
  }
 }
 
+let castleOrderReviewClockInterval=null;
+function startOrderReviewClock(container){
+ if(castleOrderReviewClockInterval!==null){
+  window.clearInterval(castleOrderReviewClockInterval);
+  castleOrderReviewClockInterval=null;
+ }
+ if(!container)return;
+ const update=()=>{
+  const clocks=container.querySelectorAll("[data-order-review-clock]");
+  if(!clocks.length){
+   if(castleOrderReviewClockInterval!==null)window.clearInterval(castleOrderReviewClockInterval);
+   castleOrderReviewClockInterval=null;
+   return;
+  }
+  const now=Date.now();
+  clocks.forEach(clock=>{
+   const startedAt=Number(clock.dataset.reviewStart);
+   if(!Number.isFinite(startedAt)||startedAt<=0)return;
+   const elapsedMs=Math.max(0,now-startedAt);
+   const totalSeconds=Math.floor(elapsedMs/1000);
+   const minutes=Math.floor(totalSeconds/60);
+   const seconds=totalSeconds%60;
+   const elapsed=clock.querySelector("[data-review-elapsed]");
+   if(elapsed)elapsed.textContent=String(minutes).padStart(2,"0")+":"+String(seconds).padStart(2,"0");
+   const progress=clock.querySelector("[data-review-progress]");
+   if(progress)progress.style.width=Math.min(100,(elapsedMs/(30*60*1000))*100)+"%";
+   const guidance=clock.querySelector("[data-review-guidance]");
+   const estimate=clock.querySelector(".order-review-estimate");
+   if(minutes>=30){
+    clock.classList.add("is-overdue");
+    if(estimate)estimate.textContent="Más de 30 minutos";
+    if(guidance)guidance.textContent="Tu pedido está tardando más de lo habitual. Escríbenos desde Mensajes para que lo revisemos. No realices otro pago ni crees otro pedido.";
+   }else{
+    clock.classList.remove("is-overdue");
+    if(estimate)estimate.textContent="Estimado: 1–30 min";
+    if(guidance)guidance.textContent="Contamos desde que recibimos tu comprobante. La estimación es orientativa; el pago se confirma al verificar su recepción.";
+   }
+  });
+ };
+ update();
+ castleOrderReviewClockInterval=window.setInterval(update,1000);
+}
+
 async function loadMyOrders(){
  if(!currentUser)return;
  const {data,error}=await db.from("orders").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
@@ -3069,6 +3152,7 @@ async function loadMyOrders(){
  orderList?.querySelectorAll("[data-retry-order-proof]").forEach(button=>{
   button.addEventListener("click",()=>retryMissingOrderProof(button.dataset.orderId,button));
  });
+ startOrderReviewClock(orderList);
 }
 
 
@@ -3455,6 +3539,17 @@ function customerOrderProgress(order,statusEvents=[]){
   if(value==="completed")return statusEventDate(value);
   return null;
  };
+ const reviewStartValue=statusEventDate("payment_review")||orderData.created_at||null;
+ const reviewStartMs=reviewStartValue?new Date(reviewStartValue).getTime():NaN;
+ const reviewClock=status==="payment_review"&&Number.isFinite(reviewStartMs)&&reviewStartMs>0
+  ?'<section class="order-review-clock" data-order-review-clock data-review-start="'+reviewStartMs+'" aria-label="Tiempo de revisión del pedido">'+
+    '<div class="order-review-clock-head"><span class="order-review-clock-title">Tiempo en revisión</span><span class="order-review-estimate">Estimado: 1–30 min</span></div>'+
+    '<div class="order-review-clock-main"><span class="order-review-clock-icon" aria-hidden="true">◷</span><div><strong data-review-elapsed>00:00</strong><small>minutos : segundos</small></div><span class="order-review-live"><i></i> En seguimiento</span></div>'+
+    '<div class="order-review-track" aria-hidden="true"><span data-review-progress></span></div>'+
+    '<p class="order-review-guidance" data-review-guidance>Contamos desde que recibimos tu comprobante. La estimación es orientativa; el pago se confirma al verificar su recepción.</p>'+
+   '</section>'
+  :"";
+
  const exceptions={
   rejected:'<div class="order-progress-exception is-error"><strong>No se pudo aceptar el pedido</strong><p class="track-note">No realices otro pago por esta misma compra. Revisa «Mensajes» y conserva el folio y el comprobante para solicitar una revisión.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
   failed:'<div class="order-progress-exception is-error"><strong>La recarga no se completó</strong><p class="track-note">No vuelvas a pagar ni crees un pedido duplicado. La incidencia debe revisarse con el folio y el comprobante. Revisa «Mensajes» o consulta cómo contactar con soporte.</p><button type="button" class="text-link" onclick="showView(\'faq\')">Cómo pedir ayuda</button></div>',
@@ -3485,7 +3580,7 @@ function customerOrderProgress(order,statusEvents=[]){
   processing:"El pago está confirmado. La recarga está en curso y esperamos la confirmación de entrega. No necesitas crear otro pedido.",
   completed:"La entrega fue confirmada. Comprueba que los diamantes o el producto aparezcan en la cuenta indicada."
  };
- return '<div class="order-progress-wrap"><ol class="order-progress" aria-label="Progreso del pedido">'+progress+'</ol><p class="track-note">'+(notes[status]||"Estamos revisando el estado de tu pedido.")+'</p></div>';
+ return '<div class="order-progress-wrap"><ol class="order-progress" aria-label="Progreso del pedido">'+progress+'</ol>'+reviewClock+'<p class="track-note">'+(notes[status]||"Estamos revisando el estado de tu pedido.")+'</p></div>';
 }
 function statusText(value){
  const status=orderStatuses.find(s=>s.value===value);
@@ -4064,6 +4159,13 @@ async function loadAllOrders(options={}){
  if(error){if(!options.silent)container.textContent="Error: "+error.message;return;}
  notifyNewPaymentReviews(data||[]);
  const accountUserIds=[...new Set((data||[]).map(order=>String(order.user_id||"")).filter(Boolean))];
+ const accountRoleByUser=new Map();
+ let accountRoleLookupError=null;
+ if(accountUserIds.length){
+  const roleResult=await db.from("profiles").select("id,role").in("id",accountUserIds);
+  if(roleResult.error)accountRoleLookupError=roleResult.error.message||"No se pudieron identificar los perfiles.";
+  else (roleResult.data||[]).forEach(profile=>accountRoleByUser.set(String(profile.id),String(profile.role||"")));
+ }
  const securityByUser=new Map();
  let securitySummaryError=null;
  if(accountUserIds.length){
@@ -4074,15 +4176,22 @@ async function loadAllOrders(options={}){
  if(!(data||[]).length){container.textContent="No hay pedidos todavía.";return;}
  const cards=(await Promise.all((data||[]).map(async(o,i)=>{
   const selectId="order-status-"+i;
-  const accountSecurity=securityByUser.get(String(o.user_id))||null;
-  const accountSecurityHtml=accountSecurity
-   ?'<div class="admin-account-security"><strong>Seguridad de la cuenta:</strong> '+(accountSecurity.is_blocked===true?'RESTRINGIDA':'Activa')+
-    ' · Advertencias registradas: <strong data-warning-count>'+Number(accountSecurity.warning_count||0)+'</strong>'+
-    ' · Operaciones en revisión: <strong>'+Number(accountSecurity.open_review_count||0)+'/4</strong>'+
-    (accountSecurity.block_reason?'<p class="track-note">Motivo de restricción: '+clean(accountSecurity.block_reason)+'</p>':"")+
-    '</div>'
-   :'<p class="track-note">No se pudo cargar el estado antifraude de esta cuenta. '+clean(securitySummaryError||"Actualiza el panel para volver a comprobarlo.")+'</p>';
-  const accountSecurityAction=accountSecurity
+  const accountRole=accountRoleByUser.get(String(o.user_id))||"";
+  const isCustomerAccount=accountRole==="customer";
+  const isAdminAccount=accountRole==="admin";
+  const accountSecurity=isCustomerAccount?(securityByUser.get(String(o.user_id))||null):null;
+  const accountSecurityHtml=isAdminAccount
+   ?'<div class="admin-account-security is-admin-account"><strong>Cuenta administrativa:</strong> pedido de prueba asociado a un perfil administrador. No se aplican advertencias ni bloqueos de clientes.</div>'
+   :isCustomerAccount&&accountSecurity
+    ?'<div class="admin-account-security"><strong>Seguridad de la cuenta:</strong> '+(accountSecurity.is_blocked===true?'RESTRINGIDA':'Activa')+
+     ' · Advertencias registradas: <strong data-warning-count>'+Number(accountSecurity.warning_count||0)+'</strong>'+
+     ' · Operaciones en revisión: <strong>'+Number(accountSecurity.open_review_count||0)+'/4</strong>'+
+     (accountSecurity.block_reason?'<p class="track-note">Motivo de restricción: '+clean(accountSecurity.block_reason)+'</p>':"")+
+     '</div>'
+    :isCustomerAccount
+     ?'<p class="track-note">No se pudo cargar el estado antifraude de esta cuenta. Los controles de bloqueo y advertencia permanecen ocultos hasta verificar el perfil.</p>'
+     :'<p class="track-note">No se pudo confirmar el tipo de cuenta. Por seguridad, los controles antifraude no están disponibles para este pedido.</p>';
+  const accountSecurityAction=isCustomerAccount&&accountSecurity
    ?'<div class="order-actions"><button type="button" class="secondary-btn" data-toggle-customer-block data-user-id="'+clean(o.user_id)+'" data-account-blocked="'+(accountSecurity.is_blocked===true?'true':'false')+'">'+(accountSecurity.is_blocked===true?'Desbloquear cuenta':'Bloquear cuenta')+'</button><small>La restricción se aplica a todas las compras nuevas de esta cuenta.</small></div>'
    :"";
   const allowed=o.status==="payment_review"?["processing","rejected"]:o.status==="pending"?["rejected"]:[];
@@ -4158,7 +4267,10 @@ async function loadAllOrders(options={}){
     ?'<div class="order-actions"><button type="button" data-provider-refresh data-order-id="'+clean(o.id)+'">Actualizar estado en Central One</button></div>'
     :"";
   const noticeId="order-notice-"+String(o.id);
-  const noticeComposer='<details class="admin-notice-compose"><summary>Enviar advertencia privada al cliente</summary><label for="'+noticeId+'">Mensaje de advertencia (3 a 1000 caracteres)</label><textarea id="'+noticeId+'" maxlength="1000" rows="3" placeholder="Te pedimos que detengas el envío de pedidos o comprobantes falsos. Si continúa, podremos restringir tu cuenta."></textarea><button type="button" class="secondary-btn" data-send-user-notice data-order-id="'+clean(o.id)+'" data-user-id="'+clean(o.user_id)+'" data-message-input="'+noticeId+'" data-feedback-id="'+noticeId+'-feedback">Enviar y registrar advertencia</button><p id="'+noticeId+'-feedback" class="msg" role="status"></p></details>';
+  const noticeComposer=isCustomerAccount
+   ?'<details class="admin-notice-compose"><summary>Enviar advertencia privada al cliente</summary><label for="'+noticeId+'">Mensaje de advertencia (3 a 1000 caracteres)</label><textarea id="'+noticeId+'" maxlength="1000" rows="3" placeholder="Te pedimos que detengas el envío de pedidos o comprobantes falsos. Si continúa, podremos restringir tu cuenta."></textarea><button type="button" class="secondary-btn" data-send-user-notice data-order-id="'+clean(o.id)+'" data-user-id="'+clean(o.user_id)+'" data-message-input="'+noticeId+'" data-feedback-id="'+noticeId+'-feedback">Enviar y registrar advertencia</button><p id="'+noticeId+'-feedback" class="msg" role="status"></p></details>'
+   :"";
+
   return '<article class="order-card" data-order-status="'+clean(o.status)+'" data-provider-status="'+clean(providerStatus)+'" data-provider-id="'+clean(o.central_one_order_id||"")+'">'+
    '<div class="admin-order-header"><strong class="admin-order-code">'+clean(o.order_code)+'</strong><span class="status">'+statusText(o.status)+'</span></div>'+
    accountSecurityHtml+accountSecurityAction+
