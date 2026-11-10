@@ -2236,6 +2236,7 @@ function mobileLegendsCatalogCategory(product){
  return null;
 }
 function isStorefrontVisibleProduct(product){
+ if(product?.storefront_visible!==true)return false;
  return !fold(product?.game||"").includes("mobile legends")||mobileLegendsCatalogCategory(product)!==null;
 }
 const mobileLegendsDiamondImages={
@@ -2287,7 +2288,7 @@ function mobileLegendsDisplayName(product){
 }
 function gameProductsFor(name){
  const item=gameFor(name);if(!item)return [];
- if(fold(item.name)==="mobile legends: bang bang")return sortPackages(products.filter(p=>mobileLegendsCatalogCategory(p)!==null));
+ if(fold(item.name)==="mobile legends: bang bang")return sortPackages(products.filter(p=>p.storefront_visible===true&&mobileLegendsCatalogCategory(p)!==null));
  return sortPackages(products.filter(p=>{if(!isGlobalMobileLegendsProduct(p)||!isStorefrontVisibleProduct(p))return false;if(isGiftCard(p)||isLevelUpPackage(p))return false;const label=fold(String(p.game||"")+" "+String(p.name||""));return (item.match||[fold(item.name)]).some(word=>label.includes(fold(word))) }));
 }
 function priceForMethod(p,method){return method==="Transferencia CUP"?p.price_transfer:method==="Saldo móvil"?p.price_mobile:(method==="USDT"||method==="Saldo de Tienda El Castillo")?p.price_usdt:0}
@@ -2915,6 +2916,11 @@ function openCheckout(productId,preferredMethod){
   console.error("openCheckout: product not found",productId);
   return false;
  }
+ if(!isStorefrontVisibleProduct(p)){
+  const message="Este paquete no está publicado actualmente en el catálogo de Tienda El Castillo.";
+  const status=$("gamePlansSubtitle");if(status)status.textContent=message;
+  return false;
+ }
  if(!isGlobalMobileLegendsProduct(p)){
   const message="Mobile Legends solo está disponible en la región GLOBAL. No se puede abrir un paquete de otra región.";
   const status=$("gamePlansSubtitle");if(status)status.textContent=message;
@@ -3147,7 +3153,7 @@ async function togglePaymentMethod(id,active){
 }
 async function loadProducts(){
  try{
-  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_target_schema,provider_requires_target,provider_status,provider_in_stock").eq("active",true).order("name");
+  const {data,error}=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,storefront_visible,provider_product_id,provider_region,provider_validation_supported,provider_image_url,provider_target_fields,provider_target_schema,provider_requires_target,provider_status,provider_in_stock").eq("active",true).eq("storefront_visible",true).order("name");
   if(error){
    products=[];
    const message="No se pudo cargar el catálogo: "+error.message;
@@ -3922,11 +3928,14 @@ async function reviewWalletDeposit(id,approve){
 
 async function loadAdminProducts(){
  if(currentProfile?.role!=="admin")return;
- const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});
+ const result=await db.from("products").select("id,game,name,description,amount,price_transfer,price_mobile,price_usdt,active,storefront_visible,provider_product_id,provider_region,provider_validation_supported,provider_in_stock").order("created_at",{ascending:false});
  const list=$("adminProducts");if(!list)return;
  if(result.error){list.textContent="No se pudo cargar el catálogo de administración: "+result.error.message;return}
  const rows=result.data||[];productsForAdmin=rows;
- list.innerHTML=rows.length?rows.map(p=>"<article class=\"order-card\"><div class=\"order-code\">"+(p.active?"Activo":"Desactivado")+"</div><strong>"+clean(p.game)+" · "+clean(p.name)+"</strong><p class=\"order-detail\">Transferencia: "+money(p.price_transfer)+" CUP · Saldo: "+money(p.price_mobile)+" · USDT: "+money(p.price_usdt)+"</p><button class=\"secondary-btn\" type=\"button\" onclick=\"editProduct(\u0027"+clean(p.id)+"\u0027)\">Editar</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductActive(\u0027"+clean(p.id)+"\u0027,"+(!p.active)+")\">"+(p.active?"Desactivar":"Activar")+"</button></article>").join(""):"<p class=\"empty-note\">Todavía no hay productos cargados.</p>";
+ list.innerHTML=rows.length?rows.map(p=>{
+  const status=(p.active?"Activo":"Desactivado")+" · "+(p.storefront_visible?"Publicado en tienda":"Oculto de tienda");
+  return "<article class=\"order-card\"><div class=\"order-code\">"+status+"</div><strong>"+clean(p.game)+" · "+clean(p.name)+"</strong><p class=\"order-detail\">Transferencia: "+money(p.price_transfer)+" CUP · Saldo: "+money(p.price_mobile)+" · USDT: "+money(p.price_usdt)+"</p><button class=\"secondary-btn\" type=\"button\" onclick=\"editProduct('"+clean(p.id)+"')\">Editar</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductActive('"+clean(p.id)+"',"+(!p.active)+")\">"+(p.active?"Desactivar":"Activar")+"</button> <button class=\"secondary-btn\" type=\"button\" onclick=\"toggleProductPublished('"+clean(p.id)+"',"+(!p.storefront_visible)+")\">"+(p.storefront_visible?"Ocultar del catálogo":"Publicar en catálogo")+"</button></article>";
+ }).join(""):"<p class=\"empty-note\">Todavía no hay productos cargados.</p>";
 }
 function editProduct(id){
  if(currentProfile?.role!=="admin")return;
@@ -3942,6 +3951,13 @@ async function toggleProductActive(id,active){
  const result=await db.from("products").update({active}).eq("id",id);
  if(result.error){$("adminmsg").textContent="No se pudo cambiar el estado: "+result.error.message;return}
  $("adminmsg").textContent=active?"Producto activado.":"Producto desactivado.";
+ await loadProducts();
+}
+async function toggleProductPublished(id,visible){
+ if(currentProfile?.role!=="admin")return;
+ const result=await db.from("products").update({storefront_visible:Boolean(visible)}).eq("id",id);
+ if(result.error){$("adminmsg").textContent="No se pudo cambiar la publicación: "+result.error.message;return}
+ $("adminmsg").textContent=visible?"Paquete publicado en la tienda.":"Paquete ocultado del catálogo.";
  await loadProducts();
 }
 function cancelProductEdit(){
