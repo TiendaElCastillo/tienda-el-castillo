@@ -1,10 +1,12 @@
-const CACHE_NAME = "el-castillo-shell-v114";
+const CACHE_NAME = "el-castillo-shell-v115";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./castle-icon.svg",
   "./recargar-free-fire-cuba.html",
+  "./recargas-juegos-cuba.html",
+  "./recargar-mobile-legends-cuba.html",
   "./assets/game-art.svg?v=5",
   "./assets/game-art.svg?v=6",
   "./assets/free-fire-hero.svg",
