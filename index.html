@@ -1551,6 +1551,33 @@ body{min-width:0}
 }
 @media(prefers-reduced-motion:reduce){#gameDetailPlans .game-plan-card{transition:none!important}}
 </style>
+<style id="castle-share-button-visibility-v1">
+/* Botón de compartir: contraste alto y área táctil cómoda */
+#homeView .castle-home-hero .hero-buttons .castle-share-link{
+ display:inline-flex!important;align-items:center;justify-content:center;gap:8px;
+ min-height:46px!important;padding:11px 17px!important;
+ border:1px solid rgba(232,225,255,.8)!important;border-radius:13px!important;
+ background:linear-gradient(135deg,#a99aff 0%,#7966ed 52%,#5d62d8 100%)!important;
+ color:#fff!important;font-size:12px!important;font-weight:900!important;
+ line-height:1.2;text-align:center;text-decoration:none!important;
+ box-shadow:0 8px 20px rgba(8,14,48,.28),inset 0 1px rgba(255,255,255,.32);
+ text-shadow:0 1px 2px rgba(28,20,80,.25)
+}
+#homeView .castle-home-hero .hero-buttons .castle-share-link:hover{
+ background:linear-gradient(135deg,#b9adff 0%,#8a7bf5 52%,#6e76eb 100%)!important;
+ border-color:#fff!important;transform:translateY(-1px)
+}
+#homeView .castle-home-hero .hero-buttons .castle-share-link:focus-visible{
+ outline:3px solid #fff!important;outline-offset:3px
+}
+@media(max-width:760px){
+ #homeView .castle-home-hero .hero-buttons .castle-share-link{
+  grid-column:1/-1!important;justify-self:stretch;align-self:stretch;
+  width:100%;min-height:47px!important;padding:12px 16px!important;
+  border-radius:13px!important;font-size:12px!important;letter-spacing:.01em
+ }
+}
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
