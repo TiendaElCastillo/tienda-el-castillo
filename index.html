@@ -857,6 +857,84 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
  #searchProducts{grid-template-columns:1fr!important}
 }
 </style>
+
+<style id="castle-visual-polish-v2">
+/* Microdetalles visuales: elegancia, claridad y carga ligera */
+:root{
+ --castle-card-shadow:0 8px 24px rgba(19,47,91,.065);
+ --castle-card-shadow-hover:0 15px 32px rgba(19,47,91,.115);
+ --castle-soft-blue:#edf4ff;
+ --castle-soft-border:#e4ebf5;
+}
+.section-head{position:relative;align-items:center;padding-bottom:10px;margin-bottom:15px;border-bottom:1px solid #eaf0f7}
+.section-head h2{display:flex;align-items:center;gap:9px;line-height:1.22}
+.section-head h2:before{content:"";display:block;width:4px;height:21px;flex:0 0 4px;border-radius:8px;background:linear-gradient(180deg,#5a9bfa,#235fc9);box-shadow:0 3px 8px rgba(36,104,242,.16)}
+.section-head p{line-height:1.5}
+.catalog-product,.gift-tile,.game-tile,.panel,.order-card{box-shadow:var(--castle-card-shadow)}
+.catalog-product,.gift-tile,.game-tile{border-color:var(--castle-soft-border)}
+.catalog-product,.gift-tile,.game-tile,.primary-btn,.secondary-btn,.header-btn,.text-link,.nav-item,.checkout-stepper li{
+ transition:transform .18s ease,box-shadow .2s ease,border-color .2s ease,background-color .2s ease,color .2s ease;
+}
+@media(hover:hover){
+ .catalog-product:hover,.gift-tile:hover{transform:translateY(-3px);box-shadow:var(--castle-card-shadow-hover);border-color:#cbdaf0}
+ .primary-btn:hover{filter:brightness(1.045);box-shadow:0 9px 20px rgba(36,104,242,.24)}
+ .secondary-btn:hover,.header-btn:hover{transform:translateY(-1px);border-color:#c4d7f2}
+ .text-link:hover{text-decoration:underline;text-underline-offset:3px}
+}
+.primary-btn{background:linear-gradient(135deg,#397ef0 0%,#1d5dd5 100%);box-shadow:0 6px 15px rgba(36,104,242,.17)}
+.secondary-btn{border:1px solid #e0e9f7;background:linear-gradient(180deg,#f5f8ff,#eaf1fd)}
+.product-badge,.tile-status,.provider-region-tag,.promo-live,.payment-pill{letter-spacing:.025em}
+.product-badge{padding:5px 9px;border:1px solid #d7eee2;background:linear-gradient(180deg,#f1fbf5,#e7f6ed);color:#23734d;box-shadow:inset 0 1px rgba(255,255,255,.8)}
+.provider-region-tag{border:1px solid #dce8fb;background:linear-gradient(180deg,#f4f8ff,#eaf2ff);color:#315f9e}
+.tile-status{padding:5px 9px;border:1px solid #deebff;background:linear-gradient(180deg,#f4f8ff,#eaf2ff)}
+.price-option{background:linear-gradient(180deg,#fbfcff,#f2f6fc);border-color:#e5ecf5;min-height:54px;display:flex;flex-direction:column;justify-content:center}
+.price-option small{font-size:9px;letter-spacing:.035em}
+.price-option strong{font-size:12px;font-variant-numeric:tabular-nums;color:#1d4f9d}
+.checkout-stepper{gap:9px}
+.checkout-stepper li{border-radius:14px;box-shadow:0 3px 10px rgba(22,54,103,.035)}
+.checkout-stepper li.done{box-shadow:inset 0 0 0 1px rgba(44,139,94,.035)}
+.nav-item{position:relative;min-height:54px}
+.nav-item.active{background:linear-gradient(180deg,#f0f5ff,#e7f0ff);box-shadow:inset 0 0 0 1px #dce8fb}
+.nav-item.active:after{content:"";position:absolute;top:2px;left:50%;width:18px;height:3px;border-radius:8px;background:#3478e8;transform:translateX(-50%)}
+.site-footer{padding-top:24px}
+.footer-brand{padding:3px 0 14px}
+.footer-columns{gap:22px;padding:17px 0}
+.footer-columns>div{gap:9px}
+.footer-columns a{transition:color .15s ease}
+.footer-columns a:hover{color:#245fc9}
+#searchProducts>.empty-note,#homeFeaturedProducts>.empty-note,#giftProducts>.empty-note{
+ grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;
+ min-height:86px;margin:0;padding:20px;border:1px dashed #d2dfef;border-radius:16px;
+ background:linear-gradient(135deg,#fbfdff,#f2f7ff);color:#647895;text-align:center;line-height:1.55;
+}
+#searchProducts>.empty-note:before,#homeFeaturedProducts>.empty-note:before,#giftProducts>.empty-note:before{
+ content:"✦";display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;
+ border-radius:10px;background:#e7f0ff;color:#2e6bd0;font-size:15px;
+}
+.empty-note{line-height:1.6}
+#castlePaymentAlertToast{
+ border:1px solid rgba(255,255,255,.2)!important;
+ border-radius:17px!important;
+ background:linear-gradient(135deg,#112b50,#1e559f)!important;
+ box-shadow:0 18px 42px rgba(8,27,57,.28)!important;
+ backdrop-filter:blur(12px);
+}
+#castlePaymentAlertToast:before{content:"♛";display:inline-grid;place-items:center;width:25px;height:25px;margin-right:9px;border-radius:8px;background:rgba(255,255,255,.14);color:#f1d28d;vertical-align:middle}
+.promo-strip{box-shadow:0 4px 13px rgba(26,78,153,.035)}
+.benefit{box-shadow:0 4px 13px rgba(20,45,90,.035);border-color:#e8edf5}
+.benefit-icon{box-shadow:inset 0 1px rgba(255,255,255,.8)}
+@media(max-width:520px){
+ .section-head{padding-bottom:9px;margin-bottom:12px}
+ .section-head h2:before{height:18px}
+ .price-option{padding:8px 5px;min-height:52px}
+ .price-option strong{font-size:11px}
+ .footer-columns{gap:14px}
+ .nav-item{border-radius:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ .catalog-product,.gift-tile,.game-tile,.primary-btn,.secondary-btn,.header-btn,.text-link,.nav-item,.checkout-stepper li,.footer-columns a{transition:none!important}
+}
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
