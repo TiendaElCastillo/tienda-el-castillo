@@ -173,3 +173,30 @@ Mapear el recorrido completo:
 - El workflow de Pages asociado a `9d81f00694adf109911a09ef6538a4ce0306dbb5` terminó con éxito en build y deploy.
 - El commit `ad2c907504d8632801fe429fcc5f2869952f1604` amplía el contador por etapa; su workflow se debe revisar al retomar para confirmar el último despliegue.
 - La inspección visual directa desde el Redmi sigue pendiente. Tras actualizar la página, pedir una captura de “Mis pedidos” en revisión/recarga y otra del panel admin en un pedido de un cliente real.
+
+
+## Auditoría de seguridad de envíos a Central One — 10 de noviembre de 2026
+Objetivo: comprobar que una compra de prueba, un pedido rechazado o una solicitud no autorizada no pueda consumir saldo del proveedor.
+
+### Resultado
+- No se encontró un envío automático desde el frontend: la única llamada `requestCentralOneOrder("submit", orderId)` está dentro de `authorizeCentralOneOrder()`, que exige perfil admin y una confirmación explícita del navegador titulada “AUTORIZAR RECARGA REAL”.
+- La confirmación explica que se creará una orden real y se usará saldo prepago. También exige verificar pago, paquete, región e ID.
+- La Edge Function `central-one-order` valida el token contra Supabase Auth y comprueba el rol `admin` en `profiles` antes de aceptar acciones.
+- La función SQL `claim_central_one_order` exige estado local `processing`; para pagos directos exige comprobante, fecha de confirmación y que el administrador autenticado sea quien confirmó el pago. Para billetera exige pago registrado.
+- También exige validación del jugador vigente, producto/proveedor activo y stock, región coincidente y esquema de destino admitido.
+- La función de claim solo puede ejecutarse por `service_role`; se confirmó que `anon` y `authenticated` no tienen permiso EXECUTE. La finalización también queda restringida a `service_role`.
+- La Edge Function usa una clave de idempotencia estable por pedido y envía `Idempotency-Key` al proveedor; los reintentos no crean deliberadamente una nueva clave.
+- Los errores de preflight de catálogo, margen o saldo detienen la solicitud antes del POST y quedan marcados como bloqueados localmente.
+- La acción de refrescar consulta el estado del pedido existente; no es el flujo de creación.
+
+### Estado real de los pedidos consultados
+- Pedido de prueba `EC-EF361F02F9`: `rejected`, `central_one_status=not_submitted`, sin ID de orden Central One, sin request ID y sin pago confirmado. No hay indicio de que se haya enviado o consumido saldo.
+- Otros pedidos recientes consultados también no muestran órdenes del proveedor registradas.
+- Recuento actual en base de datos al auditar: 0 pedidos esperando autorización, 0 órdenes Central One creadas y 0 envíos ambiguos (`submitting`/`unknown`).
+
+### Conclusión y riesgo residual
+- El rechazo de un pedido de prueba lo deja fuera de la condición `processing`; por tanto, la función de claim lo rechaza y no llama a Central One.
+- Un pedido solo puede usar saldo del proveedor después de que un administrador pulse el botón de autorización real y acepte la confirmación explícita, además de cumplir las validaciones de pago y jugador.
+- Riesgo residual: el sistema no distingue semánticamente “pedido de prueba” de “pedido real”. Si un administrador confirma manualmente como pagado un pedido de prueba y luego autoriza conscientemente la recarga, el backend lo trataría como real. Se recomienda valorar un interruptor general de “Bloquear envíos reales a Central One” para las sesiones de pruebas; debe estar activado por defecto cuando se quiera probar y solo el administrador puede desactivarlo antes de procesar pedidos reales.
+- No se realizaron llamadas POST a Central One, no se crearon pedidos de proveedor, no se alteró saldo, no se cambiaron datos ni estados de pedidos y no se modificaron migraciones durante esta auditoría.
+- Supabase Security Advisor: un aviso pendiente de nivel WARN: “Leaked Password Protection Disabled”. Activar protección contra contraseñas comprometidas desde Auth > Password Security cuando se continúe la configuración.
