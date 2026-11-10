@@ -848,6 +848,15 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
 }
 </style>
 
+<style id="search-grid-priority-fix">
+@media(max-width:760px){
+ #homeFeaturedProducts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:560px){
+ #homeFeaturedProducts{grid-template-columns:1fr!important}
+ #searchProducts{grid-template-columns:1fr!important}
+}
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -1811,7 +1820,7 @@ const productSearchSynonyms={
  xbox:["xbox"],apple:["apple"],global:["global"],latam:["latam"]
 };
 function normalizeProductSearch(value){
- return fold(String(value||"")).replace(/[^a-z0-9]+/g," ").trim().replace(/\\s+/g," ");
+ return fold(String(value||"")).replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
 }
 function productSearchHaystack(product){
  const game=String(product?.game||"");
