@@ -563,6 +563,54 @@ input,select,textarea{font-size:16px}
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}
 }
 </style>
+<style id="auth-services-preview-and-account-controls">
+/* Vista pública de servicios: solo muestra juegos/categorías, nunca paquetes ni precios. */
+.auth-showcase-layout{grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr)!important;gap:20px!important}
+.auth-showcase{background:radial-gradient(circle at 88% 10%,rgba(93,167,255,.34),transparent 34%),linear-gradient(145deg,#10243e 0%,#17477f 56%,#286ed3 100%)!important}
+.auth-showcase h1{font-size:clamp(29px,3.5vw,43px)!important;line-height:1.06!important}
+.auth-showcase-copy p{max-width:470px!important}
+.auth-showcase-games{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin:22px 0 16px!important}
+.auth-game-card{min-width:0!important;display:flex!important;flex-direction:column!important;border:1px solid rgba(222,238,255,.28)!important;background:rgba(255,255,255,.10)!important}
+.auth-game-art{height:clamp(112px,16vw,172px)!important;flex:0 0 auto!important;background:#142b4c!important}
+.auth-game-art img{object-fit:cover!important;object-position:center 34%!important}
+.auth-game-info{align-items:flex-start!important;gap:7px!important;padding:11px 11px 8px!important;min-height:74px!important}
+.auth-game-info strong{font-size:13px!important;line-height:1.25!important}
+.auth-game-info div>span{font-size:10px!important;line-height:1.4!important}
+.auth-game-info .auth-available{font-size:9px!important;padding:5px 7px!important}
+.auth-game-lock{margin:auto 10px 10px!important;padding:7px 8px!important;border:1px solid rgba(216,233,255,.2)!important;border-radius:10px!important;background:rgba(7,22,43,.3)!important;color:#e5f0ff!important;font-size:9px!important;font-weight:750!important;line-height:1.35!important;text-align:center!important}
+.auth-preview-gate{position:relative;z-index:1;display:grid;gap:4px;margin:0 0 15px!important;padding:12px 14px!important;border:1px solid rgba(190,220,255,.32)!important;border-radius:14px!important;background:rgba(7,24,49,.32)!important}
+.auth-preview-gate strong{color:#fff!important;font-size:13px!important}
+.auth-preview-gate span{color:#dcecff!important;font-size:11px!important;line-height:1.5!important}
+.auth-showcase-benefits{gap:7px!important}
+.auth-showcase-benefits span{font-size:9px!important}
+.auth-login-panel{background:#fff!important;border:1px solid #e0e8f2!important;box-shadow:0 14px 35px rgba(22,48,86,.09)!important}
+.logout-btn{display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;min-height:48px!important;padding:13px 16px!important;border:1px solid #f2c8cb!important;border-radius:13px!important;background:linear-gradient(180deg,#fff6f6,#ffeded)!important;color:#a72c38!important;font-size:14px!important;font-weight:850!important;box-shadow:0 4px 12px rgba(176,45,57,.08)!important}
+.logout-btn span{display:inline-grid!important;place-items:center!important;width:22px!important;height:22px!important;border-radius:7px!important;background:#f9dadd!important;color:#a72c38!important;font-size:17px!important;font-weight:900!important}
+.logout-btn:hover{background:#ffe3e5!important;border-color:#e9aeb3!important;box-shadow:0 7px 16px rgba(176,45,57,.12)!important}
+@media(max-width:760px){
+ .auth-showcase-layout{grid-template-columns:minmax(0,1fr)!important;max-width:560px!important;gap:13px!important}
+ .auth-showcase{padding:22px!important}
+ .auth-showcase h1{font-size:clamp(28px,7vw,36px)!important}
+ .auth-showcase-games{gap:9px!important;margin:15px 0 12px!important}
+ .auth-game-art{height:clamp(105px,31vw,155px)!important}
+ .auth-game-info{display:block!important;padding:9px!important;min-height:88px!important}
+ .auth-game-info .auth-available{display:inline-block!important;margin-top:7px!important}
+ .auth-game-info strong{font-size:12px!important}
+ .auth-game-info div>span{font-size:9px!important}
+ .auth-game-lock{margin:0 8px 8px!important;font-size:8px!important}
+ .auth-preview-gate{padding:10px 12px!important}
+}
+@media(max-width:390px){
+ .auth-showcase{padding:17px!important}
+ .auth-showcase-games{gap:8px!important}
+ .auth-game-art{height:105px!important}
+ .auth-game-info{min-height:94px!important}
+ .auth-game-info strong{font-size:11px!important}
+ .auth-game-info div>span{font-size:8px!important}
+ .auth-game-lock{font-size:7px!important}
+ .logout-btn{min-height:46px!important}
+}
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -572,17 +620,24 @@ input,select,textarea{font-size:16px}
 <section id="auth" class="auth-layout auth-showcase-layout">
  <div class="auth-showcase">
   <div class="auth-showcase-copy">
-   <span class="eyebrow">♛ TIENDA EL CASTILLO</span>
-   <h1>Todo lo que necesitas para jugar</h1>
-   <p>Recargas y diamantes de Free Fire a buenos precios. Compra con confianza y sigue tus pedidos desde tu cuenta.</p>
+   <span class="eyebrow">♛ TIENDA EL CASTILLO · RECARGAS DIGITALES</span>
+   <h1>Recargar tu juego favorito nunca había sido tan fácil y económico.</h1>
+   <p>Diamantes, pases y membresías de Free Fire y Mobile Legends: Bang Bang (Global), con precios competitivos y un proceso sencillo. Descubre nuestros juegos y entra para consultar todos los paquetes y comprar.</p>
   </div>
-  <div class="auth-showcase-games" aria-label="Servicios disponibles">
+  <div class="auth-showcase-games" aria-label="Juegos con servicios disponibles">
    <article class="auth-game-card">
-    <div class="auth-game-art"><img src="./assets/games/free-fire-tienda.webp" alt="Imagen promocional de Free Fire" width="640" height="360" fetchpriority="high"></div>
-    <div class="auth-game-info"><div><strong>Free Fire</strong><span>Diamantes y paquetes de recarga</span></div><span class="auth-available">Disponible</span></div>
+    <div class="auth-game-art"><img src="./assets/games/free-fire-tienda.webp" alt="Arte de Free Fire" width="640" height="360" fetchpriority="high" decoding="async"></div>
+    <div class="auth-game-info"><div><strong>Free Fire</strong><span>Diamantes, pases y membresías</span></div><span class="auth-available">Disponible</span></div>
+    <div class="auth-game-lock">🔒 Paquetes y precios al iniciar sesión</div>
+   </article>
+   <article class="auth-game-card">
+    <div class="auth-game-art"><img src="./assets/games/mobile-legends-bang-bang.webp" alt="Arte de Mobile Legends: Bang Bang" width="640" height="360" loading="eager" decoding="async"></div>
+    <div class="auth-game-info"><div><strong>Mobile Legends: Bang Bang</strong><span>Diamantes, pases y membresías · Global</span></div><span class="auth-available">Disponible</span></div>
+    <div class="auth-game-lock">🔒 Paquetes y precios al iniciar sesión</div>
    </article>
   </div>
-  <div class="auth-showcase-benefits"><span>✓ Pagos en CUP</span><span>✓ Saldo móvil</span><span>✓ Seguimiento de pedidos</span></div>
+  <div class="auth-preview-gate"><strong>Tu próxima recarga está a unos pasos.</strong><span>Inicia sesión o crea tu cuenta gratis para ver el catálogo completo, consultar los precios y realizar tu compra.</span></div>
+  <div class="auth-showcase-benefits"><span>✓ Precios competitivos</span><span>✓ Pagos en CUP y saldo móvil</span><span>✓ Seguimiento de pedidos</span></div>
  </div>
  <div class="auth-panel auth-login-panel">
   <div class="auth-login-heading"><span class="auth-login-kicker">TU CUENTA, TU TIENDA</span><h2 id="authTitle">Accede a tu cuenta</h2><p class="subtle" id="authSubtitle">Inicia sesión para acceder a todos los servicios, consultar tus pedidos y gestionar tu cuenta.</p></div>
@@ -614,7 +669,7 @@ input,select,textarea{font-size:16px}
  <div class="promo-strip"><span><span class="promo-crown" aria-hidden="true">♛</span> <strong>TIENDA EL CASTILLO</strong> · Tu tienda de recargas</span><span class="promo-live"><i></i> Catálogo Free Fire</span></div>
  <div class="top-search"><div class="search-wrap"><input class="search-input" id="productSearch" type="search" placeholder="Buscar un juego o una tarjeta..." onfocus="showView('search')" oninput="renderSearchProducts()"></div></div>
  <section id="homeView" class="store-view">
-  <div class="hero"><div class="hero-copy"><span class="hero-eyebrow"><span aria-hidden="true">✦</span> RECARGAS DIGITALES · CUBA</span><h1>Tu próxima partida empieza aquí.</h1><p>Elige tus diamantes, pases o tarjetas de Free Fire. Prepara tu pedido por ID y consulta su progreso desde tu cuenta.</p><div class="hero-buttons"><button class="primary-btn" type="button" onclick="showView('games')">Ver paquetes <span aria-hidden="true">→</span></button><button class="secondary-btn" type="button" onclick="scrollToHowItWorks()">Cómo funciona</button><button class="secondary-btn" type="button" onclick="shareStore()">Compartir tienda ↗</button></div><p id="shareStoreMsg" class="msg" role="status" aria-live="polite"></p><div class="payment-pills"><span class="payment-pill"><span aria-hidden="true">▣</span> Transferencia CUP</span><span class="payment-pill"><span aria-hidden="true">▰</span> Saldo móvil</span></div></div><div class="hero-visual" role="img" aria-label="Emblema de Tienda El Castillo"><img class="hero-brand-art" src="./assets/castle-logo.webp" alt="" width="256" height="256" loading="eager" decoding="async"></div></div>
+  <div class="hero"><div class="hero-copy"><span class="hero-eyebrow"><span aria-hidden="true">✦</span> RECARGAS DIGITALES · CUBA</span><h1>Recargar tu juego favorito nunca había sido tan fácil y económico.</h1><p>Encuentra diamantes, pases y membresías de Free Fire y Mobile Legends: Bang Bang (Global), con precios competitivos. Elige tu paquete, completa los datos de jugador y sigue tu pedido desde tu cuenta.</p><div class="hero-buttons"><button class="primary-btn" type="button" onclick="showView('games')">Ver paquetes <span aria-hidden="true">→</span></button><button class="secondary-btn" type="button" onclick="scrollToHowItWorks()">Cómo funciona</button><button class="secondary-btn" type="button" onclick="shareStore()">Compartir tienda ↗</button></div><p id="shareStoreMsg" class="msg" role="status" aria-live="polite"></p><div class="payment-pills"><span class="payment-pill"><span aria-hidden="true">▣</span> Transferencia CUP</span><span class="payment-pill"><span aria-hidden="true">▰</span> Saldo móvil</span></div></div><div class="hero-visual" role="img" aria-label="Emblema de Tienda El Castillo"><img class="hero-brand-art" src="./assets/castle-logo.webp" alt="" width="256" height="256" loading="eager" decoding="async"></div></div>
   <div class="benefit-row"><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3 7.8 7.5 9.5 4.5-1.7 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><div><strong>Sin contraseña del juego</strong><span>Solo solicitamos los datos del pedido</span></div></div><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4.5 7.8 7.5 4.4 7.5-4.4M12 12.2V21"/></svg></span><div><strong>Revisión del pago</strong><span>Comprobamos el comprobante recibido</span></div></div><div class="benefit"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><div><strong>Seguimiento del pedido</strong><span>Consulta su estado desde tu cuenta</span></div></div></div>
   <div class="section"><div class="section-head"><div><h2>Free Fire</h2><p>Selecciona el juego para ver todos los paquetes</p></div><button class="text-link" onclick="showView('games')">Ver catálogo →</button></div><div id="homeGames" class="catalog-grid"></div></div><div class="section featured-section" id="homeFeaturedSection"><div class="section-head"><div><h2>Paquetes disponibles</h2><p>Precios y opciones para elegir tu recarga</p></div><button class="text-link" onclick="showView('games')">Ver todos →</button></div><div id="homeFeaturedProducts" class="product-grid"><p class="empty-note">Cargando paquetes...</p></div></div>
   <div class="section"><div class="section-head"><div><h2>Gift Cards</h2><p>Tarjetas digitales de tus plataformas favoritas</p></div><button class="text-link" onclick="showView('giftcards')">Ver todas →</button></div><div id="homeGifts" class="gift-grid"></div></div>
@@ -687,7 +742,7 @@ input,select,textarea{font-size:16px}
  <div class="panel">
   <div class="profile-card"><div class="profile-avatar">EC</div><div><h2 id="welcome">Mi cuenta</h2><p id="profileEmail" class="profile-email"></p></div></div>
   <div class="section"><h3>Tu cuenta</h3><p class="subtle">Administra tu perfil, tus compras y el saldo de tu billetera.</p></div>
-  <button class="secondary-btn block-btn" type="button" onclick="logout()">Cerrar sesión</button>
+  <button class="logout-btn block-btn" type="button" onclick="logout()"><span aria-hidden="true">↪</span> Cerrar sesión</button>
  </div>
  <div class="wallet-shell">
   <section class="wallet-hero" aria-labelledby="walletTitle">
@@ -1580,7 +1635,7 @@ function chooseCheckoutPaymentMethod(name){
 }
 function showView(name){
  if(name==="giftcards")name="games";
- if(["orders","notifications","profile","admin"].includes(name)&&!currentUser){openAccount();$("authmsg").textContent="Inicia sesión para acceder a tu cuenta y consultar tus pedidos.";return}
+ if(!currentUser&&!["faq","privacy","terms"].includes(name)){openAccount();$("authmsg").textContent="Inicia sesión o crea una cuenta gratis para ver los paquetes, consultar los precios y realizar tus compras.";return}
  if(name==="admin"&&currentProfile?.role!=="admin"){$("adminNav")?.classList.add("hidden");$("admin")?.classList.add("hidden");showView("profile");return}
  const views={home:"homeView",games:"gamesView",giftcards:"giftcardsView",search:"searchView",checkout:"checkoutView",orders:"ordersView",notifications:"notificationsView",profile:"profileView",admin:"admin",faq:"faqView",privacy:"privacyView",terms:"termsView"};
  Object.values(views).forEach(id=>$(id)?.classList.add("hidden"));
