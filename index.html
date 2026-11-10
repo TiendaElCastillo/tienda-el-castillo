@@ -917,6 +917,7 @@ input::placeholder,textarea::placeholder{color:#98a5b8;opacity:1}
  animation:castle-loading-shine 1.9s ease-in-out infinite;
 }
 @keyframes castle-loading-shine{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media(prefers-reduced-motion:reduce){#homeFeaturedProducts>.empty-note,#giftProducts>.empty-note{animation:none!important;background-position:center!important}}
 .empty-note{line-height:1.6}
 #castlePaymentAlertToast{
  border:1px solid rgba(255,255,255,.2)!important;
