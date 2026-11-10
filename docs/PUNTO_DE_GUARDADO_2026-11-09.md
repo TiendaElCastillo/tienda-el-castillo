@@ -140,3 +140,36 @@ Mapear el recorrido completo:
 6. Verificar cada corrección y comunicar con precisión qué se comprobó y qué no.
 
 **Nota de verificación:** el HEAD `a7b39256dd8106bd7732bf3551acd9bd92f5d078` fue consultado en GitHub antes de crear este documento. En la última revisión histórica no se pudo confirmar el resultado de GitHub Actions ni una inspección visual real desde un teléfono; por tanto, el despliegue de Pages debe verificarse al retomar.
+
+
+
+## Actualización de continuidad — 10 de noviembre de 2026
+Últimas correcciones publicadas después del punto de guardado original:
+- `78ba859de0a56dde6084593145b71b9c2e68db11` — evita el desplazamiento horizontal de la página en móvil y corrige el arte/las imágenes de las tarjetas de producto.
+- `cdddbebb57dff963e269fe367c3df8d3e93c1387` — añade reloj visible para el tiempo de espera de pedidos y evita controles antifraude inapropiados en el panel.
+- `45881262949507129ea896c83c96f28fc7519068` — corrige el contraste de botones secundarios del panel admin (texto visible sobre fondos claros).
+- `9d81f00694adf109911a09ef6538a4ce0306dbb5` — renueva caché del service worker a `el-castillo-shell-v108` y actualiza CSS admin a `?v=30`.
+- `ad2c907504d8632801fe429fcc5f2869952f1604` — mantiene el reloj durante revisión del pago y durante la etapa de recarga, con cronometraje de cada etapa desde su propio evento.
+
+### Reloj de seguimiento del cliente
+- En `payment_review`: muestra “Tiempo en revisión”, cuenta desde el evento de “Comprobante recibido” (si falta ese evento, usa `created_at`).
+- En `processing`: cambia a “Tiempo de recarga” y cuenta desde el evento “Pago confirmado” (con los campos de confirmación como respaldo).
+- Muestra “Acreditación: 1–30 min” como orientación, no como garantía ni confirmación automática del pago.
+- Cuenta minutos y segundos cada segundo.
+- A partir de 30 minutos muestra aviso de demora y recomienda escribir desde Mensajes; no indica que se haya completado el pago o la entrega.
+- Se oculta al pasar a entrega completada o a un estado final de incidencia.
+- Se verificó mediante compilación de scripts JavaScript y pruebas de la generación del contador para revisión, recarga y entrega completada.
+
+### Ajuste del panel antifraude y causa encontrada
+- El pedido de prueba que se revisó estaba asociado a un perfil cuyo rol es `admin`, no `customer`. Por eso la RPC antifraude rechazó correctamente la advertencia con “No se encontró una cuenta de cliente válida”.
+- El error era de interfaz: el panel mostraba controles de cliente para el perfil de administración.
+- Ahora el panel consulta `profiles(id, role)` y solo presenta las acciones de advertencia/bloqueo cuando el titular tiene rol `customer`.
+- Para cuentas `admin` muestra una nota explicativa y oculta las acciones antifraude de cliente. Si no se puede verificar el rol, también oculta esas acciones por seguridad.
+- No se debilitó la función RPC ni se autorizó bloquear/advertir cuentas administrativas.
+- Se añadieron estilos específicos para que los botones secundarios y desactivados del panel sigan teniendo contraste y se lean sobre fondos claros.
+- No se modificaron tablas, políticas RLS, funciones SQL, precios, catálogo ni estados de pedidos.
+
+### Verificación de publicación
+- El workflow de Pages asociado a `9d81f00694adf109911a09ef6538a4ce0306dbb5` terminó con éxito en build y deploy.
+- El commit `ad2c907504d8632801fe429fcc5f2869952f1604` amplía el contador por etapa; su workflow se debe revisar al retomar para confirmar el último despliegue.
+- La inspección visual directa desde el Redmi sigue pendiente. Tras actualizar la página, pedir una captura de “Mis pedidos” en revisión/recarga y otra del panel admin en un pedido de un cliente real.
