@@ -4,7 +4,7 @@
 .admin-heading h1{font-size:clamp(25px,5vw,34px);letter-spacing:-.045em;line-height:1.05;margin:4px 0}
 .admin-heading p{color:#d8e6ff;margin:4px 0 0;font-size:13px}
 .admin-kicker{font-size:10px;font-weight:900;letter-spacing:.16em;color:#f1d48b}
-.admin-tabs{display:flex;gap:8px;overflow-x:auto;padding:5px 2px 13px;margin:0 0 12px;scrollbar-width:thin;position:sticky;top:68px;z-index:15;background:rgba(244,247,252,.96);backdrop-filter:blur(12px)}
+.admin-tabs{display:flex;flex-wrap:wrap;gap:8px;overflow:visible;padding:5px 2px 13px;margin:0 0 12px;scrollbar-width:none;position:sticky;top:68px;z-index:15;background:rgba(244,247,252,.96);backdrop-filter:blur(12px)}
 .admin-tab{flex:0 0 auto;border:1px solid #e2e9f4;border-radius:13px;padding:11px 15px;background:#fff;color:#53627b;font-size:12px;font-weight:850;white-space:nowrap;box-shadow:0 3px 10px rgba(20,45,90,.035);transition:transform .15s,background .15s}
 .admin-tab:active{transform:scale(.97)}
 .admin-tab.active{background:linear-gradient(135deg,#347cff,#185bdf);border-color:#2468f2;color:#fff;box-shadow:0 8px 18px rgba(36,104,242,.22)}
