@@ -1280,6 +1280,154 @@ body{min-width:0}
 }
 @media(prefers-reduced-motion:reduce){.castle-home-hero *,#homeView .game-tile,#homeView .catalog-product{transition:none!important;animation:none!important}}
 </style>
+
+<style id="castle-mobile-first-checkout-v1">
+/* Acceso: la primera pantalla también debe sentirse como parte de la tienda. */
+#auth.auth-showcase-layout{max-width:980px;gap:18px;align-items:stretch}
+#auth .auth-showcase{
+ background:radial-gradient(circle at 88% 8%,rgba(132,113,255,.3),transparent 34%),linear-gradient(145deg,#0b1b35 0%,#143565 56%,#34428c 100%);
+ border:1px solid rgba(255,255,255,.17);box-shadow:0 18px 42px rgba(17,39,84,.17);
+}
+#auth .auth-showcase .eyebrow{border-color:rgba(193,182,255,.38);background:rgba(117,100,220,.16);color:#e3dfff}
+#auth .auth-showcase h1{font-size:clamp(29px,4.2vw,43px);line-height:1.04;letter-spacing:-.05em}
+#auth .auth-showcase-copy p{max-width:530px;color:#d9e4f7;font-size:13px;line-height:1.6}
+#auth .auth-game-card{min-width:0;border:1px solid rgba(232,239,255,.17);border-radius:16px;background:rgba(255,255,255,.075);overflow:hidden}
+#auth .auth-game-art{height:clamp(108px,15vw,156px);background:#152b4e}
+#auth .auth-game-art img{width:100%;height:100%;object-fit:cover;display:block}
+#auth .auth-game-info{min-width:0;gap:6px;padding:11px 12px}
+#auth .auth-game-info strong{font-size:13px;line-height:1.25}
+#auth .auth-game-info div>span{font-size:10px;line-height:1.35}
+#auth .auth-game-lock{margin:0 11px 10px;font-size:9px}
+#auth .auth-preview-gate{border-color:rgba(222,229,255,.2);background:rgba(255,255,255,.085);color:#e4ebfa;border-radius:15px}
+#auth .auth-preview-gate strong{color:#fff}
+#auth .auth-preview-gate span{color:#d7e3f8}
+#auth .auth-showcase-benefits span{color:#dce6fa}
+#auth .auth-login-panel{border:1px solid #e1e8f2;border-radius:22px;box-shadow:0 12px 32px rgba(22,47,88,.08)}
+#auth .auth-login-kicker{color:#657fc1;font-size:9px;font-weight:900;letter-spacing:.15em}
+#auth .auth-login-panel h2{color:#1b2e4d;letter-spacing:-.04em}
+#auth .auth-login-panel .field input{min-height:48px;border-radius:13px}
+#auth .auth-submit-btn{min-height:49px;border-radius:14px;background:linear-gradient(135deg,#7869ee,#4f67d6);box-shadow:0 8px 18px rgba(86,94,210,.18)}
+#auth .auth-register-link{min-height:44px}
+#auth .auth-login-panel .secondary-btn{min-height:45px;border-radius:13px}
+#gamesView .panel,#giftcardsView .panel,#searchView .panel,#checkoutView>.panel,#ordersView .panel,#notificationsView .panel,#profileView .panel{
+ border-color:#e1e8f2;border-radius:19px;box-shadow:0 7px 22px rgba(21,47,88,.045)
+}
+#gamesView .panel,#searchView .panel,#checkoutView>.panel{padding:18px}
+#gamesView .section-head h2,#checkoutView .section-head h2,#searchView .panel>h2{color:#1b2e4d;font-weight:900;letter-spacing:-.035em}
+#gamesView #gamesTiles .game-tile{border-radius:18px;overflow:hidden}
+#gamesView #gameDetailPanel{padding:17px}
+#gameDetailHero .game-detail-hero{border:1px solid rgba(194,215,250,.22);box-shadow:0 13px 28px rgba(20,48,91,.14)}
+#gameDetailHero .game-detail-copy .detail-eyebrow{color:#c7d7ff}
+#gameDetailHero .game-detail-copy h1{color:#fff}
+#gameDetailHero .game-detail-copy p{color:#e0e9f7}
+#gameDetailPlans .game-plan-card,#gameDetailPlans .mlbb-plan-card{border-color:#e1e8f2;border-radius:16px;box-shadow:0 5px 15px rgba(20,45,84,.045)}
+#gameDetailPlans .plan-buy,#gameDetailPlans .mlbb-plan-buy{min-height:43px;border-radius:12px;font-weight:850}
+#checkoutView>.panel{padding:19px}
+#checkoutView .checkout-stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0 18px;padding:0;list-style:none}
+#checkoutView .checkout-stepper li{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:45px;padding:8px 6px;border:1px solid #e2e9f3;border-radius:13px;background:#f8faff;color:#7b899e;font-size:11px;font-weight:850}
+#checkoutView .checkout-stepper li b{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:9px;background:#e7edf7;color:#687c9b;font-size:11px}
+#checkoutView .checkout-stepper li.active{border-color:#c4d4fb;background:#f1f4ff;color:#4c59ba}
+#checkoutView .checkout-stepper li.active b{background:linear-gradient(135deg,#887cf2,#526edc);color:#fff}
+#checkoutView .checkout-stepper li.done{border-color:#cde9dc;background:#f2faf5;color:#2a8156}
+#checkoutView .checkout-stepper li.done b{background:#319b69;color:#fff}
+#checkoutView .checkout-product-lock{padding:13px;border-radius:15px;border-color:#dfe8f5;background:linear-gradient(140deg,#f8fbff,#eef4fc)}
+#checkoutView .checkout-product-lock-copy strong{color:#223a5c}
+#checkoutView .checkout-stage-title{padding:13px 14px;border-radius:14px;background:#f3f6fd}
+#checkoutView .field label{color:#435675;font-size:12px;font-weight:850}
+#checkoutView .field input,#checkoutView .field select{width:100%;min-height:49px;padding:13px 14px;border:1px solid #dce5f1;border-radius:13px;background:#fff;font-size:16px}
+#checkoutView .player-name-wrap input{padding-left:43px}
+#checkoutView .checkout-payment-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#checkoutView .checkout-method-choice{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-width:0;min-height:58px;padding:10px 11px;border:1px solid #e0e8f3;border-radius:13px;background:#fff;color:#465b78;font-size:11px;font-weight:850;text-align:left}
+#checkoutView .checkout-method-choice.active{border-color:#9bb7ec;background:#eff4ff;color:#275dbb;box-shadow:0 0 0 2px rgba(54,102,203,.07)}
+#checkoutView .checkout-method-icon{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;border-radius:10px;background:#edf3ff;color:#3869c4;font-size:16px}
+#checkoutView .checkout-summary{align-items:center;flex-wrap:wrap;padding:13px;border-radius:15px}
+#checkoutView .checkout-total{margin-left:auto}
+#checkoutView .block-btn{width:100%;min-height:49px;border-radius:14px;font-size:13px}
+#checkoutView .track-note{line-height:1.55}
+#checkoutView .proof-dropzone{min-height:100px;border-radius:16px}
+#ordersView .order-card{border-radius:17px;box-shadow:0 5px 16px rgba(20,45,84,.045)}
+#ordersView .order-card>strong{color:#213756}
+#ordersView .order-detail{line-height:1.6}
+#profileView .profile-card{padding:14px;border:1px solid #e2eaf4;border-radius:17px;background:linear-gradient(145deg,#fff,#f7f9fd)}
+#notificationsView .notification-item{border-radius:15px}
+@media(max-width:760px){
+ #auth.auth-showcase-layout{grid-template-columns:minmax(0,1fr);max-width:560px;gap:12px;margin:10px auto}
+ #auth .auth-showcase{min-height:0;padding:21px 19px;border-radius:22px}
+ #auth .auth-showcase h1{max-width:100%;margin:14px 0 9px;font-size:clamp(27px,7vw,34px)}
+ #auth .auth-showcase-copy p{font-size:12px;line-height:1.5}
+ #auth .auth-showcase-games{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:13px 0 11px}
+ #auth .auth-game-card{border-radius:13px}
+ #auth .auth-game-art{height:clamp(86px,27vw,116px)}
+ #auth .auth-game-info{display:block;min-height:74px;padding:9px}
+ #auth .auth-game-info strong{font-size:11px}
+ #auth .auth-game-info div>span{font-size:9px}
+ #auth .auth-available{margin-top:6px;font-size:8px}
+ #auth .auth-game-lock{margin:0 8px 8px;font-size:8px}
+ #auth .auth-preview-gate{padding:11px 12px}
+ #auth .auth-preview-gate strong{font-size:12px}
+ #auth .auth-preview-gate span{font-size:10px;line-height:1.45}
+ #auth .auth-showcase-benefits{gap:7px 10px;margin-top:12px;font-size:9px}
+ #auth .auth-login-panel{padding:17px;border-radius:18px}
+ #auth .auth-login-panel h2{font-size:22px}
+ #auth .auth-tabs{margin:14px 0}
+ #auth .auth-tabs button{min-height:43px;font-size:12px}
+ #gamesView .panel,#searchView .panel,#checkoutView>.panel{padding:14px}
+ #gamesView #gameDetailPanel{padding:12px}
+ #gameDetailHero .game-detail-hero{grid-template-columns:94px minmax(0,1fr);gap:11px;padding:10px;border-radius:17px}
+ #gameDetailHero .game-detail-art{height:100px;border-radius:12px}
+ #gameDetailHero .game-detail-copy h1{font-size:clamp(18px,5vw,22px);line-height:1.1}
+ #gameDetailHero .game-detail-copy p{font-size:10px;margin:5px 0}
+ #gameDetailHero .detail-eyebrow{font-size:8px}
+ #gameDetailHero .detail-count{font-size:9px;padding:4px 7px}
+ #gamesView .game-method-section{margin:8px 0 17px}
+ #gamesView .game-payment-choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ #gamesView .game-method{min-height:58px;border-radius:12px;font-size:9px}
+ #gamesView #gameDetailPlans .section-head h2{font-size:16px}
+ #checkoutView .section-head{align-items:flex-start;gap:7px}
+ #checkoutView .section-head .text-link{max-width:125px;font-size:10px;text-align:right}
+ #checkoutView .checkout-stepper{gap:6px;margin:12px 0 15px}
+ #checkoutView .checkout-stepper li{min-height:43px;gap:5px;font-size:10px;padding:7px 4px}
+ #checkoutView .checkout-stepper li b{flex-basis:22px;width:22px;height:22px}
+ #checkoutView .checkout-method-choice{min-height:57px;padding:9px;font-size:10px}
+ #checkoutView .checkout-summary{gap:8px;padding:11px}
+ #checkoutView .checkout-total strong{font-size:19px}
+ #checkoutView .payment-data-panel{padding:12px;border-radius:16px}
+ #checkoutView .payment-copy-value{font-size:20px}
+ #checkoutView .proof-dropzone{padding:12px;gap:9px}
+ #checkoutView .proof-copy strong{font-size:12px}
+ #ordersView .order-card{padding:12px}
+}
+@media(max-width:390px){
+ #auth .auth-showcase{padding:18px 16px}
+ #auth .auth-showcase .eyebrow{font-size:8px;letter-spacing:.05em}
+ #auth .auth-game-art{height:91px}
+ #auth .auth-game-info{min-height:82px;padding:8px}
+ #auth .auth-game-info strong{font-size:10px}
+ #auth .auth-game-info div>span{font-size:8px}
+ #auth .auth-game-lock{font-size:7px}
+ #auth .auth-login-panel{padding:15px}
+ #checkoutView .checkout-payment-methods{gap:6px}
+ #checkoutView .checkout-method-choice{gap:7px;padding:8px;font-size:9px}
+ #checkoutView .checkout-method-icon{flex-basis:27px;width:27px;height:27px;font-size:14px}
+ #gameDetailHero .game-detail-hero{grid-template-columns:84px minmax(0,1fr);gap:9px}
+ #gameDetailHero .game-detail-art{height:90px}
+ #gameDetailHero .game-detail-copy h1{font-size:18px}
+}
+@media(max-width:360px){
+ #auth .auth-showcase-games{grid-template-columns:1fr}
+ #auth .auth-game-art{height:116px}
+ #auth .auth-game-info{min-height:0}
+ #auth .auth-game-lock{font-size:8px}
+ #checkoutView .checkout-stepper li span{font-size:9px}
+ #gameDetailHero .game-detail-hero{grid-template-columns:minmax(0,1fr)}
+ #gameDetailHero .game-detail-art{height:128px}
+ #gamesView .game-method{font-size:8px}
+ #gameDetailPlans .mlbb-product-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+ #auth .auth-game-card,#checkoutView .checkout-method-choice,#gameDetailPlans .game-plan-card{transition:none!important}
+}
+</style>
 </head>
 <body>
 <div class="brand-loader" id="brandLoader" role="status" aria-live="polite"><div class="loader-mark"><img src="./assets/castle-logo.webp" alt="" width="62" height="62"></div><strong>Tienda El Castillo</strong><span>Preparando tu tienda digital…</span><i></i></div>
@@ -1290,8 +1438,8 @@ body{min-width:0}
  <div class="auth-showcase">
   <div class="auth-showcase-copy">
    <span class="eyebrow">♛ TIENDA EL CASTILLO · RECARGAS DIGITALES</span>
-   <h1>Recargar tu juego favorito nunca había sido tan fácil y económico.</h1>
-   <p>Diamantes, pases y membresías de Free Fire y Mobile Legends: Bang Bang (Global), con precios competitivos y un proceso sencillo. Descubre nuestros juegos y entra para consultar todos los paquetes y comprar.</p>
+   <h1>Tu tienda de recargas, a un toque.</h1>
+   <p>Encuentra diamantes, pases y membresías de Free Fire y Mobile Legends: Bang Bang Global. Entra, revisa los paquetes y realiza tu pedido desde tu teléfono.</p>
   </div>
   <div class="auth-showcase-games" aria-label="Juegos con servicios disponibles">
    <article class="auth-game-card">
