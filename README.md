@@ -1,18 +1,36 @@
 # Tienda El Castillo — DESARROLLO
 
-Este es el taller de desarrollo de la tienda.
+Este es el taller de desarrollo de la tienda. **No es la web de compras que usan los clientes.**
 
 ## Uso
 
 - Aquí se preparan mejoras, rediseños, correcciones y nuevas funciones.
 - No compartir la dirección antigua de GitHub Pages con clientes.
-- No realizar pruebas de pedidos, comprobantes, billetera, pagos ni recargas mientras este código siga conectado al Supabase de producción.
-- Antes de probar operaciones que escriban datos, crear y configurar un proyecto Supabase de staging independiente.
-- Cuando una versión esté terminada y probada, se revisa y se copia a `TiendaElCastillo/tiendaelcastillo.github.io`, el repositorio de producción.
+- No realizar compras reales, depósitos ni recargas de prueba.
+- Al probar esta rama, las llamadas del navegador van al Supabase de desarrollo que figura más abajo.
+- La versión de producción solo se actualiza tras revisar el cambio y preparar un PR en el repositorio oficial.
+- Los datos de prueba deben ser ficticios. Nunca importar clientes, pedidos, comprobantes, saldos, teléfonos ni identificadores reales.
 
 ## Separación de entornos
 
-- Producción: `TiendaElCastillo/tiendaelcastillo.github.io`
-- Desarrollo: `TiendaElCastillo/tienda-el-castillo`
+| Uso | GitHub | Supabase |
+|---|---|---|
+| Compras de clientes / producción | `TiendaElCastillo/tiendaelcastillo.github.io` — `main` | `Tienda-El-Castillo` — `kfllglkfncebpknnugnx` |
+| Taller de desarrollo / pruebas | `TiendaElCastillo/tienda-el-castillo` — `main` y ramas de trabajo | `Tienda-El-Castillo-Pruebas` — `kmotmgpzmeooznyymcxl` |
 
-No introducir aquí secretos de Supabase ni claves de proveedor. Las claves privilegiadas solo deben existir en secretos del backend.
+## Supabase de desarrollo
+
+- URL: `https://kmotmgpzmeooznyymcxl.supabase.co`
+- Proyecto: `Tienda-El-Castillo-Pruebas`
+- Región: `us-east-2`
+- Estado inicial comprobado: `ACTIVE_HEALTHY`
+- La base se creó vacía y sin copiar datos del proyecto de producción.
+- **Esquema aún no preparado:** hasta que se apliquen y verifiquen las migraciones necesarias, el taller no tendrá todas sus funciones operativas. No probar pedidos, pagos, billetera, comprobantes ni recargas.
+- No configurar secretos reales del proveedor en este proyecto. Las funciones de prueba deben usar datos ficticios y servicios simulados.
+
+## Reglas de seguridad
+
+- No introducir claves privilegiadas, service-role keys, tokens del proveedor ni datos de clientes en el repositorio público.
+- La clave incluida en el navegador es una clave pública de desarrollo, limitada por RLS; nunca sustituirla por una clave privada.
+- No usar nunca el identificador de Supabase de producción en este repositorio de desarrollo.
+- Antes de transferir una mejora a producción, comparar el código contra el repositorio oficial actual; este taller contiene una versión anterior de la tienda y no debe copiarse entero sobre producción.
