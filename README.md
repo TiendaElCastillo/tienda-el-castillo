@@ -25,7 +25,10 @@ Este es el taller de desarrollo de la tienda. **No es la web de compras que usan
 - Región: `us-east-2`
 - Estado inicial comprobado: `ACTIVE_HEALTHY`
 - La base se creó vacía y sin copiar datos del proyecto de producción.
-- **Esquema aún no preparado:** hasta que se apliquen y verifiquen las migraciones necesarias, el taller no tendrá todas sus funciones operativas. No probar pedidos, pagos, billetera, comprobantes ni recargas.
+- **Estado del esquema:** el proyecto contiene una base mínima aislada para probar reseñas verificadas, con perfiles, pedidos ficticios y políticas específicas. No es una copia completa de producción ni permite probar el checkout real.
+- Las pruebas hechas hasta ahora son de base de datos/RLS y moderación; la interfaz de reseñas todavía no está integrada.
+- No probar pedidos, pagos, billetera, comprobantes ni recargas. No hay funciones del proveedor ni secretos reales configurados.
+- El informe de pruebas está en `docs/REVIEWS_TEST_REPORT_2026-11-23.md`.
 - No configurar secretos reales del proveedor en este proyecto. Las funciones de prueba deben usar datos ficticios y servicios simulados.
 
 ## Reglas de seguridad
